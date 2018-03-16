@@ -11,7 +11,7 @@ import numpy as np
  
 ####################################################################################
 ##
-#                                   Set up the BT Leaves
+#                         Demo of ABT for Peg-In-Hole Task
 # 
 #
 demo_bt = b3.BehaviorTree()
@@ -106,40 +106,69 @@ class aug_leaf(b3.Action):
         if a<self.pS:
             return b3.SUCCESS 
         else:
-            return b3.FAILURE
-    
-print "-- -- --  Gaussian Test: mu = 3, sig = 1"
-sum = 0.0
-for i in range(NSYMBOLS):
-    tmp = gaussian(i,3,1)
-    sum += tmp
-    #print tmp
-
-#print "Sum: ", sum
-
+            return b3.FAILURE 
 print"\n\n"
+
+########  Step 1  Position Left Grasper over block
     
-leaf1 = aug_leaf(0.9)
-print "Test:  leaf 1 ID:"
-print leaf1.id
+leaf1 = aug_leaf(1.0) 
+leaf1.set_Obs_Density(5,1)
 
-leaf1.set_Obs_Density(22,5)
 
-leaf2 = aug_leaf(0.95)
-leaf2.set_Obs_Density(7,2)
+########  Step 2 Insert and Grasp block
+    
+leaf2a = aug_leaf(0.9)
+leaf2a.set_Obs_Density(12,1)
 
-leaf3 = aug_leaf(0.9)
-leaf3.set_Obs_Density(15,5)
+leaf2c = aug_leaf(0.95)
+leaf2c.set_Obs_Density(12,1)
 
-leaf1.Name = "Leaf 1"
-leaf2.Name = "Leaf 2"
-leaf3.Name = "L3"
-        
-leaf1.BHdebug = T
-leaf2.BHdebug = T
-leaf3.BHdebug = T
 
-N1 = b3.Sequence([leaf1, leaf2, leaf3])
+leaf2b = b3.Sequence([leaf2a,leaf2c])
+leaf2 = b3.RepeatUntilSuccess(leaf2b,2) 
+
+
+##########  Steps 3-5  Lift clear / reorient / move
+
+leaf3to5 = aug_leaf(1.0)
+leaf3to5.set_Obs_Density(5,1)
+
+##########  Step 6 Insert Right grasper / grasp
+
+leaf6a = aug_leaf(0.6)
+leaf6a.set_Obs_Density(18,1)
+
+leaf6c = aug_leaf(0.75)
+leaf6c.set_Obs_Density(18,1)
+
+leaf6b = b3.Sequence([leaf6a,leaf6c])
+leaf6 = b3.RepeatUntilSuccess(leaf6b,2)
+
+leaf6.Name = "Leaf 6"
+
+########  Steps 7-9   Release Left / Reorient / Position
+
+leaf7to9 = aug_leaf(1.0)
+leaf7to9.set_Obs_Density(5,1)
+
+########  Step 10     Place on peg / Release / Clear 
+     
+leaf10a = aug_leaf(0.9)
+leaf10a.set_Obs_Density(22,1)
+
+leaf10c = aug_leaf(0.95)
+leaf10c.set_Obs_Density(22,1)
+    
+leaf10d = aug_leaf(0.8)
+leaf10d.set_Obs_Density(22,1)
+leaf10b = b3.Sequence([leaf10a,leaf10c])
+leaf10 = b3.RepeatUntilSuccess(leaf10b,2) 
+
+###    Debugging
+leaf6.BHdebug = T
+
+
+N1 = b3.Sequence([leaf1, leaf2, leaf3to5, leaf6, leaf7to9, leaf10])
 N1.Name = 'Sequencer Node'
 N1.BHdebug = T
 bb = b3.Blackboard()
