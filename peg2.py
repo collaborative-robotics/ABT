@@ -81,10 +81,13 @@ class aug_leaf(b3.Action):
             return b3.FAILURE 
 print"\n\n"
 
+
+sig = 2.0   # observation sigma
+
 ########  Step 1  Position Left Grasper over block
     
 l1 = aug_leaf(1.0) 
-l1.set_Obs_Density(5,1)
+l1.set_Obs_Density(2,sig)
 l1.Name = 'L1'
 
 
@@ -92,78 +95,78 @@ l1.Name = 'L1'
 
 # try 1    
 l2a1 = aug_leaf(0.9)
-l2a1.set_Obs_Density(12,1)     # emit "12"
+l2a1.set_Obs_Density(4,sig)     # emit "2"
 l2a1.Name = 'L2a1'
 
 l2b1 = aug_leaf(0.95)
-l2b1.set_Obs_Density(12,1)     # emit "12"
+l2b1.set_Obs_Density(6,sig)     # emit "4"
 l2b1.Name = 'L2b1'
 
-l21 = b3.Sequence([leaf2a,leaf2c]) 
+l21 = b3.Sequence([l2a1,l2b1]) 
 
 # try 2
 l2a2 = aug_leaf(0.9)
-l2a2.set_Obs_Density(12,1)     # emit "12"
+l2a2.set_Obs_Density(8,sig)     # emit "12"
 l2a2.Name = 'L2a2'
 
 l2b2 = aug_leaf(0.95)
-l2b2.set_Obs_Density(12,1)     # emit "12"
+l2b2.set_Obs_Density(10,sig)     # emit "12"
 l2b2.Name = 'L2b2'
 
-l22 = b3.Sequence([leaf2a,leaf2c]) 
+l22 = b3.Sequence([l2a2,l2b2]) 
 
-l2 = b3.Selector([l21,l22])
+l2 = b3.Priority([l21,l22])
 
 
 ##########  Steps 3-5  Lift clear / reorient / move
 
 l345 = aug_leaf(1.0)
-l345.set_Obs_Density(5,1)
+l345.set_Obs_Density(12,sig)
 l345.Name = 'L345'
 
 ##########  Step 6 Insert Right grasper / grasp
 
 # try 1
 l6a1 = aug_leaf(0.6)
-l6a1.set_Obs_Density(18,1)
+l6a1.set_Obs_Density(14,sig)
 l6a1.Name = 'L6a1'
 
 l6b1 = aug_leaf(0.75)
-l6b1.set_Obs_Density(18,1)
+l6b1.set_Obs_Density(16,sig)
 l6b1.Name = 'L6b1'
 
 # try 2
 l6a2 = aug_leaf(0.6)
-l6a2.set_Obs_Density(18,1)
+l6a2.set_Obs_Density(18,sig)
 l6a2.Name = 'L6a2'
 
 l6b2 = aug_leaf(0.75)
-l6b2.set_Obs_Density(18,1)
+l6b2.set_Obs_Density(20,sig)
 l6b2.Name = 'L6b2'
 
 l61 = b3.Sequence([l6a1,l6b1])
 l62 = b3.Sequence([l6a2,l6b2])
-l6  = b3.Selector([l61,l62]) 
+l6  = b3.Priority([l61,l62]) 
 l6.Name = "Leaf 6"
 
 ########  Steps 7-9   Release Left / Reorient / Position
 
 l789 = aug_leaf(1.0)
-l789.set_Obs_Density(5,1)
+l789.set_Obs_Density(22,1)
 l789.Name = 'L789'
 
 ########  Step 10     Place on peg / Release / Clear 
      
 l10a1 = aug_leaf(0.9)
-l10a1.set_Obs_Density(22,1)
+l10a1.set_Obs_Density(24,1)
 l10a1.Name = 'L10a1'
 
 l10b1 = aug_leaf(0.95)
-l10b1.set_Obs_Density(22,1)
+l10b1.set_Obs_Density(26,1)
 l10b1.Name = 'L10c'
     
 l10c1 = aug_leaf(0.8)
-l10c1.set_Obs_Density(22,1)
+l10c1.set_Obs_Density(28,1)
 l10c1.Name = 'L10d'
 
 l10 = b3.Sequence([l10a1,l10b1,l10c1])
