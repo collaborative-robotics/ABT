@@ -1,5 +1,9 @@
 #!/usr/bin/python
 # 
+#
+#   Revised to match fig BT-01164_Huge.png
+#     from BT-Hmm proposal   May 18
+
 
 
 # modified by BH, local version in current dir
@@ -21,7 +25,7 @@ SolverDebug = False
 
 NSYMBOLS = 30 # number of VQ symbols for observations
 
-NEpochs = 100000  # number of simulations
+NEpochs = 10  # number of simulations
 
 T = True
 F = False
@@ -79,74 +83,96 @@ print"\n\n"
 
 ########  Step 1  Position Left Grasper over block
     
-leaf1 = aug_leaf(1.0) 
-leaf1.set_Obs_Density(5,1)
-leaf1.Name = 'L1'
+l1 = aug_leaf(1.0) 
+l1.set_Obs_Density(5,1)
+l1.Name = 'L1'
 
 
 ########  Step 2 Insert and Grasp block
-    
-leaf2a = aug_leaf(0.9)
-leaf2a.set_Obs_Density(12,1)
-leaf2a.Name = 'L2a'
 
-leaf2c = aug_leaf(0.95)
-leaf2c.set_Obs_Density(12,1)
-leaf2c.Name = 'L2c'
+# try 1    
+l2a1 = aug_leaf(0.9)
+l2a1.set_Obs_Density(12,1)     # emit "12"
+l2a1.Name = 'L2a1'
 
-leaf2b = b3.Sequence([leaf2a,leaf2c])
-leaf2 = b3.RepeatUntilSuccess(leaf2b,2) 
+l2b1 = aug_leaf(0.95)
+l2b1.set_Obs_Density(12,1)     # emit "12"
+l2b1.Name = 'L2b1'
+
+l21 = b3.Sequence([leaf2a,leaf2c]) 
+
+# try 2
+l2a2 = aug_leaf(0.9)
+l2a2.set_Obs_Density(12,1)     # emit "12"
+l2a2.Name = 'L2a2'
+
+l2b2 = aug_leaf(0.95)
+l2b2.set_Obs_Density(12,1)     # emit "12"
+l2b2.Name = 'L2b2'
+
+l22 = b3.Sequence([leaf2a,leaf2c]) 
+
+l2 = b3.Selector([l21,l22])
 
 
 ##########  Steps 3-5  Lift clear / reorient / move
 
-leaf3to5 = aug_leaf(1.0)
-leaf3to5.set_Obs_Density(5,1)
-leaf3to5.Name = 'L345'
+l345 = aug_leaf(1.0)
+l345.set_Obs_Density(5,1)
+l345.Name = 'L345'
 
 ##########  Step 6 Insert Right grasper / grasp
 
-leaf6a = aug_leaf(0.6)
-leaf6a.set_Obs_Density(18,1)
-leaf6a.Name = 'L6a'
+# try 1
+l6a1 = aug_leaf(0.6)
+l6a1.set_Obs_Density(18,1)
+l6a1.Name = 'L6a1'
 
-leaf6c = aug_leaf(0.75)
-leaf6c.set_Obs_Density(18,1)
-leaf6c.Name = 'L6c'
+l6b1 = aug_leaf(0.75)
+l6b1.set_Obs_Density(18,1)
+l6b1.Name = 'L6b1'
 
-leaf6b = b3.Sequence([leaf6a,leaf6c])
-leaf6 = b3.RepeatUntilSuccess(leaf6b,2)
-leaf6.Name = "Leaf 6"
+# try 2
+l6a2 = aug_leaf(0.6)
+l6a2.set_Obs_Density(18,1)
+l6a2.Name = 'L6a2'
+
+l6b2 = aug_leaf(0.75)
+l6b2.set_Obs_Density(18,1)
+l6b2.Name = 'L6b2'
+
+l61 = b3.Sequence([l6a1,l6b1])
+l62 = b3.Sequence([l6a2,l6b2])
+l6  = b3.Selector([l61,l62]) 
+l6.Name = "Leaf 6"
 
 ########  Steps 7-9   Release Left / Reorient / Position
 
-leaf7to9 = aug_leaf(1.0)
-leaf7to9.set_Obs_Density(5,1)
-leaf7to9.Name = 'L789'
+l789 = aug_leaf(1.0)
+l789.set_Obs_Density(5,1)
+l789.Name = 'L789'
 
 ########  Step 10     Place on peg / Release / Clear 
      
-leaf10a = aug_leaf(0.9)
-leaf10a.set_Obs_Density(22,1)
-leaf10a.Name = 'L10a'
+l10a1 = aug_leaf(0.9)
+l10a1.set_Obs_Density(22,1)
+l10a1.Name = 'L10a1'
 
-leaf10c = aug_leaf(0.95)
-leaf10c.set_Obs_Density(22,1)
-leaf10c.Name = 'L10c'
+l10b1 = aug_leaf(0.95)
+l10b1.set_Obs_Density(22,1)
+l10b1.Name = 'L10c'
     
-leaf10d = aug_leaf(0.8)
-leaf10d.set_Obs_Density(22,1)
-leaf10d.Name = 'L10d'
+l10c1 = aug_leaf(0.8)
+l10c1.set_Obs_Density(22,1)
+l10c1.Name = 'L10d'
 
-leaf10b = b3.Sequence([leaf10a,leaf10c,leaf10d])
-
-leaf10 = b3.RepeatUntilSuccess(leaf10b,2) 
+l10 = b3.Sequence([l10a1,l10b1,l10c1])
+l10.Name = 'Position/Release'
 
 ###    Debugging
-leaf6.BHdebug = T
 
 
-N1 = b3.Sequence([leaf1, leaf2, leaf3to5, leaf6, leaf7to9, leaf10])
+N1 = b3.Sequence([l1, l2, l345, l6, l789, l10])
 N1.Name = 'Sequencer Node'
 N1.BHdebug = T
 bb = b3.Blackboard()
