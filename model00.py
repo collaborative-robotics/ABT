@@ -30,24 +30,23 @@ A[4,5] = PS[4]
 A[4,6] = 1.0-PS[4] 
 
 N = len(names)
-A = A[1:len,1:len]  # get zero offset index
+A = A[1:N,1:N]  # get zero offset index
 
 ######################
-sig = 2.0
-#outputs = {'l1':2, 'l2a1': 4, 'l2b1':6, 'l2a2':8 ,'l2b2':10, 'l345':12, 'l6a1':14, 'l6b1':16, 'l6a2':18, ';6b2':20, 'l789':22, 'l10a1':24, 'l10b1':26, 'l10c1':28, 'OutS':30, 'OutF':30}
+sig = 2.0 
 #
-outputs = {'l1':2, 'l2': 5, 'l3':8, 'l4': 8,  'OutS':30, 'OutF':30}
-
+outputs = {'l1':2, 'l2': 5, 'l3':8, 'l4': 8,  'OutS':10, 'OutF':20}
 
 Pi = np.zeros(16)
 Pi[0] = 1.0      # always start at state 1
-
  
 statenos = {'l1':1, 'l2': 2, 'l3':3, 'l4':4,  'OutS':5, 'OutF':6}
 
 ###  Regenerate output means:
-#i = 0
-#di = 8  # = nxsigma !!
-#for n in outputs.keys():
-    #outputs[n] = i
-    #i += di
+i = 20
+di = 8  # = nxsigma !!
+for n in outputs.keys():
+    outputs[n] = i
+    i += di
+    
+    

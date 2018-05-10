@@ -56,6 +56,8 @@ sig = 2.0
 #
 outputs = {'l1':2, 'l2a1': 5, 'l2b1':8, 'l2a2': 8,  'l2b2':11, 'l345':14, 'l6a1':17, 'l6b1':20, 'l6a2':23, 'l6b2':26, 'l789':29, 'l10a1':33, 'l10b1':36, 'l10c1':28, 'OutS':30, 'OutF':30}
 
+statenos = {'l1':1, 'l2a1': 2, 'l2b1':3, 'l2a2':4,  'l2b2':5, 'l345':6, 'l6a1':7, 'l6b1':8, 'l6a2':9, 'l6b2':10, 'l789':11, 'l10a1':12, 'l10b1':13, 'l10c1':14, 'OutS':15, 'OutF':16}
+
 ##  Regenerate output means:  (easier to change below)
 i = 8
 di = 8  # = nxsigma !!
@@ -63,12 +65,11 @@ for n in outputs.keys():
     outputs[n] = i
     i += di
 
-print 'Outputs: (mean of each states observations)'
-print outputs
+#print 'Outputs: (mean of each states observations)'
+#print outputs
 
 
 Pi = np.zeros(16)
 Pi[0] = 1.0      # always start at state 1
 
  
-statenos = {'l1':1, 'l2a1': 2, 'l2b1':3, 'l2a2':4,  'l2b2':5, 'l345':6, 'l6a1':7, 'l6b1':8, 'l6a2':9, 'l6b2':10, 'l789':11, 'l10a1':12, 'l10b1':13, 'l10c1':14, 'OutS':15, 'OutF':16}

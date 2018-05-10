@@ -11,64 +11,29 @@ import matplotlib.pyplot as plt
 #pip install -U --user hmmlearn 
 from hmmlearn import hmm
 
-# INITIAL State Transition Probabilities
-#  make A one bigger to make index human
-A = np.zeros((17,17))
-A[1,2] = 1.0
-A[2,3] = 0.90
-A[2,4] = 0.10
-A[3,4] = 0.05
-A[3,6] = 0.95
-A[4,5] = 0.90
-A[4,16] = 0.10
-A[5,6] = 0.95
-A[5,16] = 0.05
-A[6,7] = 1
-A[7,8] = 0.90
-A[7,10] = 0.10
-A[8,9] = 0.05
-A[8,11] = 0.95
-A[9,10] = 0.90
-A[9,16] = 0.10
-A[10,11] = 0.95
-A[10,16] = 0.05
-A[11,12] = 1
-A[12,13] = 0.90
-A[12,16] = 0.10
-A[13,14] = 0.95
-A[13,16] = 0.05
-A[14,15] = 0.80
-A[14,16] = 0.20
-A[15,15] = 1.0
-A[16,16] = 1.0
-
-A = A[1:17,1:17]  # get zero offset index
-
+# BT and HMM parameters here
+from  model01 import *
 
 print "Original  A matrix:"
 for i in range(16):
+    print '{0: <7}'.format(names[i]),
     for j in range(16):
         print '{:.3f} '.format(A[i,j]),
     print '\n' 
-    
+
 print "A-matrix row check"
 for i in range(16):
     r = 0
     for j in range(16):
         r += A[i,j]
-    print i, r
-    
+    print i,r
+    if r > 1.0:
+        print 'Problem: row ',i,' of A-matrix sum is > 1.0'
+        quit()
+     
+#quit()
 
-names = ['l1','l2a1','l2b1','l2a2','l2b2', 'l345', 'l6a1', 'l6b1', 'l6a2', ';6b2', 'l789', 'l10a1', 'l10b1', 'l10c1', 'OutS', 'OutF']
-
-sig = 2.0
-outputs = {'l1':2, 'l2a1': 4, 'l2b1':6, 'l2a2':8 ,'l2b2':10, 'l345':12, 'l6a1':14, 'l6b1':16, 'l6a2':18, ';6b2':20, 'l789':22, 'l10a1':24, 'l10b1':26, 'l10c1':28, 'OutS':30, 'OutF':30}
-#
-Pi = np.zeros(16)
-Pi[0] = 1.0      # always start at state 1
-
-
-M = hmm.GaussianHMM(n_components=16, covariance_type='diag', n_iter=10,init_params='')
+M = hmm.GaussianHMM(n_components=16, covariance_type='diag', n_iter=10, init_params='')
 #M.n_features = 1
 M.startprob_ = Pi
 M.transmat_ = A
@@ -109,21 +74,59 @@ for line in logf:
 
 
 print "starting HMM fit with ", len(Y), ' sequences.'   
- 
-quit() 
+  
  
 Y=np.array(Y).reshape(-1,1)  # make 2D
 Ls = np.array(Ls)
+
+#print 'Shapes: '
+#print 'Y', Y.shape
+#print Y
+#print 'Ls', Ls.shape
+#print Ls
+
+#quit()
+
 M.fit(Y,Ls)
 
 np.set_printoptions(precision=3,suppress=True)
 
 print "New A matrix:"
 for i in range(len(names)):
+    print '{0: <7}'.format(names[i]),
     for j in range(len(names)):
         print '{:.3f} '.format(M.transmat_[i,j]),
     print '\n' 
+    
+    
+# compute A matrix errors etc
 
+e = 0
+em = 0
+N = len(names)
+anoms = []
+erasures = []
+for i in range(N):
+    for j in range(N):
+        e1 = (A[i,j]-M.transmat_[i,j])**2
+        if(e1 > em):
+            em = e1
+        e += e1
+        if(A[i,j]==0.0 and M.transmat_[i,j]>0.0):
+          anoms.append([i,j])  
+        if(A[i,j]>0.0 and M.transmat_[i,j] < 0.0000001):
+          erasures.append([names[i],names[j]])  
+e /= np.sqrt(N*N)
+em = np.sqrt(em)
+
+print 'RMS  A-matrix E**2: {:.3f}'.format(e)
+print 'Max     A-matrix E: {:.3f}'.format(em)
+if len(anoms) == 0:
+    anoms = 'None'
+print 'Anomalies: ', anoms
+if len(erasures) == 0:
+    anoms = 'None'
+print 'Erasures : ', erasures
 quit()
 
 #print "shapes:"

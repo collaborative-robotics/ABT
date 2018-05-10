@@ -13,6 +13,9 @@ import random as random
 import math as m
 import numpy as np
  
+# BT and HMM parameters here
+from  model01 import *
+
 ####################################################################################
 ##
 #                         Demo of ABT for Peg-In-Hole Task
@@ -22,15 +25,6 @@ demo_bt = b3.BehaviorTree()
 
 LeafDebug = False
 SolverDebug = False
-
-NSYMBOLS = 150 # number of VQ symbols for observations
-
-NEpochs = 1000  # number of simulations
-
-T = True
-F = False
-
-logdir = 'logs/'
        
 if not os.path.isdir(logdir):  # if this doesn't exist, create it.
     os.mkdir(logdir) 
@@ -50,14 +44,18 @@ class aug_leaf(b3.Action):
         #  Observation Densities for this leaf
         self.Obs = np.zeros(NSYMBOLS)
         
+    def set_Ps(self, P):
+        self.pS = P
+        self.pF = 1.0-P
+        
     def set_Obs_Density(self, mu, sig):
-        if (mu+sig) > NSYMBOLS or ((mu-sig) < 0):
+        if (mu+3*sig) > NSYMBOLS or ((mu-3*sig) < 0):
             print 'aug_leaf: Warning may gen negative observations'
             #quit()
         for j in range(NSYMBOLS):
-            self.Obs[j] = gaussian(j+0.5,mu,sig)
+            self.Obs[j] = gaussian(j,mu,sig)
             #print "j/Obs:",j,self.Obs[j]
-        print self.Name, 'obs:', mu, sig
+        #print self.Name, 'obs:', mu, sig
         
     def gen_obs(self):
         a = random.uniform(0,1.0)
@@ -74,7 +72,7 @@ class aug_leaf(b3.Action):
         a = random.uniform(0,1.0)
         #print "random: ",a , "   Ps: ", self.pS
         observation = self.gen_obs()
-        print "------------------------------------> obs: ", observation
+        #print "------------------------------------> obs: ", observation
         f.write(self.Name+', '+str(observation)+'\n')
         if a<self.pS:
             return b3.SUCCESS 
@@ -83,50 +81,42 @@ class aug_leaf(b3.Action):
 print"\n\n"
 
 
-sig = 2.0
-outputs = {'l1':2, 'l2a1': 5, 'l2b1':8, 'l2a2': 8,  'l2b2':11, 'l345':14, 'l6a1':17, 'l6b1':20, 'l6a2':23, 'l6b2':26, 'l789':29, 'l10a1':33, 'l10b1':36, 'l10c1':28, 'OutS':30, 'OutF':30}
-
-##  Regenerate output means:
-i = 0
-di = 8
-for n in outputs.keys():
-    outputs[n] = i
-    i += di
-    
-    
 #print outputs
 #quit()
+
+leafs = []
  
 
 ########  Step 1  Position Left Grasper over block
     
-l1 = aug_leaf(1.0) 
-l1.set_Obs_Density(outputs['l1'], sig)
+l1 = aug_leaf(1.0)  
 l1.Name = 'l1'
+leafs.append(l1)
 
 ########  Step 2 Insert and Grasp block
 
 # try 1    
 l2a1 = aug_leaf(0.9)
-l2a1.Name = 'l2a1'
-l2a1.set_Obs_Density(outputs['l2a1'],sig)     # emit "2"
+l2a1.Name = 'l2a1' 
+leafs.append(l2a1)
 
 l2b1 = aug_leaf(0.95)
-l2b1.Name = 'l2b1'
-l2b1.set_Obs_Density(outputs['l2b1'],sig)     # emit "4"
+l2b1.Name = 'l2b1' 
+leafs.append(l2b1)
 
 l21 = b3.Sequence([l2a1,l2b1]) 
 
 # try 2
 l2a2 = aug_leaf(0.9)
-l2a2.Name = 'l2a2'
-l2a2.set_Obs_Density(outputs['l2a2'],sig)     # emit "12"
+l2a2.Name = 'l2a2' 
+leafs.append(l2a2)
 
 l2b2 = aug_leaf(0.95)
-l2b2.Name = 'l2b2'
-l2b2.set_Obs_Density(outputs['l2b2'],sig)     # emit "12"
+l2b2.Name = 'l2b2' 
+leafs.append(l2b2)
 
-l22 = b3.Sequence([l2a2,l2b2]) 
+l22 = b3.Sequence([l2a2,l2b2])
+l22.Name = 'Node 2' 
 
 l2 = b3.Priority([l21,l22])
 
@@ -134,67 +124,80 @@ l2 = b3.Priority([l21,l22])
 ##########  Steps 3-5  Lift clear / reorient / move
 
 l345 = aug_leaf(1.0)
-l345.Name = 'l345'
-l345.set_Obs_Density(outputs['l345'],sig)
+l345.Name = 'l345' 
+leafs.append(l345)
 
 ##########  Step 6 Insert Right grasper / grasp
 
 # try 1
 l6a1 = aug_leaf(0.6)
-l6a1.Name = 'l6a1'
-l6a1.set_Obs_Density(outputs['l6a1'],sig)
+l6a1.Name = 'l6a1' 
+leafs.append(l6a1)
 
 l6b1 = aug_leaf(0.75)
-l6b1.Name = 'l6b1'
-l6b1.set_Obs_Density(outputs['l6b1'],sig)
+l6b1.Name = 'l6b1' 
+leafs.append(l6b1)
 
 # try 2
 l6a2 = aug_leaf(0.6)
-l6a2.Name = 'l6a2'
-l6a2.set_Obs_Density(outputs['l6a2'],sig)
+l6a2.Name = 'l6a2' 
+leafs.append(l6a2)
 
 l6b2 = aug_leaf(0.75)
-l6b2.Name = 'l6b2'
-l6b2.set_Obs_Density(outputs['l6b2'],sig)
+l6b2.Name = 'l6b2' 
+leafs.append(l6b2)
 
 l61 = b3.Sequence([l6a1,l6b1])
 l62 = b3.Sequence([l6a2,l6b2])
 l6  = b3.Priority([l61,l62]) 
-l6.Name = "leaf 6"
+l6.Name = "node 6"
 
 ########  Steps 7-9   Release Left / Reorient / Position
 
 l789 = aug_leaf(1.0)
-l789.Name = 'l789'
-l789.set_Obs_Density(outputs['l789'],sig)
+l789.Name = 'l789' 
+leafs.append(l789)
 
 ########  Step 10     Place on peg / Release / Clear 
      
 l10a1 = aug_leaf(0.9)
-l10a1.Name = 'l10a1'
-l10a1.set_Obs_Density(outputs['l10a1'],sig)
+l10a1.Name = 'l10a1' 
+leafs.append(l10a1)
 
 l10b1 = aug_leaf(0.95)
-l10b1.Name = 'l10b1'
-l10b1.set_Obs_Density(outputs['l10b1'],sig)
+l10b1.Name = 'l10b1' 
+leafs.append(l10b1)
     
 l10c1 = aug_leaf(0.8)
-l10c1.Name = 'l10c1'
-l10c1.set_Obs_Density(outputs['l10c1'],sig)
+l10c1.Name = 'l10c1' 
+leafs.append(l10c1)
 
 l10 = b3.Sequence([l10a1,l10b1,l10c1])
-l10.Name = 'Position/Release'
+l10.Name = 'Node 10: Position/Release'
+
+######  Top level sequence node
+N1 = b3.Sequence([l1, l2, l345, l6, l789, l10])
+N1.Name = 'Sequencer Node'
+N1.BHdebug = F
+bb = b3.Blackboard()
+
+##################################################################################################
+##  Set leaf params 
+
+    
+# set up leaf probabilities
+for l in leafs:
+    # output observeation mu, sigma
+    l.set_Obs_Density(outputs[l.Name],sig)
+    # set up the Ps
+    #print 'setting probs for:', l.Name, statenos[l.Name]
+    l.set_Ps(PS[statenos[l.Name]])
+
 
 ###    Debugging
 
 
 #quit()
-
-N1 = b3.Sequence([l1, l2, l345, l6, l789, l10])
-N1.Name = 'Sequencer Node'
-N1.BHdebug = T
-bb = b3.Blackboard()
-
 # open the log file
 logf = open(logdir+'statelog.txt','w')
 bb.set('logfileptr',logf)
@@ -207,5 +210,6 @@ for i in range(NEpochs):
     
 logf.close()
 
+print 'Finished simulating ',NEpochs,'  epochs'
     
     
