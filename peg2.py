@@ -23,9 +23,9 @@ from  model01 import *
 #
 demo_bt = b3.BehaviorTree()
 
-LeafDebug = False
+LeafDebug   = False
 SolverDebug = False
-       
+
 if not os.path.isdir(logdir):  # if this doesn't exist, create it.
     os.mkdir(logdir) 
     
@@ -43,19 +43,30 @@ class aug_leaf(b3.Action):
         self.pF = 1.0-self.pS
         #  Observation Densities for this leaf
         self.Obs = np.zeros(NSYMBOLS)
+        # give a residual obs prob:
+        for j in range(NSYMBOLS):
+            self.Obs[j] = 0.0001  # a nominal non-zero value
         
+    def set_Obs_Density(self, mu, sig):
+        if (mu+sig) > NSYMBOLS or ((mu-sig) < 0):
+            print 'aug_leaf: Warning may gen negative observations'
+            #quit()
+        psum = 0.0
+        for j in range(NSYMBOLS):
+            self.Obs[j] += gaussian(j+0.5,mu,sig)
+            psum += self.Obs[j]
+            #print "j/Obs:",j,self.Obs[j]
+        #normalize the Observation density so it sums to 1.000
+        for j in range(NSYMBOLS):
+            self.Obs[j] /= psum
+            
+        #print self.Name, 'obs:', mu, sig
+        
+        
+    # initialize Success Prob for leaf    
     def set_Ps(self, P):
         self.pS = P
         self.pF = 1.0-P
-        
-    def set_Obs_Density(self, mu, sig):
-        if (mu+3*sig) > NSYMBOLS or ((mu-3*sig) < 0):
-            print 'aug_leaf: Warning may gen negative observations'
-            #quit()
-        for j in range(NSYMBOLS):
-            self.Obs[j] = gaussian(j,mu,sig)
-            #print "j/Obs:",j,self.Obs[j]
-        #print self.Name, 'obs:', mu, sig
         
     def gen_obs(self):
         a = random.uniform(0,1.0)
@@ -83,13 +94,13 @@ print"\n\n"
 
 #print outputs
 #quit()
-
+ 
 leafs = []
  
 
 ########  Step 1  Position Left Grasper over block
     
-l1 = aug_leaf(1.0)  
+l1 = aug_leaf(1.0) 
 l1.Name = 'l1'
 leafs.append(l1)
 
@@ -97,54 +108,56 @@ leafs.append(l1)
 
 # try 1    
 l2a1 = aug_leaf(0.9)
-l2a1.Name = 'l2a1' 
+l2a1.Name = 'l2a1'
 leafs.append(l2a1)
 
 l2b1 = aug_leaf(0.95)
-l2b1.Name = 'l2b1' 
+l2b1.Name = 'l2b1'
 leafs.append(l2b1)
 
 l21 = b3.Sequence([l2a1,l2b1]) 
+l21.Name = 'Node 21'
 
 # try 2
 l2a2 = aug_leaf(0.9)
-l2a2.Name = 'l2a2' 
+l2a2.Name = 'l2a2'
 leafs.append(l2a2)
 
 l2b2 = aug_leaf(0.95)
-l2b2.Name = 'l2b2' 
+l2b2.Name = 'l2b2'
 leafs.append(l2b2)
 
-l22 = b3.Sequence([l2a2,l2b2])
-l22.Name = 'Node 2' 
+l22 = b3.Sequence([l2a2,l2b2]) 
+l22.Name = 'Node 22' 
 
 l2 = b3.Priority([l21,l22])
+l2.Name = 'Node 2'
 
 
 ##########  Steps 3-5  Lift clear / reorient / move
 
 l345 = aug_leaf(1.0)
-l345.Name = 'l345' 
+l345.Name = 'l345'
 leafs.append(l345)
 
 ##########  Step 6 Insert Right grasper / grasp
 
 # try 1
 l6a1 = aug_leaf(0.6)
-l6a1.Name = 'l6a1' 
+l6a1.Name = 'l6a1'
 leafs.append(l6a1)
 
 l6b1 = aug_leaf(0.75)
-l6b1.Name = 'l6b1' 
+l6b1.Name = 'l6b1'
 leafs.append(l6b1)
 
 # try 2
 l6a2 = aug_leaf(0.6)
-l6a2.Name = 'l6a2' 
+l6a2.Name = 'l6a2'
 leafs.append(l6a2)
 
 l6b2 = aug_leaf(0.75)
-l6b2.Name = 'l6b2' 
+l6b2.Name = 'l6b2'
 leafs.append(l6b2)
 
 l61 = b3.Sequence([l6a1,l6b1])
@@ -155,21 +168,21 @@ l6.Name = "node 6"
 ########  Steps 7-9   Release Left / Reorient / Position
 
 l789 = aug_leaf(1.0)
-l789.Name = 'l789' 
+l789.Name = 'l789'
 leafs.append(l789)
 
 ########  Step 10     Place on peg / Release / Clear 
      
 l10a1 = aug_leaf(0.9)
-l10a1.Name = 'l10a1' 
+l10a1.Name = 'l10a1'
 leafs.append(l10a1)
 
 l10b1 = aug_leaf(0.95)
-l10b1.Name = 'l10b1' 
+l10b1.Name = 'l10b1'
 leafs.append(l10b1)
     
 l10c1 = aug_leaf(0.8)
-l10c1.Name = 'l10c1' 
+l10c1.Name = 'l10c1'
 leafs.append(l10c1)
 
 l10 = b3.Sequence([l10a1,l10b1,l10c1])
@@ -188,11 +201,12 @@ bb = b3.Blackboard()
 # set up leaf probabilities
 for l in leafs:
     # output observeation mu, sigma
+    print 'Setting Pobs for {:s} to ({:.2f},{:.2f})'.format(l.Name,outputs[l.Name],sig)
     l.set_Obs_Density(outputs[l.Name],sig)
     # set up the Ps
-    #print 'setting probs for:', l.Name, statenos[l.Name]
+    print 'setting PS for:', l.Name, PS[statenos[l.Name]]
     l.set_Ps(PS[statenos[l.Name]])
-
+    print ''
 
 ###    Debugging
 

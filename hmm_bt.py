@@ -41,7 +41,7 @@ tmpmeans = []
 for i in range(len(names)):
     tmpmeans.append( [ outputs[names[i]] ] )
 M.means_ = np.array(tmpmeans)
-tmpcovars = sig* np.ones((16))
+tmpcovars = sig * np.ones((16))
 tmpcovars.shape = [16,1]
 M.covars_ = np.array(tmpcovars)
 

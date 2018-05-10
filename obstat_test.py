@@ -71,7 +71,8 @@ for i in range(len(X)):
     
 print 'Studied {:d} symbols for state {:s}'.format(n2,state)
 for i in range(len(hist)):
-    print i, hist[i]
+    if hist[i] > 0.001:
+        print i, hist[i]
     
     
     

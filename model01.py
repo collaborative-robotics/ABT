@@ -5,7 +5,7 @@ import numpy as np
 
 NSYMBOLS = 150 # number of VQ symbols for observations
 
-NEpochs = 100  # number of simulations
+NEpochs = 2000  # number of simulations
 
 T = True
 F = False
@@ -51,17 +51,17 @@ A[16,16] = PS[16]
 A = A[1:17,1:17]  # get zero offset index
 
 ######################
-sig = 2.0
-#outputs = {'l1':2, 'l2a1': 4, 'l2b1':6, 'l2a2':8 ,'l2b2':10, 'l345':12, 'l6a1':14, 'l6b1':16, 'l6a2':18, ';6b2':20, 'l789':22, 'l10a1':24, 'l10b1':26, 'l10c1':28, 'OutS':30, 'OutF':30}
+sig = 2.0 
 #
 outputs = {'l1':2, 'l2a1': 5, 'l2b1':8, 'l2a2': 8,  'l2b2':11, 'l345':14, 'l6a1':17, 'l6b1':20, 'l6a2':23, 'l6b2':26, 'l789':29, 'l10a1':33, 'l10b1':36, 'l10c1':28, 'OutS':30, 'OutF':30}
 
 statenos = {'l1':1, 'l2a1': 2, 'l2b1':3, 'l2a2':4,  'l2b2':5, 'l345':6, 'l6a1':7, 'l6b1':8, 'l6a2':9, 'l6b2':10, 'l789':11, 'l10a1':12, 'l10b1':13, 'l10c1':14, 'OutS':15, 'OutF':16}
 
+#################################################################
 ##  Regenerate output means:  (easier to change below)
 i = 8
 di = 8  # = nxsigma !!
-for n in outputs.keys():
+for n in names:
     outputs[n] = i
     i += di
 
