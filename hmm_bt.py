@@ -73,7 +73,7 @@ for line in logf:
        os.append([int(obs)])
 
 
-print "starting HMM fit with ", len(Y), ' sequences.'   
+print "starting HMM fit with ", len(Y), ' observations.'   
   
  
 Y=np.array(Y).reshape(-1,1)  # make 2D
