@@ -22,6 +22,9 @@ oname = 'hmm_fit_out_'+datetime.datetime.now().strftime("%y-%m-%d-%H-%M")
 
 of = open(outputdir+oname,'w')
 
+for rline in rep:
+    print >>of, rline
+    
 print >> of, "Original  A matrix:"
 for i in range(16):
     print >> of, '{0: <7}'.format(names[i]),
@@ -111,7 +114,10 @@ for i in range(len(names)):
 
 e = 0
 em = 0
+e2 = 0   # avge error of NON ZERO elements
 N = len(names)
+N2 = 0   # count the non-zero Aij entries 
+         #  should be 2(l+2) of course
 anoms = []
 erasures = []
 for i in range(N):
@@ -119,16 +125,21 @@ for i in range(N):
         e1 = (A[i,j]-M.transmat_[i,j])**2
         if(e1 > em):
             em = e1
+        if(A[i,j] > 0.000001):
+            e2 += e1
+            N2 += 1
         e += e1
         if(A[i,j]==0.0 and M.transmat_[i,j]>0.0):
           anoms.append([i,j])
         if(A[i,j]>0.0 and M.transmat_[i,j] < 0.0000001):
           erasures.append([names[i],names[j]])
-e /= np.sqrt(N*N)
+e /= N*N  # div total number of Aij elements
+e2 /=N2
 em = np.sqrt(em)
 
-print >> of, 'RMS  A-matrix E**2: {:.3f}'.format(e)
-print >> of, 'Max     A-matrix E: {:.3f}'.format(em)
+print >> of, 'RMS  A-matrix error: {:.3f}'.format(np.sqrt(e))
+print >> of, 'RMS  A-matrix error: {:.8f} ({:d} non zero elements)'.format(np.sqrt(e2),N2)
+print >> of, 'Max  A-matrix error: {:.3f}'.format(em)
 if len(anoms) == 0:
     anoms = 'None'
 print >> of, 'Anomalies: ', anoms

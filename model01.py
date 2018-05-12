@@ -5,7 +5,7 @@ import numpy as np
 
 NSYMBOLS = 150 # number of VQ symbols for observations
 
-NEpochs = 4000  # number of simulations
+NEpochs = 1000000  # number of simulations
 
 T = True
 F = False
@@ -60,7 +60,7 @@ statenos = {'l1':1, 'l2a1': 2, 'l2b1':3, 'l2a2':4,  'l2b2':5, 'l345':6, 'l6a1':7
 #################################################################
 ##  Regenerate output means:  (easier to change below)
 i = 8
-di = 8  # = nxsigma !!
+di = 1.0*sig  # = nxsigma !!
 for n in names:
     outputs[n] = i
     i += di
@@ -72,4 +72,14 @@ for n in names:
 Pi = np.zeros(16)
 Pi[0] = 1.0      # always start at state 1
 
+#####    make a string report describing the setup
+#
+# 
+rep = []
+rep.append('-------------------------- BT to HMM ---------------------------------------------')
+rep.append('NSYMBOLS: {:d}   NEpochs: {:d} '.format(NSYMBOLS,NEpochs))
+rep.append('sigma: {:.2f}    Symbol delta: {:d}   Ratio:  {:.2f}'.format(sig, int(di), float(di)/float(sig)))
+rep.append('----------------------------------------------------------------------------------')
+rep.append(' ')
 
+           
