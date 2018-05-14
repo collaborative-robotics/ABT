@@ -13,7 +13,7 @@ global NEpochs
 
 NSYMBOLS = 150 # number of VQ symbols for observations
 
-NEpochs = 100  # number of simulations
+NEpochs = 1000  # number of simulations
 
 ##  The ABT file for the task (in this case FLS block Xfer)
 from peg2 import *
@@ -69,14 +69,14 @@ print 'Finished simulating ',NEpochs,'  epochs'
 #
 
 logdir = 'logs/'
-[X,Y,Ls] = read_obs_seq(logdir+'statelog.txt')
+[X,Y,Ls] = read_obs_seqs(logdir+'statelog.txt')
 
 #############################################
 #
 #    HMM model identification
 #
 
-M = HMMsetup(Pi,A,names)
+M = HMM_setup(Pi,A,names)
 
 print "starting HMM fit with ", len(Y), ' observations.'
 
@@ -95,6 +95,22 @@ for rline in rep:
 
 outputAmat(A,"Original A Matrix", of)
 outputAmat(M.transmat_,"New A Matrix", of)
+
+##  compare the two A matrices
+#     (compute error metrics)
+[e,e2,em,N2,im,jm,anoms,erasures] = Adiff(A,M.transmat_, names)
+
+
+print >> of, 'RMS  A-matrix error: {:.3f}'.format(e)
+print >> of, 'RMS  A-matrix error: {:.8f} ({:d} non zero elements)'.format(e2,N2)
+print >> of, 'Max  A-matrix error: {:.3f} at ({:d} to {:d})'.format(em,im,jm)
+if len(anoms) == 0:
+    anoms = 'None'
+print >> of, 'Anomalies: ', anoms
+if len(erasures) == 0:
+    anoms = 'None'
+print >> of, 'Erasures : ', erasures
+
 
 #np.set_printoptions(precision=3,suppress=True)
  

@@ -17,17 +17,17 @@ from  model01 import *
 
 def outputAmat(A,title,of):        
     print >> of, title   # eg, "Original  A matrix:"
-    for i in range(A.size[0]):
+    for i in range(A.shape[0]):
         print >> of, '{0: <7}'.format(names[i]),
-        for j in range(A.size[1]):
+        for j in range(A.shape[1]):
             print >> of, '{:.3f} '.format(A[i,j]),
         print >> of, '\n'
 
 def A_row_check(A,of):
     print >> of, "A-matrix row check"
-    for i in range(A.size[0]):
+    for i in range(A.shape[0]):
         r = 0
-        for j in range(A.size[1]):
+        for j in range(A.shape[1]):
             r += A[i,j]
         print >> of, i,r
         if r > 1.0:
@@ -37,7 +37,8 @@ def A_row_check(A,of):
 #quit()
 
 def HMM_setup(Pi, A, names):
-    l = A.size[0]
+    print 'Size: A: ', A.shape
+    l = A.shape[0]
     M = hmm.GaussianHMM(n_components=l, covariance_type='diag', n_iter=10, init_params='')
     #M.n_features = 1
     M.startprob_ = Pi
@@ -88,44 +89,40 @@ def read_obs_seqs(fn):
 
 
 
+###############################################
+# compare two A-matrices
+#
 
-# compute A matrix errors etc
+def Adiff(A1,A2,names):
+    e = 0
+    em = 0
+    e2 = 0   # avge error of NON ZERO elements
+    N = A1.shape[0]
+    print 'Adiff: A shape: ', A1.shape
+    N2 = 0   # count the non-zero Aij entries 
+            #  should be 2(l+2) of course
+    anoms = []
+    erasures = []
+    for i in range(N):
+        for j in range(N):
+            e1 = (A1[i,j]-A2[i,j])**2
+            if(e1 > em):
+                em = e1
+                imax = i
+                jmax = j
+            if(A1[i,j] > 0.000001):
+                e2 += e1
+                N2 += 1
+            e += e1
+            if(A1[i,j]==0.0 and A2[i,j]>0.0):
+                anoms.append([i,j])
+            if(A1[i,j]>0.0 and A2[i,j] < 0.0000001):
+                erasures.append([names[i],names[j]])
+    e  = np.sqrt(e/(N*N))  # div total number of Aij elements
+    e2 = np.sqrt(e2/N2)  # RMS error of NON zero Aij
+    em = np.sqrt(em)     # Max error
+    return [e,e2,em,imax,jmax,N2,anoms,erasures]
 
-e = 0
-em = 0
-e2 = 0   # avge error of NON ZERO elements
-N = len(names)
-N2 = 0   # count the non-zero Aij entries 
-         #  should be 2(l+2) of course
-anoms = []
-erasures = []
-for i in range(N):
-    for j in range(N):
-        e1 = (A[i,j]-M.transmat_[i,j])**2
-        if(e1 > em):
-            em = e1
-        if(A[i,j] > 0.000001):
-            e2 += e1
-            N2 += 1
-        e += e1
-        if(A[i,j]==0.0 and M.transmat_[i,j]>0.0):
-          anoms.append([i,j])
-        if(A[i,j]>0.0 and M.transmat_[i,j] < 0.0000001):
-          erasures.append([names[i],names[j]])
-e /= N*N  # div total number of Aij elements
-e2 /=N2
-em = np.sqrt(em)
-
-print >> of, 'RMS  A-matrix error: {:.3f}'.format(np.sqrt(e))
-print >> of, 'RMS  A-matrix error: {:.8f} ({:d} non zero elements)'.format(np.sqrt(e2),N2)
-print >> of, 'Max  A-matrix error: {:.3f}'.format(em)
-if len(anoms) == 0:
-    anoms = 'None'
-print >> of, 'Anomalies: ', anoms
-if len(erasures) == 0:
-    anoms = 'None'
-print >> of, 'Erasures : ', erasures
-quit()
 
 #print "shapes:"
 #print "outputs", len(outputs)
