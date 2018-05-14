@@ -95,7 +95,7 @@ def read_obs_seqs(fn):
 
 def Adiff(A1,A2,names):
     e = 0
-    em = 0
+    em = -99999.9
     e2 = 0   # avge error of NON ZERO elements
     N = A1.shape[0]
     print 'Adiff: A shape: ', A1.shape
@@ -106,10 +106,13 @@ def Adiff(A1,A2,names):
     for i in range(N):
         for j in range(N):
             e1 = (A1[i,j]-A2[i,j])**2
+            #print 'error: ', e1,i,j
+            #print 'A1[ij] ',A1[i,j], '  A2[ij] ',A2[i,j], (A1[i,j]-A2[i,j])
             if(e1 > em):
-                em = e1
+                em = np.sqrt(e1)
                 imax = i
                 jmax = j
+                #print "storing emax: ", em, i,j
             if(A1[i,j] > 0.000001):
                 e2 += e1
                 N2 += 1
@@ -121,7 +124,8 @@ def Adiff(A1,A2,names):
     e  = np.sqrt(e/(N*N))  # div total number of Aij elements
     e2 = np.sqrt(e2/N2)  # RMS error of NON zero Aij
     em = np.sqrt(em)     # Max error
-    return [e,e2,em,imax,jmax,N2,anoms,erasures]
+    print 'imax, jmax; ', imax, jmax
+    return [e,e2,em,N2,imax,jmax,anoms,erasures]
 
 
 #print "shapes:"

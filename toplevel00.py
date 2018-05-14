@@ -96,6 +96,19 @@ for rline in rep:
 outputAmat(A,"Original A Matrix", of)
 outputAmat(M.transmat_,"New A Matrix", of)
 
+
+## TEST A-diff
+
+#B = np.zeros(A.shape)
+#n=16
+#for i in range(n):
+    #for j in range(n):
+        #B[i,j]=A[i,j]
+#B[5,3]= 0.1
+#[e,e2,em,N2,im,jm,anoms,erasures] = Adiff(A,B,names)
+#print 'top: im, jm: ', im,jm
+
+
 ##  compare the two A matrices
 #     (compute error metrics)
 [e,e2,em,N2,im,jm,anoms,erasures] = Adiff(A,M.transmat_, names)
@@ -103,7 +116,7 @@ outputAmat(M.transmat_,"New A Matrix", of)
 
 print >> of, 'RMS  A-matrix error: {:.3f}'.format(e)
 print >> of, 'RMS  A-matrix error: {:.8f} ({:d} non zero elements)'.format(e2,N2)
-print >> of, 'Max  A-matrix error: {:.3f} at ({:d} to {:d})'.format(em,im,jm)
+print >> of, 'Max  A-matrix error: {:.3f} (at {:d} to {:d})'.format(em,im,jm)
 if len(anoms) == 0:
     anoms = 'None'
 print >> of, 'Anomalies: ', anoms
