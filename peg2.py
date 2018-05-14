@@ -20,7 +20,7 @@ global NEpochs
 
 from abtclass import *
 # BT and HMM parameters here
-from  model01 import *
+#from  model01 import *
 
 
 def flsblockABT():

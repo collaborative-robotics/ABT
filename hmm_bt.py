@@ -6,7 +6,6 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-import datetime
 
 #sudo pip install scikit-learn  # dep for hmmlearn
 #pip install -U --user hmmlearn
@@ -15,80 +14,69 @@ from hmmlearn import hmm
 # BT and HMM parameters here
 from  model01 import *
 
-########## results output file
 
-outputdir = 'out/'
-oname = 'hmm_fit_out_'+datetime.datetime.now().strftime("%y-%m-%d-%H-%M")
+def outputAmat(A,title,of):        
+    print >> of, title   # eg, "Original  A matrix:"
+    for i in range(A.size[0]):
+        print >> of, '{0: <7}'.format(names[i]),
+        for j in range(A.size[1]):
+            print >> of, '{:.3f} '.format(A[i,j]),
+        print >> of, '\n'
 
-of = open(outputdir+oname,'w')
-
-for rline in rep:
-    print >>of, rline
-    
-print >> of, "Original  A matrix:"
-for i in range(16):
-    print >> of, '{0: <7}'.format(names[i]),
-    for j in range(16):
-        print >> of, '{:.3f} '.format(A[i,j]),
-    print >> of, '\n'
-
-print >> of, "A-matrix row check"
-for i in range(16):
-    r = 0
-    for j in range(16):
-        r += A[i,j]
-    print >> of, i,r
-    if r > 1.0:
-        print >> of, 'Problem: row ',i,' of A-matrix sum is > 1.0'
-        quit()
+def A_row_check(A,of):
+    print >> of, "A-matrix row check"
+    for i in range(A.size[0]):
+        r = 0
+        for j in range(A.size[1]):
+            r += A[i,j]
+        print >> of, i,r
+        if r > 1.0:
+            print >> of, 'Problem: row ',i,' of A-matrix sum is > 1.0'
+            quit()
 
 #quit()
 
-M = hmm.GaussianHMM(n_components=16, covariance_type='diag', n_iter=10, init_params='')
-#M.n_features = 1
-M.startprob_ = Pi
-M.transmat_ = A
-tmpmeans = []
-for i in range(len(names)):
-    tmpmeans.append( [ outputs[names[i]] ] )
-M.means_ = np.array(tmpmeans)
-tmpcovars = sig * np.ones((16))
-tmpcovars.shape = [16,1]
-M.covars_ = np.array(tmpcovars)
+def HMM_setup(Pi, A, names):
+    l = A.size[0]
+    M = hmm.GaussianHMM(n_components=l, covariance_type='diag', n_iter=10, init_params='')
+    #M.n_features = 1
+    M.startprob_ = Pi
+    M.transmat_ = A
+    tmpmeans = []
+    for i in range(len(names)):
+        tmpmeans.append( [ outputs[names[i]] ] )
+    M.means_ = np.array(tmpmeans)
+    tmpcovars = sig * np.ones((l))
+    tmpcovars.shape = [l,1]
+    M.covars_ = np.array(tmpcovars)
+    return M
 
 
-# read in data file
+# read in observation sequences data file
+def read_obs_seqs(fn):
+    logf = open(fn,'r')
 
+    X = []   # state names
+    Y = []   # observations
+    Ls =[]   # lengths
 
+    seq = [] # current state seq
+    os  = [] # current obs seq
 
-logdir = 'logs/'
-logf = open(logdir+'statelog.txt','r')
-
-X = []   # state names
-Y = []   # observations
-Ls =[]   # lengths
-
-seq = [] # current state seq
-os  = [] # current obs seq
-
-for line in logf:
-   #print '>>>',line
-   line = line.strip()
-   if line == '---':
-       Ls.append(len(os))
-       os  = []
-   else:
-       [state, obs ] = line.split(',')
-       X.append(state)
-       Y.append([int(obs)])
-       os.append([int(obs)])
-
-
-print "starting HMM fit with ", len(Y), ' observations.'
-
-
-Y=np.array(Y).reshape(-1,1)  # make 2D
-Ls = np.array(Ls)
+    for line in logf:
+        #print '>>>',line
+        line = line.strip()
+        if line == '---':
+            Ls.append(len(os))
+            os  = []
+        else:
+            [state, obs ] = line.split(',')
+            X.append(state)
+            Y.append([int(obs)])
+            os.append([int(obs)])
+    Y=np.array(Y).reshape(-1,1)  # make 2D
+    Ls = np.array(Ls)
+    return [X,Y,Ls]
 
 #print 'Shapes: '
 #print 'Y', Y.shape
@@ -98,16 +86,7 @@ Ls = np.array(Ls)
 
 #quit()
 
-M.fit(Y,Ls)
 
-#np.set_printoptions(precision=3,suppress=True)
-
-print >> of, "New A matrix:"
-for i in range(len(names)):
-    print >> of, '{0: <7}'.format(names[i]),
-    for j in range(len(names)):
-        print >> of, '{:.3f} '.format(M.transmat_[i,j]),
-    print >> of, '\n'
 
 
 # compute A matrix errors etc
