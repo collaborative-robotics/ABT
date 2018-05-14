@@ -12,155 +12,154 @@ import b3 as b3          # behavior trees
 import random as random
 import math as m
 import numpy as np
-from abtclass import *
  
+global NSYMBOLS  
+NSYMBOLS = 150 # number of VQ symbols for observations
+
+global NEpochs 
+
+from abtclass import *
 # BT and HMM parameters here
 from  model01 import *
 
+
+def flsblockABT():
 ####################################################################################
 ##
-#                         Demo of ABT for Peg-In-Hole Task
+#                    ABT for Peg-In-Hole Task
 # 
 #
-demo_bt = b3.BehaviorTree()
+#   Returns an ABT for the task to be modeled
+#
+    demo_bt = b3.BehaviorTree()
 
-LeafDebug   = False
-SolverDebug = False
+    LeafDebug   = False
+    SolverDebug = False
 
-if not os.path.isdir(logdir):  # if this doesn't exist, create it.
-    os.mkdir(logdir) 
+    if not os.path.isdir(logdir):  # if this doesn't exist, create it.
+        os.mkdir(logdir) 
+        
+
+    #print outputs
+    #quit()
+    
+    leafs = []
     
 
-#print outputs
-#quit()
- 
-leafs = []
- 
+    ########  Step 1  Position Left Grasper over block
+        
+    l1 = aug_leaf(1.0) 
+    l1.Name = 'l1'
+    leafs.append(l1)
 
-########  Step 1  Position Left Grasper over block
+    ########  Step 2 Insert and Grasp block
+
+    # try 1    
+    l2a1 = aug_leaf(0.9)
+    l2a1.Name = 'l2a1'
+    leafs.append(l2a1)
+
+    l2b1 = aug_leaf(0.95)
+    l2b1.Name = 'l2b1'
+    leafs.append(l2b1)
+
+    l21 = b3.Sequence([l2a1,l2b1]) 
+    l21.Name = 'Node 21'
+
+    # try 2
+    l2a2 = aug_leaf(0.9)
+    l2a2.Name = 'l2a2'
+    leafs.append(l2a2)
+
+    l2b2 = aug_leaf(0.95)
+    l2b2.Name = 'l2b2'
+    leafs.append(l2b2)
+
+    l22 = b3.Sequence([l2a2,l2b2]) 
+    l22.Name = 'Node 22' 
+
+    l2 = b3.Priority([l21,l22])
+    l2.Name = 'Node 2'
+
+
+    ##########  Steps 3-5  Lift clear / reorient / move
+
+    l345 = aug_leaf(1.0)
+    l345.Name = 'l345'
+    leafs.append(l345)
+
+    ##########  Step 6 Insert Right grasper / grasp
+
+    # try 1
+    l6a1 = aug_leaf(0.6)
+    l6a1.Name = 'l6a1'
+    leafs.append(l6a1)
+
+    l6b1 = aug_leaf(0.75)
+    l6b1.Name = 'l6b1'
+    leafs.append(l6b1)
+
+    # try 2
+    l6a2 = aug_leaf(0.6)
+    l6a2.Name = 'l6a2'
+    leafs.append(l6a2)
+
+    l6b2 = aug_leaf(0.75)
+    l6b2.Name = 'l6b2'
+    leafs.append(l6b2)
+
+    l61 = b3.Sequence([l6a1,l6b1])
+    l62 = b3.Sequence([l6a2,l6b2])
+    l6  = b3.Priority([l61,l62]) 
+    l6.Name = "node 6"
+
+    ########  Steps 7-9   Release Left / Reorient / Position
+
+    l789 = aug_leaf(1.0)
+    l789.Name = 'l789'
+    leafs.append(l789)
+
+    ########  Step 10     Place on peg / Release / Clear 
+        
+    l10a1 = aug_leaf(0.9)
+    l10a1.Name = 'l10a1'
+    leafs.append(l10a1)
+
+    l10b1 = aug_leaf(0.95)
+    l10b1.Name = 'l10b1'
+    leafs.append(l10b1)
+        
+    l10c1 = aug_leaf(0.8)
+    l10c1.Name = 'l10c1'
+    leafs.append(l10c1)
+
+    l10 = b3.Sequence([l10a1,l10b1,l10c1])
+    l10.Name = 'Node 10: Position/Release'
+
+    ######  Top level sequence node
+    N1 = b3.Sequence([l1, l2, l345, l6, l789, l10])
+    N1.Name = 'Sequencer Node'
+    N1.BHdebug = F
     
-l1 = aug_leaf(1.0) 
-l1.Name = 'l1'
-leafs.append(l1)
+    demo_bt.root = N1
 
-########  Step 2 Insert and Grasp block
+    bb = b3.Blackboard()
 
-# try 1    
-l2a1 = aug_leaf(0.9)
-l2a1.Name = 'l2a1'
-leafs.append(l2a1)
-
-l2b1 = aug_leaf(0.95)
-l2b1.Name = 'l2b1'
-leafs.append(l2b1)
-
-l21 = b3.Sequence([l2a1,l2b1]) 
-l21.Name = 'Node 21'
-
-# try 2
-l2a2 = aug_leaf(0.9)
-l2a2.Name = 'l2a2'
-leafs.append(l2a2)
-
-l2b2 = aug_leaf(0.95)
-l2b2.Name = 'l2b2'
-leafs.append(l2b2)
-
-l22 = b3.Sequence([l2a2,l2b2]) 
-l22.Name = 'Node 22' 
-
-l2 = b3.Priority([l21,l22])
-l2.Name = 'Node 2'
-
-
-##########  Steps 3-5  Lift clear / reorient / move
-
-l345 = aug_leaf(1.0)
-l345.Name = 'l345'
-leafs.append(l345)
-
-##########  Step 6 Insert Right grasper / grasp
-
-# try 1
-l6a1 = aug_leaf(0.6)
-l6a1.Name = 'l6a1'
-leafs.append(l6a1)
-
-l6b1 = aug_leaf(0.75)
-l6b1.Name = 'l6b1'
-leafs.append(l6b1)
-
-# try 2
-l6a2 = aug_leaf(0.6)
-l6a2.Name = 'l6a2'
-leafs.append(l6a2)
-
-l6b2 = aug_leaf(0.75)
-l6b2.Name = 'l6b2'
-leafs.append(l6b2)
-
-l61 = b3.Sequence([l6a1,l6b1])
-l62 = b3.Sequence([l6a2,l6b2])
-l6  = b3.Priority([l61,l62]) 
-l6.Name = "node 6"
-
-########  Steps 7-9   Release Left / Reorient / Position
-
-l789 = aug_leaf(1.0)
-l789.Name = 'l789'
-leafs.append(l789)
-
-########  Step 10     Place on peg / Release / Clear 
-     
-l10a1 = aug_leaf(0.9)
-l10a1.Name = 'l10a1'
-leafs.append(l10a1)
-
-l10b1 = aug_leaf(0.95)
-l10b1.Name = 'l10b1'
-leafs.append(l10b1)
-    
-l10c1 = aug_leaf(0.8)
-l10c1.Name = 'l10c1'
-leafs.append(l10c1)
-
-l10 = b3.Sequence([l10a1,l10b1,l10c1])
-l10.Name = 'Node 10: Position/Release'
-
-######  Top level sequence node
-N1 = b3.Sequence([l1, l2, l345, l6, l789, l10])
-N1.Name = 'Sequencer Node'
-N1.BHdebug = F
-bb = b3.Blackboard()
-
-##################################################################################################
-##  Set leaf params 
+    ##################################################################################################
+    ##  Set leaf params 
 
     
-# set up leaf probabilities
-for l in leafs:
-    # output observeation mu, sigma
-    print 'Setting Pobs for {:s} to ({:.2f},{:.2f})'.format(l.Name,outputs[l.Name],sig)
-    l.set_Obs_Density(outputs[l.Name],sig)
-    # set up the Ps
-    print 'setting PS for:', l.Name, PS[statenos[l.Name]]
-    l.set_Ps(PS[statenos[l.Name]])
-    print ''
+    # set up leaf probabilities
+    for l in leafs:
+        # output observeation mu, sigma
+        print 'Setting Pobs for {:s} to ({:.2f},{:.2f})'.format(l.Name,outputs[l.Name],sig)
+        l.set_Obs_Density(outputs[l.Name],sig)
+        # set up the Ps
+        print 'setting PS for:', l.Name, PS[statenos[l.Name]]
+        l.set_Ps(PS[statenos[l.Name]])
+        print ''
 
-###    Debugging
-#quit()
-# open the log file
-logf = open(logdir+'statelog.txt','w')
-bb.set('logfileptr',logf)
+    return [demo_bt, bb]
 
-demo_bt.root = N1
 
-for i in range(NEpochs):
-    demo_bt.tick("ABT Simulation", bb)
-    logf.write('---\n')
-    
-logf.close()
-
-print 'Finished simulating ',NEpochs,'  epochs'
-    
     

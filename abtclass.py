@@ -12,6 +12,10 @@ import random as random
 import math as m
 import numpy as np
 
+global NSYMBOLS  
+NSYMBOLS = 150 # number of VQ symbols for observations
+
+global NEpochs 
 # BT and HMM parameters here
 from  model01 import *
 
@@ -21,6 +25,17 @@ def gaussian(x, mu, sig):
     return a
 
 class aug_leaf(b3.Action): 
+    def __init__(self):        
+        b3.BaseNode.__init__(self)
+        # Transition Probabilities for this leaf
+        self.pS = 0.9  #default value
+        self.pF = 1.0-self.pS
+        #  Observation Densities for this leaf
+        self.Obs = np.zeros(NSYMBOLS)
+        # give a residual obs prob:
+        for j in range(NSYMBOLS):
+            self.Obs[j] = 0.0001  # a nominal non-zero value
+            
     def __init__(self,probSuccess):
         b3.BaseNode.__init__(self)
         # Transition Probabilities for this leaf

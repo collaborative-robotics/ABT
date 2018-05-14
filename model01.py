@@ -3,9 +3,9 @@
 ## hmm model params
 import numpy as np
 
+global NSYMBOLS  
+global NEpochs 
 NSYMBOLS = 150 # number of VQ symbols for observations
-
-NEpochs = 1000000  # number of simulations
 
 T = True
 F = False
@@ -71,15 +71,3 @@ for n in names:
 
 Pi = np.zeros(16)
 Pi[0] = 1.0      # always start at state 1
-
-#####    make a string report describing the setup
-#
-# 
-rep = []
-rep.append('-------------------------- BT to HMM ---------------------------------------------')
-rep.append('NSYMBOLS: {:d}   NEpochs: {:d} '.format(NSYMBOLS,NEpochs))
-rep.append('sigma: {:.2f}    Symbol delta: {:d}   Ratio:  {:.2f}'.format(sig, int(di), float(di)/float(sig)))
-rep.append('----------------------------------------------------------------------------------')
-rep.append(' ')
-
-           
