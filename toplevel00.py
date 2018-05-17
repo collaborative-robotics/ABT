@@ -14,7 +14,7 @@ global NEpochs
 
 NSYMBOLS = 150 # number of VQ symbols for observations
 
-NEpochs = 100  # number of simulations
+NEpochs = 100000  # number of simulations
 
 ##  The ABT file for the task (in this case FLS block Xfer)
 #from peg2 import *

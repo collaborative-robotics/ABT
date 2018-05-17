@@ -81,10 +81,7 @@ class aug_leaf(b3.Action):
     def tick(self,tick):
         f = tick.blackboard.get('logfileptr')
         a = random.uniform(0,1.0)
-        #print "random: ",a , "   Ps: ", self.pS
-        observation = self.gen_obs()
-        #print "------------------------------------> obs: ", observation
-        f.write(self.Name+', '+str(observation)+'\n')
+        f.write(self.Name+', '+str(self.gen_obs())+'\n')
         if a<self.pS:
             return b3.SUCCESS 
         else:
