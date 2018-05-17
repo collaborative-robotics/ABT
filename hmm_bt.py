@@ -12,10 +12,10 @@ import matplotlib.pyplot as plt
 from hmmlearn import hmm
 
 # BT and HMM parameters here
-from  model01 import *
+#from  model00 import *
 
-
-def outputAmat(A,title,of):        
+        
+def outputAmat(A,title,names,of):        
     print >> of, title   # eg, "Original  A matrix:"
     for i in range(A.shape[0]):
         print >> of, '{0: <7}'.format(names[i]),
@@ -36,17 +36,20 @@ def A_row_check(A,of):
 
 #quit()
 
-def HMM_setup(Pi, A, names):
-    print 'Size: A: ', A.shape
+def HMM_setup(Pi, A, sig, names):
+    #print 'Size: A: ', A.shape
     l = A.shape[0]
+    #print 'len(Pi): ', len(Pi), l
     M = hmm.GaussianHMM(n_components=l, covariance_type='diag', n_iter=10, init_params='')
     #M.n_features = 1
     M.startprob_ = Pi
     M.transmat_ = A
-    tmpmeans = []
-    for i in range(len(names)):
-        tmpmeans.append( [ outputs[names[i]] ] )
-    M.means_ = np.array(tmpmeans)
+    #tmpmeans = []
+    #for i in range(len(names)):
+        #tmpmeans.append( [ outputs[names[i]] ] )
+    #M.means_ = np.array(tmpmeans)
+    M.means_ = 0.5*np.ones(l).reshape([l,1])
+    print 'means shape: ', M.means_.shape
     tmpcovars = sig * np.ones((l))
     tmpcovars.shape = [l,1]
     M.covars_ = np.array(tmpcovars)

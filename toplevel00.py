@@ -3,6 +3,7 @@
 #   Top-level scripted task
 #
 
+import sys
 import datetime
 from hmm_bt import *
 
@@ -13,11 +14,11 @@ global NEpochs
 
 NSYMBOLS = 150 # number of VQ symbols for observations
 
-NEpochs = 1000  # number of simulations
+NEpochs = 100  # number of simulations
 
 ##  The ABT file for the task (in this case FLS block Xfer)
-from peg2 import *
-
+#from peg2 import *
+from simp_ABT import *
 
 #############################################
 #
@@ -40,7 +41,7 @@ rep.append(' ')
 #    Build the ABT and its blackboard
 #
 
-[ABT, bb] = flsblockABT()
+[ABT, bb] = simple4leafABT()
 
 #############################################
 #
@@ -75,8 +76,9 @@ logdir = 'logs/'
 #
 #    HMM model identification
 #
-
-M = HMM_setup(Pi,A,names)
+outputAmat(A,"test output A",names,sys.stdout) # test
+ 
+M = HMM_setup(Pi,A,sig, names)
 
 print "starting HMM fit with ", len(Y), ' observations.'
 
@@ -93,8 +95,8 @@ of = open(outputdir+oname,'w')
 for rline in rep:
     print >>of, rline
 
-outputAmat(A,"Original A Matrix", of)
-outputAmat(M.transmat_,"New A Matrix", of)
+outputAmat(A,"Original A Matrix",names, of)
+outputAmat(M.transmat_,"New A Matrix",names, of)
 
 
 ## TEST A-diff
