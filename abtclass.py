@@ -13,9 +13,11 @@ import math as m
 import numpy as np
 
 global NSYMBOLS  
-NSYMBOLS = 150 # number of VQ symbols for observations
+#NSYMBOLS = 150 # number of VQ symbols for observations
 
 global NEpochs 
+
+
 # BT and HMM parameters here
 from  model01 import *
 

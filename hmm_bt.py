@@ -101,7 +101,7 @@ def Adiff(A1,A2,names):
     em = -99999.9
     e2 = 0   # avge error of NON ZERO elements
     N = A1.shape[0]
-    print 'Adiff: A shape: ', A1.shape
+    #print 'Adiff: A shape: ', A1.shape
     N2 = 0   # count the non-zero Aij entries 
             #  should be 2(l+2) of course
     anoms = []
@@ -127,7 +127,7 @@ def Adiff(A1,A2,names):
     e  = np.sqrt(e/(N*N))  # div total number of Aij elements
     e2 = np.sqrt(e2/N2)  # RMS error of NON zero Aij
     em = np.sqrt(em)     # Max error
-    print 'imax, jmax; ', imax, jmax
+    #print 'imax, jmax; ', imax, jmax
     return [e,e2,em,N2,imax,jmax,anoms,erasures]
 
 

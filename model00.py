@@ -3,10 +3,12 @@
 ## hmm model params
 import numpy as np
 
+global NSYMBOLS  
+global NEpochs 
 
-NSYMBOLS = 150 # number of VQ symbols for observations
+#NSYMBOLS = 150 # number of VQ symbols for observations
 
-NEpochs = 100  # number of simulations
+#NEpochs = 1000000  # number of simulations
 
 T = True
 F = False
@@ -20,7 +22,9 @@ print 'N = ',N
 # prob success for each node
 # note dummy value for PS[0] for math consistency
 PS = [0, 0.65, 0.75, .8, 0.9, 1.0,1.0]
-
+if len(PS) != N+1:
+    print 'Incorrect PS length'
+    quit()
 
 # INITIAL State Transition Probabilities
 #  make A one bigger to make index human

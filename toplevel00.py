@@ -14,7 +14,7 @@ global NEpochs
 
 NSYMBOLS = 150 # number of VQ symbols for observations
 
-NEpochs = 100000  # number of simulations
+NEpochs = 10000  # number of simulations
 
 ##  The ABT file for the task (in this case FLS block Xfer)
 #from peg2 import *
@@ -56,7 +56,11 @@ bb.set('logfileptr',logf)
 
 
 for i in range(NEpochs):
-    ABT.tick("ABT Simulation", bb)
+    result = ABT.tick("ABT Simulation", bb)
+    if (result == b3.SUCCESS):
+        logf.write('OutS, 80\n')
+    else:
+        logf.write('OutF, 90\n')
     logf.write('---\n')
     
 logf.close()
@@ -77,7 +81,9 @@ logdir = 'logs/'
 #    HMM model identification
 #
 outputAmat(A,"test output A",names,sys.stdout) # test
- 
+
+print 'Initial Pi: ', Pi
+
 M = HMM_setup(Pi,A,sig, names)
 
 print "starting HMM fit with ", len(Y), ' observations.'
