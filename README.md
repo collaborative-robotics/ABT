@@ -24,3 +24,11 @@ To build a model you have to create three files (bad!)
     d. HMM model fitting
     e. reporting
     
+## Files
+
+ * hmm_bt.py
+    Utilities for A-matrices, and special magic for setting up an HMM_setup
+    
+ * abtclass.py
+    A new "leaf" class which Augments the BT to work with Success/Fail probabilities, and stochastic observations from each leaf. 
+    

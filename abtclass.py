@@ -13,13 +13,13 @@ import math as m
 import numpy as np
 
 global NSYMBOLS  
-#NSYMBOLS = 150 # number of VQ symbols for observations
+NSYMBOLS = 150 # number of VQ symbols for observations
 
 global NEpochs 
 
 
 # BT and HMM parameters here
-from  model01 import *
+from  model00 import *
 
 def gaussian(x, mu, sig):
     a = 1.0/(sig*(m.sqrt(2*m.pi))) * m.exp(-0.5*((x-mu)/sig)**2)

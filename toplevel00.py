@@ -4,6 +4,7 @@
 #
 
 import sys
+import os
 import datetime
 from hmm_bt import *
 
@@ -14,7 +15,7 @@ global NEpochs
 
 NSYMBOLS = 150 # number of VQ symbols for observations
 
-NEpochs = 10000  # number of simulations
+NEpochs = 1000  # number of simulations
 
 ##  The ABT file for the task (in this case FLS block Xfer)
 #from peg2 import *
@@ -51,16 +52,19 @@ rep.append(' ')
 ###    Debugging
 #quit()
 # open the log file
-logf = open(logdir+'statelog.txt','w')
+lfname = logdir+'statelog.txt'
+logf = open(lfname,'w')
 bb.set('logfileptr',logf)
 
-
+osu = names[-2]  # state names
+ofa = names[-1]
+    
 for i in range(NEpochs):
     result = ABT.tick("ABT Simulation", bb)
     if (result == b3.SUCCESS):
-        logf.write('OutS, 80\n')
+        logf.write('{:s}, {:.0f}\n'.format(osu,outputs[osu]))  # not random obs!
     else:
-        logf.write('OutF, 90\n')
+        logf.write('{:s}, {:.0f}\n'.format(ofa,outputs[ofa]))
     logf.write('---\n')
     
 logf.close()
@@ -131,6 +135,9 @@ print >> of, 'Anomalies: ', anoms
 if len(erasures) == 0:
     anoms = 'None'
 print >> of, 'Erasures : ', erasures
+
+of.close()
+os.system('cp {:s} {:s}'.format(outputdir+oname,outputdir+'lastoutput'))
 
 
 #np.set_printoptions(precision=3,suppress=True)
