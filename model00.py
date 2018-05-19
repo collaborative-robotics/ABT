@@ -2,23 +2,12 @@
 # 
 ## hmm model params
 import numpy as np
-
-global NSYMBOLS  
-global NEpochs 
-
-#NSYMBOLS = 150 # number of VQ symbols for observations
-
-#NEpochs = 1000000  # number of simulations
-
-T = True
-F = False
-
+  
 logdir = 'logs/'
 names = ['l1','l2','l3','l4', 'OutS', 'OutF']
 
 N = len(names)
-print 'N = ',N
-
+ 
 # prob success for each node
 # note dummy value for PS[0] for math consistency
 PS = [0, 0.65, 0.75, .8, 0.9, 1.0,1.0]
@@ -41,15 +30,17 @@ A[5,5] = 1.0
 A[6,6] = 1.0
 
 A = A[1:N+1,1:N+1]  # get zero offset index
-print 'Size: A:', A.size
+ 
 ######################
 sig = 2.0 
 #
+#  these values are place-holders, replaced later
 outputs = {'l1':2, 'l2': 5, 'l3':8, 'l4': 8,  'OutS':10, 'OutF':20}
 
 Pi = np.zeros(N)
 Pi[0] = 1.0      # always start at state 1
  
+#  This is probably not nesc:   names.index('l3') == 2
 statenos = {'l1':1, 'l2': 2, 'l3':3, 'l4':4,  'OutS':5, 'OutF':6}
 
 ###  Regenerate output means:
