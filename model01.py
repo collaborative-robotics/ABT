@@ -1,14 +1,10 @@
 #!/usr/bin/python
 #
 ## hmm model params
+
+## hmm model params
 import numpy as np
-
-global NSYMBOLS  
-global NEpochs 
-NSYMBOLS = 150 # number of VQ symbols for observations
-
-T = True
-F = False
+from abt_constants import * 
 
 logdir = 'logs/'
 
