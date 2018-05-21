@@ -15,7 +15,7 @@ from abt_constants import *
 
 global NEpochs  
 
-NEpochs = 10000  # number of simulations
+NEpochs = 1000000  # number of simulations
 
 ##  The ABT file for the task (in this case FLS block Xfer)
 from peg2 import * 
@@ -51,12 +51,19 @@ rep.append(' ')
 ###    Debugging
 #quit()
 # open the log file
-logf = open(logdir+'statelog.txt','w')
+lfname = logdir+'statelog.txt'
+logf = open(lfname,'w')
 bb.set('logfileptr',logf)
 
-
+osu = names[-2]  # state names
+ofa = names[-1]
+    
 for i in range(NEpochs):
-    ABT.tick("ABT Simulation", bb)
+    result = ABT.tick("ABT Simulation", bb)
+    if (result == b3.SUCCESS):
+        logf.write('{:s}, {:.0f}\n'.format(osu,outputs[osu]))  # not random obs!
+    else:
+        logf.write('{:s}, {:.0f}\n'.format(ofa,outputs[ofa]))
     logf.write('---\n')
     
 logf.close()

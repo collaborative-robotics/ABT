@@ -12,7 +12,7 @@ names = ['l1','l2a1','l2b1','l2a2','l2b2', 'l345', 'l6a1', 'l6b1', 'l6a2', 'l6b2
 
 # prob success for each node
 # note dummy value for PS[0] for math consistency
-PS = [0.0, 1.0, 0.9, 0.8, 0.9, 0.9, 1.0, 0.9, 0.8, 0.9, 0.9, 1.0,0.9,0.75,0.5,1.0,1.0]
+PS = [0.0, 1.0, 0.9, 0.8, 0.9, 0.9, 1.0, 0.9, 0.8, 0.9, 0.9, 1.0,0.9,0.75, 0.5, 1.0, 1.0]
 # INITIAL State Transition Probabilities
 #  make A one bigger to make index human
 A = np.zeros((17,17))
@@ -41,7 +41,7 @@ A[13,14] = PS[13]
 A[13,16] = 1.0-PS[13]
 A[14,15] = PS[14]
 A[14,16] = 1.0-PS[14]
-A[15,15] = PS[15]
+A[15,16] = PS[15]
 A[16,16] = PS[16]
 
 A = A[1:17,1:17]  # get zero offset index

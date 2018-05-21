@@ -141,6 +141,16 @@ def flsblockABT():
     N1.Name = 'Sequencer Node'
     N1.BHdebug = F
     
+    # make fake leafs for OutS and OutF
+    
+    OS = aug_leaf(1.0)
+    OS.Name = 'OutS'
+    leafs.append(OS)
+    
+    OF = aug_leaf(1.0)
+    OF.Name = 'OutF'
+    leafs.append(OF)
+    
     demo_bt.root = N1
 
     bb = b3.Blackboard()
