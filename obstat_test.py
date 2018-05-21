@@ -8,10 +8,9 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 from hmm_bt import *
- 
-NSYMBOLS = 150
 
 from model00 import *
+from abt_constants import * 
 
 nargs = len(sys.argv) - 1
 

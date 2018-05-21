@@ -1,6 +1,7 @@
 #!/usr/bin/python
 #
 #   Top-level scripted task
+#       SIMPLE 4-state ABT
 #
 
 import sys
@@ -8,14 +9,13 @@ import os
 import datetime
 from hmm_bt import *
 
+from abt_constants import *
+
 ##   Set up research parameters
 
-global NSYMBOLS  
-global NEpochs 
+global NEpochs  
 
-NSYMBOLS = 150 # number of VQ symbols for observations
-
-NEpochs = 1000  # number of simulations
+NEpochs = 1000000  # number of simulations
 
 ##  The ABT file for the task (in this case FLS block Xfer)
 #from peg2 import *

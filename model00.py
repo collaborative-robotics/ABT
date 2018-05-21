@@ -2,7 +2,8 @@
 # 
 ## hmm model params
 import numpy as np
-  
+from abt_constants import *
+
 logdir = 'logs/'
 names = ['l1','l2','l3','l4', 'OutS', 'OutF']
 
@@ -22,8 +23,8 @@ A[1,2] = PS[1]
 A[1,3] = 1.0-PS[1]
 A[2,3] = PS[2]
 A[2,6] = 1.0-PS[2]
-A[3,4] = PS[3]
-A[3,5] = 1.0-PS[3]
+A[3,4] = 1.0-PS[3]
+A[3,5] = PS[3]
 A[4,5] = PS[4]
 A[4,6] = 1.0-PS[4]
 A[5,5] = 1.0
