@@ -139,7 +139,7 @@ for run in range(Nruns):
 #  End of loop of runs
 
 of.close()
-os.system('cp {:s} {:s}'.format(outputdir+oname,outputdir+'lastoutput'))
+os.system('cp {:s} {:s}'.format(oname,outputdir+'lastoutput'))
 
  
 #
