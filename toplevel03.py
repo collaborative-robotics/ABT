@@ -45,7 +45,9 @@ infolog = open('infolog', 'a')  # append
 em = 9999
 
 for run in range(Nruns):
-    print >> infolog,datetime.datetime.now().strftime("%y-%m-%d-%H-%M"), 'run ',run+1,'/',Nruns, ' NEpocs: ', NEpochs,'   Emax: ', em
+    print >> infolog,datetime.datetime.now().strftime("%y-%m-%d-%H-%M"), 'run ',run+1,'/',Nruns, ' NEpocs: ', NEpochs,'Emax: ', em
+    infolog.flush()    # make sure this info visible in file
+    os.fsync(infolog.fileno())
     print '\n-------------------------------------------\n   Starting Run ',run, '\n\n'
     # open the log file
     lfname = logdir+'statelog.txt'
