@@ -40,8 +40,12 @@ oname = outputdir +  'hmm_fit_out_'+datetime.datetime.now().strftime("%y-%m-%d-%
 # HMM analysis output
 of = open(oname,'w')    
 
+# log file for progress info
+infolog = open('infolog', 'a')  # append
+em = 9999
 
 for run in range(Nruns):
+    print >> infolog,datetime.datetime.now().strftime("%y-%m-%d-%H-%M"), 'run ',run+1,'/',Nruns, ' NEpocs: ', NEpochs,'   Emax: ', em
     print '\n-------------------------------------------\n   Starting Run ',run, '\n\n'
     # open the log file
     lfname = logdir+'statelog.txt'
