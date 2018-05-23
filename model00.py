@@ -20,7 +20,7 @@ if len(PS) != N+1:
 #  make A one bigger to make index human
 A = np.zeros((N+1,N+1))
 A[1,2] = PS[1]
-A[1,3] = 1.0-PS[1]
+A[1,6] = 1.0-PS[1]
 A[2,3] = PS[2]
 A[2,6] = 1.0-PS[2]
 A[3,4] = 1.0-PS[3]

@@ -16,11 +16,11 @@ import numpy as np
 global NSYMBOLS  
 NSYMBOLS = 150 # number of VQ symbols for observations
 
-global NEpochs 
-
 from abtclass import *
+
 # BT and HMM parameters here
-#from  model01 import *
+from abt_constants import *
+ 
 from model00 import *
 
 

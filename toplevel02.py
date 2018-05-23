@@ -15,7 +15,9 @@ from abt_constants import *
 
 global NEpochs  
 
-NEpochs = 1000000  # number of simulations
+Mil = 1000000
+
+NEpochs = 1000  # number of simulations
 
 ##  The ABT file for the task (in this case FLS block Xfer)
 from peg2 import * 

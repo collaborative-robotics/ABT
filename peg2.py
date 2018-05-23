@@ -162,12 +162,12 @@ def flsblockABT():
     # set up leaf probabilities
     for l in leafs:
         # output observeation mu, sigma
-        print 'Setting Pobs for {:s} to ({:.2f},{:.2f})'.format(l.Name,outputs[l.Name],sig)
+        #print 'Setting Pobs for {:s} to ({:.2f},{:.2f})'.format(l.Name,outputs[l.Name],sig)
         l.set_Obs_Density(outputs[l.Name],sig)
         # set up the Ps
-        print 'setting PS for:', l.Name, PS[statenos[l.Name]]
+        #print 'setting PS for:', l.Name, PS[statenos[l.Name]]
         l.set_Ps(PS[statenos[l.Name]])
-        print ''
+        #print ''
 
     return [demo_bt, bb]
 
