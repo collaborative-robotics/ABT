@@ -15,6 +15,8 @@ from abt_constants import *
 
 ##   Set up research parameters
 
+CSVOUTPUT = True
+
 global NEpochs  
 
 Mil = 1000000
@@ -32,7 +34,7 @@ from peg2 import *
 Nruns = 10
 
 
-########## results output file
+########## results output files
 
 outputdir = 'out/'
 oname = outputdir +  'hmm_fit_out_'+datetime.datetime.now().strftime("%y-%m-%d-%H-%M")
@@ -44,9 +46,19 @@ of = open(oname,'w')
 infolog = open('infolog', 'a')  # append
 em = 9999
 
+if CSVOUTPUT:
+    fcsv = open('csvlog','a') 
+    print >> fcsv, '-------',datetime.datetime.now().strftime("%y-%m-%d-%H-%M")
+
+#################################################
+#
+#   Outer Loop
+#
 for run in range(Nruns):
-    print >> infolog,datetime.datetime.now().strftime("%y-%m-%d-%H-%M"), 'run ',run+1,'/',Nruns, ' NEpocs: ', NEpochs,'   Emax: ', em
-    print '\n-------------------------------------------\n   Starting Run ',run, '\n\n'
+    print >> infolog,datetime.datetime.now().strftime("%y-%m-%d-%H-%M"), 'run ',run+1,'/',Nruns, ' NEpocs: ', NEpochs,'Emax: ', em
+    infolog.flush()    # make sure this info visible in file
+    os.fsync(infolog.fileno())
+    print '\n-------------------------------------------\n   Starting Run ',run+1, 'of', Nruns, '\n\n'
     # open the log file
     lfname = logdir+'statelog.txt'
     logf = open(lfname,'w')   
@@ -139,6 +151,9 @@ for run in range(Nruns):
     if len(erasures) == 0:
         anoms = 'None'
     print >> of, 'Erasures : ', erasures
+    
+    if CSVOUTPUT:
+        print >>fcsv, '{:.3f}, {:3d}, {:.3f}, {:2d}, {:2d}, {:.3f}, {:.3f}'.format(sig, int(di), float(di)/float(sig),run+1,Nruns,e2,em)
 
 #  End of loop of runs
 
