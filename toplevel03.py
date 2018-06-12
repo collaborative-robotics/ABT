@@ -119,7 +119,7 @@ for run in range(Nruns):
     [X,Y,Ls] = read_obs_seqs(lfname)
     
     # remove the old log file
-    os.system('rm '+lfname)
+    #os.system('rm '+lfname)
 
     #############################################
     #
