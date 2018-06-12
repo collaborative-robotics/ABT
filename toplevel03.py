@@ -24,8 +24,7 @@ Mil = 1000000
 NEpochs = Mil  # number of simulations
 
 ##  The ABT file for the task (in this case FLS block Xfer)
-from peg2 import * 
-
+from peg2 import *   # uses model01.py
 
 #############################################
 #
@@ -35,6 +34,8 @@ Nruns = 10
 
 
 ########## results output files
+
+logdir = 'logs/'
 
 outputdir = 'out/'
 oname = outputdir +  'hmm_fit_out_'+datetime.datetime.now().strftime("%y-%m-%d-%H-%M")
@@ -48,7 +49,7 @@ em = 9999
 
 if CSVOUTPUT:
     fcsv = open('csvlog','a') 
-    print >> fcsv, '-------',datetime.datetime.now().strftime("%y-%m-%d-%H-%M")
+    print >> fcsv, '-------',datetime.datetime.now().strftime("%y-%m-%d-%H-%M"), 'Nruns: ', Nruns, 'x', NEpochs
 
 #################################################
 #
@@ -60,7 +61,8 @@ for run in range(Nruns):
     os.fsync(infolog.fileno())
     print '\n-------------------------------------------\n   Starting Run ',run+1, 'of', Nruns, '\n\n'
     # open the log file
-    lfname = logdir+'statelog.txt'
+    id = str(int(100*float(di)/float(sig))) # encode the ratio into filename
+    lfname = logdir+'statelog'+id+'.txt'
     logf = open(lfname,'w')   
     
     #############################################

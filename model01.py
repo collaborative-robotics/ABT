@@ -6,8 +6,6 @@
 import numpy as np
 from abt_constants import * 
 
-logdir = 'logs/'
-
 names = ['l1','l2a1','l2b1','l2a2','l2b2', 'l345', 'l6a1', 'l6b1', 'l6a2', 'l6b2', 'l789', 'l10a1', 'l10b1', 'l10c1', 'OutS', 'OutF']
 
 # prob success for each node
@@ -48,6 +46,7 @@ A = A[1:17,1:17]  # get zero offset index
 
 ######################
 sig = 2.0
+ratio = 2.0
 #
 outputs = {'l1':2, 'l2a1': 5, 'l2b1':8, 'l2a2': 8,  'l2b2':11, 'l345':14, 'l6a1':17, 'l6b1':20, 'l6a2':23, 'l6b2':26, 'l789':29, 'l10a1':33, 'l10b1':36, 'l10c1':28, 'OutS':30, 'OutF':30}
 
@@ -56,7 +55,7 @@ statenos = {'l1':1, 'l2a1': 2, 'l2b1':3, 'l2a2':4,  'l2b2':5, 'l345':6, 'l6a1':7
 #################################################################
 ##  Regenerate output means:  (easier to change below)
 i = 8
-di = 1.0*sig  # = nxsigma !!
+di = ratio*sig  # = nxsigma !!
 for n in names:
     outputs[n] = i
     i += di
