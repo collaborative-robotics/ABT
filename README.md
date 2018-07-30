@@ -31,7 +31,7 @@ To build a model you have to create three files (bad!)
  
     a. the new leaf class `aug_leaf()` (from abtclass.py)
     
-    b. the (current Project Name: `peg2.py`) e.g. peg in hole task. 
+    b. the (current ProjName = `peg2.py`) e.g. peg in hole task. 
     
     c. or- a simple test project:   `simp_ABT.py`
 

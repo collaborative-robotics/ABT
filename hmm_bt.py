@@ -48,7 +48,7 @@ def HMM_setup(Pi, A, sig, names):
     #for i in range(len(names)):
         #tmpmeans.append( [ outputs[names[i]] ] )
     #M.means_ = np.array(tmpmeans)
-    M.means_ = 0.5*np.ones(l).reshape([l,1])
+    M.means_ = 0.5*np.ones(l).reshape([l,1])  # is this a bug??? what about \delta\mu * i???
     print 'means shape: ', M.means_.shape
     tmpcovars = sig * np.ones((l))
     tmpcovars.shape = [l,1]
