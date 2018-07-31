@@ -30,7 +30,7 @@ global NEpochs
 
 Mil = 1000000
 
-NEpochs = Mil  # number of simulations
+NEpochs = 1000  # number of simulations
 
 # amount HMM parameters should be ofset 
 #   from the ABT parameters.  Offset has random sign (+/-)
@@ -80,7 +80,7 @@ for run in range(Nruns):
     os.fsync(infolog.fileno())
     print '\n-------------------------------------------\n   Starting Run ',run+1, 'of', Nruns, '\n\n'
     # open the log file
-    id = str(int(100*(Ratio)) # encode the ratio (delta mu/sigma) into filename
+    id = str(int(100*(Ratio))) # encode the ratio (delta mu/sigma) into filename
     lfname = logdir+'statelog'+id+'.txt'
     logf = open(lfname,'w')   
  
@@ -174,10 +174,8 @@ for run in range(Nruns):
         #     (compute error metrics)
         [e,e2,em,N2,im,jm,anoms,erasures] = Adiff(A,M.transmat_, names)
 
-
-        print >> of, 'RMS  A-matrix error: {:.3f}'.format(e)
-        print >> of, 'RMS  A-matrix error: {:.8f} ({:d} non zero elements)'.format(e2,N2)
-        print >> of, 'Max  A-matrix error: {:.3f} (at {:d} to {:d})'.format(em,im,jm)
+        print >> of, 'EAavg    A-matrix error: {:.8f} ({:d} non zero elements)'.format(e2,N2)
+        print >> of, 'EAinfty  A-matrix error: {:.3f} (at {:d} to {:d})'.format(em,im,jm)
         if len(anoms) == 0:
             anoms = 'None'
         print >> of, 'Anomalies: ', anoms

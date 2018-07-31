@@ -111,11 +111,6 @@ outputAmat(A,'A', names, sys.stdout)
 outputAmat(B,'B', names, sys.stdout)
 
 print 'EAinfty = ',x[2]    # em
-print 'EAavg   = ',x[1]    # e2
-
-
-            
-            
-            
+print 'EAavg   = ',x[1]    # e2            
             
 of.close()
