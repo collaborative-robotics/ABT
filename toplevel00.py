@@ -43,7 +43,7 @@ rep.append(' ')
 #    Build the ABT and its blackboard
 #
 
-[ABT, bb] = simple4leafABT()
+[ABT, bb] = ABTtree()
 
 #############################################
 #

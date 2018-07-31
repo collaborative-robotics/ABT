@@ -41,8 +41,8 @@ HMM_delta = 0.00
 ############################################
 
 ##  The ABT file for the task (CHOOSE ONE)
-#from peg2_ABT import *   # uses model01.py
-from simp_ABT import *
+#from peg2_ABT import * # big 14 state  # uses model01.py
+from simp_ABT import *  # small 6 state # uses model00.py
 
 
 #############################################
@@ -129,7 +129,7 @@ for run in range(Nruns):
 
         print 'Finished simulating ',NEpochs,'  epochs'
         
-        
+    NEWDATA = False
     #############################################
     #
     #    Read simulated sequence data
