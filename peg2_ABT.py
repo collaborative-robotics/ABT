@@ -23,7 +23,7 @@ from abtclass import *
 from  model01 import *
 
 
-def flsblockABT():
+def ABTtree():
 ####################################################################################
 ##
 #                    ABT for Peg-In-Hole Task

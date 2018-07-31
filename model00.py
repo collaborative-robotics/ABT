@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # 
-## hmm model params
+## hmm model params for SIMPLE 4-state BT
 import numpy as np
 from abt_constants import *
 
@@ -9,7 +9,7 @@ names = ['l1','l2','l3','l4', 'OutS', 'OutF']
 
 N = len(names)
  
-# prob success for each node
+# PS = prob of success for each node
 # note dummy value for PS[0] for math consistency
 PS = [0, 0.65, 0.75, .8, 0.9, 1.0,1.0]
 if len(PS) != N+1:
@@ -34,6 +34,8 @@ A = A[1:N+1,1:N+1]  # get zero offset index
  
 ######################
 sig = 2.0 
+
+Ratio = 3.0
 #
 #  these values are place-holders, replaced later
 outputs = {'l1':2, 'l2': 5, 'l3':8, 'l4': 8,  'OutS':10, 'OutF':20}
@@ -46,7 +48,7 @@ statenos = {'l1':1, 'l2': 2, 'l3':3, 'l4':4,  'OutS':5, 'OutF':6}
 
 ###  Regenerate output means:
 i = 20
-di = 3*sig  # = nxsigma !!
+di = Ratio*sig  # = nxsigma !!
 for n in outputs.keys():
     outputs[n] = i
     i += di

@@ -24,7 +24,7 @@ from abt_constants import *
 from model00 import *
 
 
-def simple4leafABT():
+def ABTtree():
 ####################################################################################
 ##
 #                    ABT for a little 4-leaf BT

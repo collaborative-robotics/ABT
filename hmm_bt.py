@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 #sudo pip install scikit-learn  # dep for hmmlearn
 #pip install -U --user hmmlearn
 from hmmlearn import hmm
+import random as random
 
 # BT and HMM parameters here
 #from  model00 import *
@@ -55,7 +56,41 @@ def HMM_setup(Pi, A, sig, names):
     M.covars_ = np.array(tmpcovars)
     return M
 
-
+# apply a delta (random +-) to the elements of A
+#   subject to sum of row = 1.
+def HMM_perturb(M, d):
+    # A matrix  
+    A = M.transmat_
+    [r1, c1] = A.shape
+    r1 -= 2    # don't perturb for Os and Of states
+    for r in range(r1):
+        flag = -1
+        for c in range(c1):
+            # second non-zero element of row
+            print 'looking at element: ',r,c
+            print 'flag = ', flag
+            print ''
+            if flag > 0  and A[r][c] > 0: 
+                A[r][c] = 1.0 - flag
+                print 'setting second element to', 1.0 - flag
+            # first non-zero element of row
+            if A[r][c] > 0:
+                A[r][c] *= 1.0 + randsign() * d
+                flag = A[r][c]
+    M.transmat_ = A
+    # B matrix means
+    B = M.means_
+    for i in range(len(B)):
+        B[i] = B[i] * (1.0 +  randsign() * d)
+    M.means_ = B
+    
+def randsign():
+    a = random.random()
+    if a > 0.500:
+        return 1
+    else:
+        return -1
+    
 # read in observation sequences data file
 def read_obs_seqs(fn):
     logf = open(fn,'r')
