@@ -25,25 +25,25 @@ def outputAmat(A,title,names,of):
         print >> of, '\n'
 
 def A_row_check(A,of):
-    print >> of, "A-matrix row check"
+    print >> of, "A-matrix row check"  
+    eps = 1.0E-6        # accuracy 
     for i in range(A.shape[0]):
         r = 0
         for j in range(A.shape[1]):
             r += A[i,j]
         print >> of, i,r
-        if r > 1.0:
-            print >> of, 'Problem: row ',i,' of A-matrix sum is > 1.0'
-            quit()
-
-def A_row_test(A):
+        if abs(r-1.0) > eps:
+            print >> of, 'Problem: row ',i,' of A-matrix sum is != 1.0'
+ 
+def A_row_test(A,of):
     eps = 1.0E-6        # accuracy 
     print 'A-matrix row test'
     for i in range(A.shape[0]):
         r = 0
         for j in range(A.shape[1]):
             r += A[i,j]
-        print >> of, i,r
-        assert(abs(r-1.0) < eps, 'Problem: a row sum of A-matrix is != 1.0')
+        print  'assertion:', i,r
+        assert abs(r-1.0) < eps, 'Assert Problem: a row sum of A-matrix is != 1.0'
         
 
 #quit()
@@ -85,7 +85,7 @@ def HMM_perturb(M, d):
                 A[r][c] = 1.0 - flag
                 print 'setting second element to', 1.0 - flag
             # first non-zero element of row
-            if A[r][c] > 0:
+            elif A[r][c] > 0:
                 A[r][c] *= 1.0 + randsign() * d
                 if A[r][c] > 0.99:
                     A[r][c] = 0.99  # don't allow going to 1.0 or above
@@ -161,7 +161,7 @@ def Adiff(A1,A2,names):
             #print 'error: ', e1,i,j
             #print 'A1[ij] ',A1[i,j], '  A2[ij] ',A2[i,j], (A1[i,j]-A2[i,j])
             if(e1 > em):
-                em = np.sqrt(e1)
+                em = e1
                 imax = i
                 jmax = j
                 #print "storing emax: ", em, i,j

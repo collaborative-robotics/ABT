@@ -3,7 +3,7 @@
 
 #  Test for HMM setup and perturbs
 
-
+import sys
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -15,47 +15,7 @@ from hmmlearn import hmm
 #####################################################
 from hmm_bt import *
  
-
-
-###############################################
-# compare two A-matrices
-#
-
-def Adiff(A1,A2,names):
-    e = 0
-    em = -99999.9
-    e2 = 0   # avge error of NON ZERO elements
-    N = A1.shape[0]
-    #print 'Adiff: A shape: ', A1.shape
-    N2 = 0   # count the non-zero Aij entries 
-            #  should be 2(l+2) of course
-    anoms = []
-    erasures = []
-    for i in range(N):
-        for j in range(N):
-            e1 = (A1[i,j]-A2[i,j])**2
-            #print 'error: ', e1,i,j
-            #print 'A1[ij] ',A1[i,j], '  A2[ij] ',A2[i,j], (A1[i,j]-A2[i,j])
-            if(e1 > em):
-                em = np.sqrt(e1)
-                imax = i
-                jmax = j
-                #print "storing emax: ", em, i,j
-            if(A1[i,j] > 0.000001):
-                e2 += e1
-                N2 += 1
-            e += e1
-            if(A1[i,j]==0.0 and A2[i,j]>0.0):
-                anoms.append([i,j])
-            if(A1[i,j]>0.0 and A2[i,j] < 0.0000001):
-                erasures.append([names[i],names[j]])
-    e  = np.sqrt(e/(N*N))  # div total number of Aij elements
-    e2 = np.sqrt(e2/N2)  # RMS error of NON zero Aij
-    em = np.sqrt(em)     # Max error
-    #print 'imax, jmax; ', imax, jmax
-    return [e,e2,em,N2,imax,jmax,anoms,erasures]
-
-#####################################################
+ 
 
 #####################################################
 #from model00 import *
@@ -116,14 +76,46 @@ for n in outputs.keys():
 of = open('HMM_test_rep.txt', 'w')
 
 M = HMM_setup(Pi, A, sig, names)
-
+B = A.copy()
 outputAmat(A,"Initial A Matrix",names,of)
-HMM_perturb(M, 0.01)
+HMM_perturb(M, 0.25)  
 outputAmat(M.transmat_, "Perturbed A Matrix", names, of)
 
 A_row_check(M.transmat_, of)
 A_row_test(M.transmat_, of)
 
+outputAmat(B,'Initial A Matrix',names, of)
+print '-------------------------- resulting distance metrics -------------------'
+
+x = Adiff(A, B ,names)
+#    return [e,e2,em,N2,imax,jmax,anoms,erasures]
+
+print 'EAinfty = ',x[2]    # em
+print 'EAavg   = ',x[1]    # e2
+
+A = B.copy()  # restore init values
+
+[r1, c1] = A.shape
+#r1 -= 2    # don't perturb for Os and Of states
+for r in range(r1):
+    for c in range(c1):
+        if A[r][c] > 0:
+            A[r][c] += 0.2  #  test for metrics
+
+print '-------------------------- test distance metrics -------------------'
+print ' each element += 0.2  both errors should = 0.2'
+x = Adiff(A, B ,names)
+#    return [e,e2,em,N2,imax,jmax,anoms,erasures]
+
+outputAmat(A,'A', names, sys.stdout)
+outputAmat(B,'B', names, sys.stdout)
+
+print 'EAinfty = ',x[2]    # em
+print 'EAavg   = ',x[1]    # e2
 
 
+            
+            
+            
+            
 of.close()
