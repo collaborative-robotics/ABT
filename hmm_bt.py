@@ -21,7 +21,7 @@ def outputAmat(A,title,names,of):
     for i in range(A.shape[0]):
         print >> of, '{0: <7}'.format(names[i]),
         for j in range(A.shape[1]):
-            print >> of, '{:.3f} '.format(A[i,j]),
+            print >> of, '{:.5f} '.format(A[i,j]),
         print >> of, '\n'
 
 def A_row_check(A,of):
@@ -34,6 +34,17 @@ def A_row_check(A,of):
         if r > 1.0:
             print >> of, 'Problem: row ',i,' of A-matrix sum is > 1.0'
             quit()
+
+def A_row_test(A):
+    eps = 1.0E-6        # accuracy 
+    print 'A-matrix row test'
+    for i in range(A.shape[0]):
+        r = 0
+        for j in range(A.shape[1]):
+            r += A[i,j]
+        print >> of, i,r
+        assert(abs(r-1.0) < eps, 'Problem: a row sum of A-matrix is != 1.0')
+        
 
 #quit()
 
@@ -76,7 +87,10 @@ def HMM_perturb(M, d):
             # first non-zero element of row
             if A[r][c] > 0:
                 A[r][c] *= 1.0 + randsign() * d
-                flag = A[r][c]
+                if A[r][c] > 0.99:
+                    A[r][c] = 0.99  # don't allow going to 1.0 or above
+                flag = A[r][c]      # store value (for use above)
+                
     M.transmat_ = A
     # B matrix means
     B = M.means_
