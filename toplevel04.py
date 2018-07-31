@@ -24,7 +24,7 @@ CSVOUTPUT = True
 
 NEWDATA = True
 
-Task = BaumWelch
+Task = BaumWelch   # Viterbi / Forward 
 
 global NEpochs  
 
