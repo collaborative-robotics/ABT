@@ -1,6 +1,7 @@
 #!/usr/bin/python
 #
-#   Top-level scripted task
+#   Top-level scripted
+
 #
 #
 #    23-May    Add looping for multiple runs
@@ -10,6 +11,7 @@ import sys
 import os
 import datetime
 from hmm_bt import *
+import numpy as np
 
 from abt_constants import *
 
@@ -20,22 +22,22 @@ CSVOUTPUT = True
 ############################################
 #
 #        Basic Job Config
-# 
+#
 
 NEWDATA = True
 
-Task = BaumWelch   # Viterbi / Forward 
+task = Viterbi #BaumWelch   # Viterbi / Forward
 
-global NEpochs  
+global NEpochs
 
 Mil = 1000000
 
-NEpochs = 1000  # number of simulations
+NEpochs = Mil  # number of simulations
 
-# amount HMM parameters should be ofset 
+# amount HMM parameters should be ofset
 #   from the ABT parameters.  Offset has random sign (+/-)
-HMM_delta = 0.05   #  5%  
-HMM_delta = 0.00   
+HMM_delta = 0.05   #  5%
+HMM_delta = 0.00
 
 #
 ############################################
@@ -49,25 +51,26 @@ from simp_ABT import *  # small 6 state # uses model00.py
 #
 #      Manage outer loop (a set of runs)
 #
-Nruns = 10
+Nruns = 1
 
 
 ########## results output files
 
 logdir = 'logs04/'
-
 outputdir = 'out04/'
 oname = outputdir +  'hmm_fit_out_'+datetime.datetime.now().strftime("%y-%m-%d-%H-%M")
 
 # HMM analysis output
-of = open(oname,'w')    
-
+of = open(oname,'w')
+if not (os.path.exists(os.path.dirname("test/otest"))):
+    os.mkdir("test/")
+otest = open("test/otest",'w')
 # log file for progress info
 infolog = open('infolog04', 'a')  # append
 em = 9999
 
 if CSVOUTPUT:
-    fcsv = open('csvlog04','a') 
+    fcsv = open('csvlog04','a')
     print >> fcsv, '-------',datetime.datetime.now().strftime("%y-%m-%d-%H-%M"), 'Nruns: ', Nruns, 'x', NEpochs
 
 #################################################
@@ -82,11 +85,11 @@ for run in range(Nruns):
     # open the log file
     id = str(int(100*(Ratio))) # encode the ratio (delta mu/sigma) into filename
     lfname = logdir+'statelog'+id+'.txt'
-    logf = open(lfname,'w')   
- 
+    logf = open(lfname,'w')
+
     #####    make a string report describing the setup
     #
-    # 
+    #
     rep = []
     rep.append('-------------------------- BT to HMM ---------------------------------------------')
     rep.append('NSYMBOLS: {:d}   NEpochs: {:d} '.format(NSYMBOLS,NEpochs))
@@ -94,12 +97,12 @@ for run in range(Nruns):
     rep.append('----------------------------------------------------------------------------------')
     rep.append(' ')
 
-    
+
     #############################################
     #
     #    Set up models
 
-           
+
     #############################################
     #
     #    Build the ABT and its blackboard
@@ -116,7 +119,7 @@ for run in range(Nruns):
 
         osu = names[-2]  # state names
         ofa = names[-1]
-            
+
         for i in range(NEpochs):
             result = ABT.tick("ABT Simulation", bb)
             if (result == b3.SUCCESS):
@@ -124,11 +127,11 @@ for run in range(Nruns):
             else:
                 logf.write('{:s}, {:.0f}\n'.format(ofa,outputs[ofa]))
             logf.write('---\n')
-            
+
         logf.close()
 
         print 'Finished simulating ',NEpochs,'  epochs'
-        
+
     NEWDATA = False
     #############################################
     #
@@ -136,7 +139,7 @@ for run in range(Nruns):
     #
 
     [X,Y,Ls] = read_obs_seqs(lfname)
-    
+
     # remove the old log file
     #os.system('rm '+lfname)
 
@@ -147,7 +150,8 @@ for run in range(Nruns):
 
     M = HMM_setup(Pi,A,sig,names)
 
-    #############################################
+    ##################        print len(state_test)
+###########################
     #
     #   Perturb the HMM's parameters (optional)
     #
@@ -182,17 +186,25 @@ for run in range(Nruns):
         if len(erasures) == 0:
             anoms = 'None'
         print >> of, 'Erasures : ', erasures
-        
-    if CSVOUTPUT:
-        print >>fcsv, '{:3d} {:.3f}, {:3d}, {:.3f}, {:2d}, {:2d}, {:.3f}, {:.3f}'.format(task, Ratio, int(di), float(di)/float(sig),run+1,Nruns,e2,em)
+    ##################################################
+    #
+    #       Veterbi Algorithm
+    #
+    if(task == Viterbi):
+        print "Identifying State Sequence of the generated data at different peturbations with ", len(Y)," observations"
+        log_test,state_test= M.decode(Y,Ls,"viterbi")
+        np.save("Tester",state_test)
+        np.save("Lengths",Ls)
+    ##################################################
+    #if CSVOUTPUT:
+    #    print >>fcsv, '{:3d} {:.3f}, {:3d}, {:.3f}, {:2d}, {:2d}, {:.3f}, {:.3f}'.format(task, Ratio, int(di), float(di)/float(sig),run+1,Nruns,e2,em)
 
 #  End of loop of runs
 
 of.close()
 os.system('cp {:s} {:s}'.format(oname,outputdir+'lastoutput'))
 
- 
+
 #
 #    HMM state tracking analysis
-# 
-
+#
