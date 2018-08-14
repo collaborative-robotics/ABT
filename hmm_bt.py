@@ -6,6 +6,8 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+import editdistance as ed
+from tqdm import tqdm
 
 #sudo pip install scikit-learn  # dep for hmmlearn
 #pip install -U --user hmmlearn
@@ -15,8 +17,8 @@ import random as random
 # BT and HMM parameters here
 #from  model00 import *
 
-        
-def outputAmat(A,title,names,of):        
+
+def outputAmat(A,title,names,of):
     print >> of, title   # eg, "Original  A matrix:"
     for i in range(A.shape[0]):
         print >> of, '{0: <7}'.format(names[i]),
@@ -25,8 +27,8 @@ def outputAmat(A,title,names,of):
         print >> of, '\n'
 
 def A_row_check(A,of):
-    print >> of, "A-matrix row check"  
-    eps = 1.0E-6        # accuracy 
+    print >> of, "A-matrix row check"
+    eps = 1.0E-6        # accuracy
     for i in range(A.shape[0]):
         r = 0
         for j in range(A.shape[1]):
@@ -34,9 +36,9 @@ def A_row_check(A,of):
         print >> of, i,r
         if abs(r-1.0) > eps:
             print >> of, 'Problem: row ',i,' of A-matrix sum is != 1.0'
- 
+
 def A_row_test(A,of):
-    eps = 1.0E-6        # accuracy 
+    eps = 1.0E-6        # accuracy
     print 'A-matrix row test'
     for i in range(A.shape[0]):
         r = 0
@@ -44,7 +46,7 @@ def A_row_test(A,of):
             r += A[i,j]
         print  'assertion:', i,r
         assert abs(r-1.0) < eps, 'Assert Problem: a row sum of A-matrix is != 1.0'
-        
+
 
 #quit()
 
@@ -70,8 +72,8 @@ def HMM_setup(Pi, A, sig, names):
 # apply a delta (random +-) to the elements of A
 #   subject to sum of row = 1.
 def HMM_perturb(M, d):
-    # A matrix  
-    A = M.transmat_
+    # A matrix
+    A = M.transmat_inbuilt # Levenshtein
     [r1, c1] = A.shape
     r1 -= 2    # don't perturb for Os and Of states
     for r in range(r1):
@@ -81,7 +83,7 @@ def HMM_perturb(M, d):
             print 'looking at element: ',r,c
             print 'flag = ', flag
             print ''
-            if flag > 0  and A[r][c] > 0: 
+            if flag > 0  and A[r][c] > 0:
                 A[r][c] = 1.0 - flag
                 print 'setting second element to', 1.0 - flag
             # first non-zero element of row
@@ -90,21 +92,21 @@ def HMM_perturb(M, d):
                 if A[r][c] > 0.99:
                     A[r][c] = 0.99  # don't allow going to 1.0 or above
                 flag = A[r][c]      # store value (for use above)
-                
+
     M.transmat_ = A
     # B matrix means
     B = M.means_
     for i in range(len(B)):
         B[i] = B[i] * (1.0 +  randsign() * d)
     M.means_ = B
-    
+
 def randsign():
     a = random.random()
     if a > 0.500:
         return 1
     else:
         return -1
-    
+
 # read in observation sequences data file
 def read_obs_seqs(fn):
     logf = open(fn,'r')
@@ -151,9 +153,9 @@ def Adiff(A1,A2,names):
     e2 = 0   # avge error of NON ZERO elements
     N = A1.shape[0]
     #print 'Adiff: A shape: ', A1.shape
-    N2 = 0   # count the non-zero Aij entries 
+    N2 = 0   # count the non-zero Aij entries
             #  should be 2(l+2) of course
-    anoms = []
+    anoms = [] #identification
     erasures = []
     for i in range(N):
         for j in range(N):
@@ -178,7 +180,30 @@ def Adiff(A1,A2,names):
     em = np.sqrt(em)     # Max error
     #print 'imax, jmax; ', imax, jmax
     return [e,e2,em,N2,imax,jmax,anoms,erasures]
-
+###############################################################
+# Evaluation of Veterbi
+def Veterbi_Eval(p,x,names,l):
+    x = np.array(x)
+    counter = 0
+    b = np.zeros((len(l),len(names)))
+    predict = np.empty((len(l),len(names)), dtype = object)
+    x_sorted = np.empty((len(l),len(names)), dtype = object)
+    e = np.empty((p.shape[0],1), dtype = object)
+    for i in range(len(l)):
+        for j in range(l[i]):
+            b[i][j] = p[counter] # sorted prediction according to the state number (1 Million * 16)
+            predict[i][j] = names[p[counter]] # sorted predicted data with names
+            x_sorted[i][j] = x[counter] # Orignal Sorted Simulation
+            e[counter] = names[p[counter]] # Predicted Names list
+            counter+=1
+    totald = ed.eval(np.array2string(e),np.array2string(x))
+    cost = np.empty(len(l))
+    count = 0
+    for i in tqdm(range(len(l))):
+        cost[i] = ed.eval(np.array2string(predict[i]),np.array2string(x_sorted[i])) # Cost per data string
+        if cost[i]==0:
+            count+=1
+    return [totald, cost]
 
 #print "shapes:"
 #print "outputs", len(outputs)
@@ -194,5 +219,3 @@ def Adiff(A1,A2,names):
 
 #for i in range(len(Z)):
     #print names[Z[i]], int(0.5 + X[i,0])
-
-

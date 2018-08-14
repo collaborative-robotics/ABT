@@ -59,7 +59,7 @@ Nruns = 1
 logdir = 'logs04/'
 outputdir = 'out04/'
 oname = outputdir +  'hmm_fit_out_'+datetime.datetime.now().strftime("%y-%m-%d-%H-%M")
-
+vname = outputdir +  'Veterbi_Stats_'+datetime.datetime.now().strftime("%y-%m-%d-%H-%M")
 # HMM analysis output
 of = open(oname,'w')
 if not (os.path.exists(os.path.dirname("test/otest"))):
@@ -194,7 +194,17 @@ for run in range(Nruns):
         print "Identifying State Sequence of the generated data at different peturbations with ", len(Y)," observations"
         log_test,state_test= M.decode(Y,Ls,"viterbi")
         np.save("Tester",state_test)
+        np.save("Original_Data",Y)
+        np.save("State_Names",X)
         np.save("Lengths",Ls)
+        [totald, cost, count] = Veterbi_Eval(state_test,X,names,Ls)
+        with open(vname,'w') as ov:
+            for rline in rep:
+                print >>ov, rline
+            print >>ov, "The total Edit distance:", totald
+            print >>ov, "Summed cost of individual records: ", np.sum(cost)
+            print >>ov, "Number of exact state matches are: ", count
+
     ##################################################
     #if CSVOUTPUT:
     #    print >>fcsv, '{:3d} {:.3f}, {:3d}, {:.3f}, {:2d}, {:2d}, {:.3f}, {:.3f}'.format(task, Ratio, int(di), float(di)/float(sig),run+1,Nruns,e2,em)
