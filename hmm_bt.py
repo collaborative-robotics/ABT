@@ -70,14 +70,18 @@ def HMM_setup(Pi, A, sig, names):
     return M
 
 # apply a delta (random +-) to the elements of A
-#   subject to sum of row = 1.
+#   subject to sum of row = 1.]
 def HMM_perturb(M, d):
-    # A matrix
-    A = M.transmat_inbuilt # Levenshtein
+      # A matrix
+    A = M.transmat_
+    np.save("M_trans",M.transmat_)
+    np.save("Means",M.means_)
     [r1, c1] = A.shape
     r1 -= 2    # don't perturb for Os and Of states
     for r in range(r1):
         flag = -1
+        if np.count_nonzero(A[r1]) == 1:
+            continue
         for c in range(c1):
             # second non-zero element of row
             print 'looking at element: ',r,c
@@ -97,8 +101,13 @@ def HMM_perturb(M, d):
     # B matrix means
     B = M.means_
     for i in range(len(B)):
+        if np.count_nonzero(A[r1]) == 1:
+            continue
         B[i] = B[i] * (1.0 +  randsign() * d)
     M.means_ = B
+    np.save("Amat",A)
+    np.save("Bmat",B)
+
 
 def randsign():
     a = random.random()
@@ -203,7 +212,7 @@ def Veterbi_Eval(p,x,names,l):
         cost[i] = ed.eval(np.array2string(predict[i]),np.array2string(x_sorted[i])) # Cost per data string
         if cost[i]==0:
             count+=1
-    return [totald, cost]
+    return [totald, cost, count]
 
 #print "shapes:"
 #print "outputs", len(outputs)

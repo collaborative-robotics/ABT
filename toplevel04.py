@@ -36,15 +36,15 @@ NEpochs = Mil  # number of simulations
 
 # amount HMM parameters should be ofset
 #   from the ABT parameters.  Offset has random sign (+/-)
-HMM_delta = 0.05   #  5%
-HMM_delta = 0.00
+HMM_delta = 0.50   #  5%
+#HMM_delta = 0.00
 
 #
 ############################################
 
 ##  The ABT file for the task (CHOOSE ONE)
-#from peg2_ABT import * # big 14 state  # uses model01.py
-from simp_ABT import *  # small 6 state # uses model00.py
+from peg2_ABT import * # big 14 state  # uses model01.py
+#from simp_ABT import *  # small 6 state # uses model00.py
 
 
 #############################################
@@ -197,13 +197,18 @@ for run in range(Nruns):
         np.save("Original_Data",Y)
         np.save("State_Names",X)
         np.save("Lengths",Ls)
-        [totald, cost, count] = Veterbi_Eval(state_test,X,names,Ls)
+        totald, cost, count = Veterbi_Eval(state_test,X,names,Ls)
         with open(vname,'w') as ov:
             for rline in rep:
                 print >>ov, rline
             print >>ov, "The total Edit distance:", totald
             print >>ov, "Summed cost of individual records: ", np.sum(cost)
             print >>ov, "Number of exact state matches are: ", count
+
+    ##################################################
+    #
+    #       Forward Algorithm
+    #
 
     ##################################################
     #if CSVOUTPUT:

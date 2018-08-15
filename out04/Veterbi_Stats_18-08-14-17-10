@@ -1,0 +1,8 @@
+-------------------------- BT to HMM ---------------------------------------------
+NSYMBOLS: 150   NEpochs: 1000000 
+sigma: 2.00    Symbol delta: 2   Ratio:  1.00
+----------------------------------------------------------------------------------
+ 
+The total Edit distance: 26
+Summed cost of individual records:  10991617.0
+Number of exact state matches are:  175031
