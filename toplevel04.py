@@ -26,18 +26,18 @@ CSVOUTPUT = True
 
 NEWDATA = True
 
-task = Viterbi #BaumWelch   # Viterbi / Forward
+task = Forward #BaumWelch   # Viterbi / Forward
 
 global NEpochs
 
-Mil = 1000000
+Mil = 1000
 
 NEpochs = Mil  # number of simulations
 
 # amount HMM parameters should be ofset
 #   from the ABT parameters.  Offset has random sign (+/-)
 HMM_delta = 0.50   #  5%
-#HMM_delta = 0.00
+HMM_delta = 0.00
 
 #
 ############################################
@@ -209,7 +209,11 @@ for run in range(Nruns):
     #
     #       Forward Algorithm
     #
-
+    if(task == Forward):
+        logprob, wakku = M.score_samples(Y,Ls)
+        logprob = np.array(logprob)
+        np.save("Logprob",logprob)
+        np.save("Post",wakku)
     ##################################################
     #if CSVOUTPUT:
     #    print >>fcsv, '{:3d} {:.3f}, {:3d}, {:.3f}, {:2d}, {:2d}, {:.3f}, {:.3f}'.format(task, Ratio, int(di), float(di)/float(sig),run+1,Nruns,e2,em)
