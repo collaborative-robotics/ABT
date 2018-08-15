@@ -210,10 +210,15 @@ for run in range(Nruns):
     #       Forward Algorithm
     #
     if(task == Forward):
-        logprob, wakku = M.score_samples(Y,Ls)
+        logprob, postprob = M.score_samples(Y,Ls)
         logprob = np.array(logprob)
-        np.save("Logprob",logprob)
-        np.save("Post",wakku)
+        np.save("Lengths",Ls)
+        #np.save("Logprob",logprob)
+        #np.save("Post",postprob)
+        log_record = Foward_eval(Y,Ls,M)
+        #while iter < postprob.shape[0]:
+        print "Summation of log probability : ", logprob
+        print "Average of log probability : ", log_record.average()
     ##################################################
     #if CSVOUTPUT:
     #    print >>fcsv, '{:3d} {:.3f}, {:3d}, {:.3f}, {:2d}, {:2d}, {:.3f}, {:.3f}'.format(task, Ratio, int(di), float(di)/float(sig),run+1,Nruns,e2,em)

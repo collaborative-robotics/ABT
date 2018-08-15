@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import editdistance as ed
 from tqdm import tqdm
-
+import os
 #sudo pip install scikit-learn  # dep for hmmlearn
 #pip install -U --user hmmlearn
 from hmmlearn import hmm
@@ -213,6 +213,25 @@ def Veterbi_Eval(p,x,names,l):
         if cost[i]==0:
             count+=1
     return [totald, cost, count]
+##############################################
+#Forward Pass
+##############################################
+def Foward_eval(obs,l,M):
+    counter = 0
+    os.system('clear')
+    print "######################################",obs.shape
+    obs_sequence = 0
+    while counter < len(l):
+        obs_slice = obs[counter:(l[obs_sequence]-1)]
+        foward = np.zeros((M.transmat_.shape[0],l[obs_sequence]))
+        for s in range(M.transmat_.shape[0]):
+            forward[s][0] = M.startprob_[s] * obs_slice[0,s]
+        for t in range (1,len(obs.slice)):
+            for s in range (M.transmat_.shape[0]):
+                for last_step in range(M.transmat_.shape[0]):
+                    foward[s,t] += foward[t-1,last_step]*M.transmat_[last_step,s]*obs_slice[t,s]
+
+    return log_record
 
 #print "shapes:"
 #print "outputs", len(outputs)
