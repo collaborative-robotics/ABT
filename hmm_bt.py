@@ -78,14 +78,15 @@ def HMM_perturb(M, d):
         flag = -1
         for c in range(c1):
             # second non-zero element of row
-            print 'looking at element: ',r,c
-            print 'flag = ', flag
-            print ''
+            #print 'looking at element: ',r,c
+            #print 'flag = ', flag
             if flag > 0  and A[r][c] > 0: 
                 A[r][c] = 1.0 - flag
-                print 'setting second element to', 1.0 - flag
+                #print 'setting second element to', 1.0 - flag
             # first non-zero element of row
             elif A[r][c] > 0:
+                if abs(A[r][c] - 1.0) < 0.000001:
+                    continue
                 A[r][c] *= 1.0 + randsign() * d
                 if A[r][c] > 0.99:
                     A[r][c] = 0.99  # don't allow going to 1.0 or above
