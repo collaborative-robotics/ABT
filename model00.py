@@ -4,6 +4,12 @@
 import numpy as np
 from abt_constants import *
 
+######################
+sig = 2.0 
+
+Ratio = 10.0
+#
+
 logdir = 'logs/'
 names = ['l1','l2','l3','l4', 'OutS', 'OutF']
 
@@ -32,11 +38,6 @@ A[6,6] = 1.0
 
 A = A[1:N+1,1:N+1]  # get zero offset index
  
-######################
-sig = 2.0 
-
-Ratio = 3.0
-#
 #  these values are place-holders, replaced later
 outputs = {'l1':2, 'l2': 5, 'l3':8, 'l4': 8,  'OutS':10, 'OutF':20}
 
