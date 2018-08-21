@@ -9,8 +9,8 @@ import sys
 from abt_constants import *
 
 # Select the ABT file here
-from simp_ABT import *    # basic 4-state HMM 
-#from peg2_ABT import *         # elaborate 16-state HMM
+#from simp_ABT import *    # basic 4-state HMM 
+from peg2_ABT import *         # elaborate 16-state HMM
 #
 
 GENDATA = False  #  (determined by # args below)

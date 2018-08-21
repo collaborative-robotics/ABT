@@ -9,8 +9,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 from hmm_bt import *
 
-from model00 import *
 from abt_constants import * 
+
+# Select the ABT file here
+#from simp_ABT import *    # basic 4-state HMM 
+from peg2_ABT import *         # elaborate 16-state HMM
+#
 
 nargs = len(sys.argv) - 1
 
@@ -20,9 +24,12 @@ nargs = len(sys.argv) - 1
 
 if nargs == 1:
     lfname = sys.argv[1]
-else:
+elif nargs == 2:
 # read in data file 
     lfname = logdir+'statelog.txt'
+else:
+    print 'bad command line - quitting'
+    quit()
     
 logf = open(lfname,'r')
 

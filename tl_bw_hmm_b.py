@@ -34,7 +34,7 @@ global NEpochs
 
 Mil = 1000000
 
-NEpochs = 5000  # number of simulations
+NEpochs = 500  # number of simulations
 
 # amount HMM parameters should be ofset 
 #   from the ABT parameters.  Offset has random sign (+/-)

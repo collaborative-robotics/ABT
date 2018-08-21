@@ -12,9 +12,9 @@ import b3 as b3          # behavior trees
 import random as random
 import math as m
 import numpy as np
- 
-global NSYMBOLS  
-NSYMBOLS = 150 # number of VQ symbols for observations
+import abt_constants 
+
+global NEpochs 
 
 from abtclass import *
 
