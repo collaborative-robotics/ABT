@@ -1,117 +1,124 @@
 #!/usr/bin/python
-# 
-## hmm model params for SIMPLE 4-state BT
-import numpy as np
-from abt_constants import *
+#
+#   Test observation stats 
+#    generated
+
 import sys
 
-# Select the ABT file here
-#from simp_ABT import *    # basic 4-state HMM 
+import numpy as np
+import matplotlib.pyplot as plt
+from hmm_bt import *
 
-from peg2_ABT import *         # elaborate 16-state HMM
-#
+from model00 import *
+from abt_constants import * 
 
-GENDATA = False  #  (determined by # args below)
+nargs = len(sys.argv) - 1
 
-lfname = logdir+'TSTstatelog.txt'
-nargs = len(sys.argv)
+#print 'Nargs: ', nargs
+#print 'Argv:  ', sys.argv
+#quit()
+
 if nargs == 1:
-    GENDATA = True
-elif nargs == 2:
-    lfname = 'logs/' + str(sys.argv[1])
+    lfname = logdir+sys.argv[1]
+else:
+# read in data file 
+    lfname = logdir+'statelog.txt'
     
-NEpochs = 1000000
-#NEpochs = 1000
-
-#####    make a string report describing the setup
-#
-# 
-rep = []
-rep.append('-------------------------- Stat Validation of ABT Sim output ---------------------')
-if(GENDATA):
-    rep.append('  Generating new test data')
-rep.append('NSYMBOLS: {:d}   NEpochs: {:d} '.format(NSYMBOLS,NEpochs))
-rep.append('sigma: {:.2f}    Symbol delta: {:d}   Ratio:  {:.2f}'.format(sig, int(di), float(di)/float(sig)))
-rep.append('----------------------------------------------------------------------------------')
-rep.append(' ')
-
-           
-#############################################
-#
-#    Build the ABT and its blackboard
-#
-
-[ABT, bb] = ABTtree()
-
-
-if(GENDATA):
-    #############################################
-    #
-    #    Generate Simulated Data
-    #
-    print '\n\n computing and storing simulation data for ', NEpochs, ' simulations.\n\n'
-    ###    Debugging
-    #quit()
-    # open the log file
-    logf = open(lfname,'w')
-    bb.set('logfileptr',logf)
-
-    osu = names[-2]  # state names
-    ofa = names[-1]
-        
-    for i in range(NEpochs):
-        result = ABT.tick("ABT Simulation", bb)
-        if (result == b3.SUCCESS):
-            logf.write('{:s}, {:.0f}\n'.format(osu,outputs[osu]))  # not random obs!
-        else:
-            logf.write('{:s}, {:.0f}\n'.format(ofa,outputs[ofa]))
-        logf.write('---\n')
-        
-    logf.close()
-
-    print 'Finished simulating ',NEpochs,'  epochs'
-
-############################################
-#
-#  Read in the simulated sequence and compute its stats. 
-#
-#
-
 logf = open(lfname,'r')
 
-dN = {}
-dSum = {}
-dS2 = {}
+state_selection = 'l2'
 
-smu = {}
-ssig = {}
+X = []   # state names 
+Y = []   # observations
+Ls =[]   # length of the epochs/runouts
 
-for n in names: 
-    dN[n] = 0
-    dSum[n] = float(0)
-    dS2[n] = float(0)
-    
-nsims = 1
+seq = [] # current state seq
+os  = [] # current obs seq
+
+Ahat = np.zeros((N,N))  # N def in model0x
+
 for line in logf:
-    if line == '---\n':
-        nsims += 1
-    else:
-        [st, sy] = line.split(',')
-        #print 'state, symbol: ',st, '|',sy
-        dN[st] += 1
-        x = float(sy)
-        dSum[st] += x
-        dS2[st] += x*x
+   #print '>>>',line
+   line = line.strip()
+   if line == '---': 
+       # store freq of state transitions
+       for i in range(len(seq)):
+           if(i>0):  # no transition INTO first state
+               j = names.index(seq[i])
+               k = names.index(seq[i-1])
+               Ahat[k,j] += 1
+       Ls.append(len(os)) 
+       os  = []
+       seq = []
+   else:
+       [state, obs ] = line.split(',')
+       seq.append(state)
+       os.append(obs)
+       X.append(state)
+       Y.append([int(obs)])
+       os.append([int(obs)])
 
+outputAmat(Ahat,"raw Ahat",names,sys.stdout)
 
-print ''
-print 'File analyzed: ', lfname 
-for rl in rep:
-    print rl
-print '    name        N            sum           sum^2     mu         S.D.'
-for n in names:
-    smu[n] = dSum[n] / float(dN[n])
-    ssig[n] = np.sqrt(dN[n]*dS2[n] - dSum[n]*dSum[n]) / float(dN[n])
+#  divide to create frequentist prob estimates
+for i in range(N-2):  # rows (but NOT OutS and OutF cause they don't transition out)
+    rsum = np.sum(Ahat[i,:])
+    print 'A,sum', Ahat[i,:], rsum
+    for j in range(N): # cols
+        Ahat[i,j] /= rsum
+        
+#state = names[13]
+
+N = len(names) - 2   # don't expect OutF and OutS
+
+# set up sums for each state
+s1 = np.zeros(N)
+s2 = np.zeros(N)
+n  = np.zeros(N)  # counts for each state
+
+for i in range(len(X)): 
+    for j in range(N):     # accumulate stats for each state
+        #print X[j],names[j]
+        if X[i] == names[j]:
+            s1[j] +=  Y[i][0]
+            s2[j] += (Y[i][0])**2
+            n[j]  += 1
+            #print X[j], s1[j], s2[j]
     
-    print '%10s  %8d  %12.1f %12.1f %12.1f %12.1f' % ( n, dN[n], dSum[n], dS2[n], smu[n], ssig[n])
+    
+print 'Statistics for all state outputs in {:d} observations, {:d} epochs.'.format(len(X),len(Ls))
+print '     mu     sig    mu-error'
+for j in range(N):
+    mu = s1[j]/n[j]
+    sigma = np.sqrt(n[j]*s2[j] - s1[j]*s1[j]) / n[j]
+    error = mu - outputs[names[j]]
+    print  '{:3d}, {: <6}, {:.1f}, {:.2f}      {:.2f}'.format(1+j, names[j], mu,sigma,error)
+    
+#outputAmat(A,   "Initial   A Matrix",names, sys.stdout)
+#outputAmat(Ahat,"Empirical A Matrix",names, sys.stdout)
+
+print 'A-matrix estimation errors: '
+
+Adiff_Report(A,Ahat,names) 
+
+
+if(False):
+    # print histogram of specified state observations
+    state = names[statenos[state_selection]-1]
+    hist = np.zeros(NSYMBOLS)
+
+    n2 = 0
+    for i in range(len(X)):
+        s = X[i]
+        n2 += 1
+        #print n,s,Y[i]
+        if s == state:
+            hist[Y[i][0]] += 1  # count the output 
+        
+    print 'Studied {:d} symbols for state {:s}'.format(n2,state)
+    for i in range(len(hist)):
+        if hist[i] > 0.001:
+            print i, hist[i]
+        
+    
     
