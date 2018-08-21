@@ -6,19 +6,20 @@ from abt_constants import *
 import sys
 
 # Select the ABT file here
-#from simp_ABT import *    # basic 4-state HMM 
+from simp_ABT import *    # basic 4-state HMM 
 
-from peg2_ABT import *         # elaborate 16-state HMM
+#from peg2_ABT import *         # elaborate 16-state HMM
 #
 
 GENDATA = False  #  (determined by # args below)
 
+logdir = 'logs/'
 lfname = logdir+'TSTstatelog.txt'
 nargs = len(sys.argv)
 if nargs == 1:
     GENDATA = True
 elif nargs == 2:
-    lfname = 'logs/' + str(sys.argv[1])
+    lfname = str(sys.argv[1])
     
 NEpochs = 1000000
 #NEpochs = 1000
@@ -43,8 +44,11 @@ rep.append(' ')
 
 [ABT, bb] = ABTtree()
 
-
 if(GENDATA):
+    print 'Data will appear in '+lfname
+    x = 'About to perform %d simulations. <enter> to cont.:' % NEpochs
+    raw_input(x)
+
     #############################################
     #
     #    Generate Simulated Data
@@ -87,6 +91,7 @@ smu = {}
 ssig = {}
 
 for n in names: 
+    print 'looking for state: ', n
     dN[n] = 0
     dSum[n] = float(0)
     dS2[n] = float(0)

@@ -6,11 +6,9 @@ from abt_constants import *
 
 ######################
 sig = 2.0 
-
 Ratio = 10.0
 #
 
-logdir = 'logs/'
 names = ['l1','l2','l3','l4', 'OutS', 'OutF']
 
 N = len(names)

@@ -109,8 +109,8 @@ def randsign():
         return -1
     
 # read in observation sequences data file
-def read_obs_seqs(fn):
-    logf = open(fn,'r')
+def read_obs_seqs(logf):
+    #logf = open(fn,'r')
 
     X = []   # state names
     Y = []   # observations
@@ -132,6 +132,7 @@ def read_obs_seqs(fn):
             os.append([int(obs)])
     Y=np.array(Y).reshape(-1,1)  # make 2D
     Ls = np.array(Ls)
+    #logf.close()
     return [X,Y,Ls]
 
 #print 'Shapes: '
@@ -151,15 +152,15 @@ def read_obs_seqs(fn):
 def Adiff(A1,A2,names):
     e = 0
     em = -99999.9
-    e2 = 0   # avge error of NON ZERO elements
+    e2 = 0   # avg error of NON ZERO elements
     N = A1.shape[0]
     #print 'Adiff: A shape: ', A1.shape
     N2 = 0   # count the non-zero Aij entries 
             #  should be 2(l+2) of course
     anoms = []
     erasures = []
-    for i in range(N):
-        for j in range(N):
+    for i in range(N-2): # skip last two rows which are 1.000
+        for j in range(N): 
             e1 = (A1[i,j]-A2[i,j])**2
             #print 'error: ', e1,i,j
             #print 'A1[ij] ',A1[i,j], '  A2[ij] ',A2[i,j], (A1[i,j]-A2[i,j])

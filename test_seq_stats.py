@@ -19,7 +19,7 @@ nargs = len(sys.argv) - 1
 #quit()
 
 if nargs == 1:
-    lfname = logdir+sys.argv[1]
+    lfname = sys.argv[1]
 else:
 # read in data file 
     lfname = logdir+'statelog.txt'

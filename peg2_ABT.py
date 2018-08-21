@@ -36,10 +36,6 @@ def ABTtree():
     LeafDebug   = False
     SolverDebug = False
 
-    if not os.path.isdir(logdir):  # if this doesn't exist, create it.
-        os.mkdir(logdir) 
-        
-
     #print outputs
     #quit()
     
