@@ -87,14 +87,20 @@ for i in range(len(X)):
     
     
 print 'Statistics for all state outputs in {:d} observations, {:d} epochs.'.format(len(X),len(Ls))
+print '     mu     sig    mu-error'
 for j in range(N):
     mu = s1[j]/n[j]
     sigma = np.sqrt(n[j]*s2[j] - s1[j]*s1[j]) / n[j]
     error = mu - outputs[names[j]]
     print  '{:3d}, {: <6}, {:.1f}, {:.2f}      {:.2f}'.format(1+j, names[j], mu,sigma,error)
     
-outputAmat(A,   "Initial   A Matrix",names, sys.stdout)
-outputAmat(Ahat,"Empirical A Matrix",names, sys.stdout)
+#outputAmat(A,   "Initial   A Matrix",names, sys.stdout)
+#outputAmat(Ahat,"Empirical A Matrix",names, sys.stdout)
+
+print 'A-matrix estimation errors: '
+
+Adiff_Report(A,Ahat,names) 
+
 
 if(False):
     # print histogram of specified state observations

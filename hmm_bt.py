@@ -6,11 +6,13 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+import sys
 
 #sudo pip install scikit-learn  # dep for hmmlearn
 #pip install -U --user hmmlearn
 from hmmlearn import hmm
 import random as random
+
 
 # BT and HMM parameters here
 #from  model00 import *
@@ -180,20 +182,24 @@ def Adiff(A1,A2,names):
     #print 'imax, jmax; ', imax, jmax
     return [e,e2,em,N2,imax,jmax,anoms,erasures]
 
+######################################################
+#
+#   Print an A matrix comparison/diff report
+#
 
-#print "shapes:"
-#print "outputs", len(outputs)
-#print "means_", (M.means_.shape)
-#print "covars", (tmpcovars.shape)
-#print "trans",  (M.transmat_.shape)
+def Adiff_Report(A1,A2,names,of=sys.stdout):
+    [e,e2,em,N2,im,jm,anoms,erasures] = Adiff(A1, A2, names)
 
 
-# Generate sample data
-#X, Z = M.sample(50)
-#print X.shape, Z.shape
-#print type(X), type(Z)
+    print >> of, 'RMS  A-matrix error: {:.3f}'.format(e)
+    print >> of, 'RMS  A-matrix error: {:.8f} ({:d} non zero elements)'.format(e2,N2)
+    print >> of, 'Max  A-matrix error: {:.3f} (at {:d} to {:d})'.format(em,im,jm)
+    if len(anoms) == 0:
+        anoms = 'None'
+    print >> of, 'Anomalies: ', anoms
+    if len(erasures) == 0:
+        anoms = 'None'
+    print >> of, 'Erasures : ', erasures 
 
-#for i in range(len(Z)):
-    #print names[Z[i]], int(0.5 + X[i,0])
 
 

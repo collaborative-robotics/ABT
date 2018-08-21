@@ -8,7 +8,7 @@ import os as os
 
 # b3 class modified by BH, local version in current dir
 import b3 as b3          # behavior trees
-import random as random
+#import random as random
 import math as m
 import numpy as np
 from abt_constants import *
@@ -20,6 +20,7 @@ global NEpochs
 from  model00 import *
 
 def gaussian(x, mu, sig):
+    sig = abs(sig)
     a = 1.0/(sig*(m.sqrt(2*m.pi))) * m.exp(-0.5*((x-mu)/sig)**2)
     #print "A gaussian: ", a
     return a
@@ -48,17 +49,24 @@ class aug_leaf(b3.Action):
             self.Obs[j] = 0.0001  # a nominal non-zero value
         
     def set_Obs_Density(self, mu, sig):
+        print '\n\n'
         if (mu+sig) > NSYMBOLS or ((mu-sig) < 0):
             print 'aug_leaf: Warning may gen negative observations'
             #quit()
         psum = 0.0
+        pmin = 0.0001 # smallest allowed probability
         for j in range(NSYMBOLS):
-            self.Obs[j] += gaussian(j+0.5,mu,sig)
+            self.Obs[j] = gaussian(float(j),float(mu),float(sig))
+            #clear the tiny numerical values 
+            if self.Obs[j] < pmin:
+                self.Obs[j] = 0.0
             psum += self.Obs[j]
-            #print "j/Obs:",j,self.Obs[j]
-        #normalize the Observation density so it sums to 1.000
+            
+        #normalize the Observation distrib so it sums to 1.000
         for j in range(NSYMBOLS):
             self.Obs[j] /= psum
+            #print "j/Obs:",j,self.Obs[j]
+
             
         #print self.Name, 'obs:', mu, sig
         
@@ -69,18 +77,23 @@ class aug_leaf(b3.Action):
         self.pF = 1.0-P
         
     def gen_obs(self):
-        a = random.uniform(0,1.0)
+        a = np.random.uniform(0,0.999)
         b = 0.0
-        for j in range(NSYMBOLS):
+        for j in range(NSYMBOLS): # accumulate discrete probs over the symbols
             b += self.Obs[j]
-            #print "Obs: b,a", b,a
+            ##print "Obs: b,a", b,a
+            #if self.Name == 'l6b2':
+                #print 'a,b,j: ', a,b,j
             if b >= a:
-                return j;
+                #if self.Name == 'l6b2' and j > 100:
+                    #print self.Name, 'gen_obs: a,b,j:', a,b,j
+                return j;   # j is the symbol number / observation
+        #print 'gen_obs: a,b,j:', a,b,j
         return j
     
     def tick(self,tick):
         f = tick.blackboard.get('logfileptr')
-        a = random.uniform(0,1.0)
+        a = np.random.uniform(0,0.999)
         f.write(self.Name+', '+str(self.gen_obs())+'\n')
         if a<self.pS:
             return b3.SUCCESS 

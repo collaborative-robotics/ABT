@@ -6,10 +6,12 @@ from abt_constants import *
 import sys
 
 # Select the ABT file here
-from simp_ABT import *
+#from simp_ABT import *    # basic 4-state HMM 
+
+from peg2_ABT import *         # elaborate 16-state HMM
 #
 
-GENDATA = False
+GENDATA = False  #  (determined by # args below)
 
 lfname = logdir+'TSTstatelog.txt'
 nargs = len(sys.argv)
@@ -19,6 +21,7 @@ elif nargs == 2:
     lfname = 'logs/' + str(sys.argv[1])
     
 NEpochs = 1000000
+#NEpochs = 1000
 
 #####    make a string report describing the setup
 #
@@ -46,7 +49,7 @@ if(GENDATA):
     #
     #    Generate Simulated Data
     #
-
+    print '\n\n computing and storing simulation data for ', NEpochs, ' simulations.\n\n'
     ###    Debugging
     #quit()
     # open the log file

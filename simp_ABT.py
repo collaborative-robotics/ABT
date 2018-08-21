@@ -21,7 +21,7 @@ from abtclass import *
 # BT and HMM parameters here
 from abt_constants import *
  
-from model00 import *
+from model02 import *
 
 
 def ABTtree():
@@ -112,7 +112,7 @@ def ABTtree():
         # set up the Ps
         #print 'setting PS for:', l.Name, PS[statenos[l.Name]]
         l.set_Ps(PS[statenos[l.Name]])
-        print ''
+        #print ''
 
     return [demo_bt, bb]
 
