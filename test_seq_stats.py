@@ -33,6 +33,10 @@ else:
     
 logf = open(lfname,'r')
 
+
+print '\n\n\n                       Sequence Test Report '
+print '                                     checking state transition stats from ground truth \n\n'
+
 state_selection = 'l2'
 
 X = []   # state names 
@@ -93,16 +97,18 @@ for i in range(len(X)):
             #print X[j], s1[j], s2[j]
     
     
-print 'Statistics for all state outputs in {:d} observations, {:d} epochs.'.format(len(X),len(Ls))
-print '     mu     sig    mu-error'
-for j in range(N):
-    mu = s1[j]/n[j]
-    sigma = np.sqrt(n[j]*s2[j] - s1[j]*s1[j]) / n[j]
-    error = mu - outputs[names[j]]
-    print  '{:3d}, {: <6}, {:.1f}, {:.2f}      {:.2f}'.format(1+j, names[j], mu,sigma,error)
+    
+#####  replaced by test_obs_stats.py
+#print 'Statistics for all state outputs in {:d} observations, {:d} epochs.'.format(len(X),len(Ls))
+#print '     mu     sig    mu-error'
+#for j in range(N):
+    #mu = s1[j]/n[j]
+    #sigma = np.sqrt(n[j]*s2[j] - s1[j]*s1[j]) / n[j]
+    #error = mu - outputs[names[j]]
+    #print  '{:3d}, {: <6}, {:.1f}, {:.2f}      {:.2f}'.format(1+j, names[j], mu,sigma,error)
     
 #outputAmat(A,   "Initial   A Matrix",names, sys.stdout)
-#outputAmat(Ahat,"Empirical A Matrix",names, sys.stdout)
+outputAmat(Ahat,"Empirical A Matrix",names, sys.stdout)
 
 print 'A-matrix estimation errors: '
 
