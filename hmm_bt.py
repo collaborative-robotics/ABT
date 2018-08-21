@@ -13,11 +13,6 @@ import sys
 from hmmlearn import hmm
 import random as random
 
-
-# BT and HMM parameters here
-#from  model00 import *
-
-        
 def outputAmat(A,title,names,of):        
     print >> of, title   # eg, "Original  A matrix:"
     for i in range(A.shape[0]):
@@ -32,10 +27,12 @@ def A_row_check(A,of):
     for i in range(A.shape[0]):
         r = 0
         for j in range(A.shape[1]):
+            if A[i,j] < 0.0:
+                r += 10000000
             r += A[i,j]
         print >> of, i,r
         if abs(r-1.0) > eps:
-            print >> of, 'Problem: row ',i,' of A-matrix sum is != 1.0'
+            print >> of, 'Problem: row ',i,' of A-matrix sum is != 1.0 -or- row contains a P<0'
  
 def A_row_test(A,of):
     eps = 1.0E-6        # accuracy 
@@ -43,6 +40,7 @@ def A_row_test(A,of):
     for i in range(A.shape[0]):
         r = 0
         for j in range(A.shape[1]):
+            assert A[i,j] >= 0.0, ' A matrix Prob value < 0.0!'
             r += A[i,j]
         print  'assertion:', i,r
         assert abs(r-1.0) < eps, 'Assert Problem: a row sum of A-matrix is != 1.0'
@@ -95,11 +93,12 @@ def HMM_perturb(M, d):
                 flag = A[r][c]      # store value (for use above)
                 
     M.transmat_ = A
+    
     # B matrix means
-    B = M.means_
-    for i in range(len(B)):
-        B[i] = B[i] * (1.0 +  randsign() * d)
-    M.means_ = B
+    #B = M.means_
+    #for i in range(len(B)):
+        #B[i] = B[i] * (1.0 +  randsign() * d)
+    #M.means_ = B
     
 def randsign():
     a = random.random()

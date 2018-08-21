@@ -34,27 +34,25 @@ global NEpochs
 
 Mil = 1000000
 
-NEpochs = 1000  # number of simulations
+NEpochs = 5000  # number of simulations
 
 # amount HMM parameters should be ofset 
 #   from the ABT parameters.  Offset has random sign (+/-)
-HMM_delta = 0.00   # 10%   
+HMM_delta = 0.10   # 10%   
 
 #
 ############################################
 
 ##  The ABT file for the task (CHOOSE ONE)
 
-#from peg2_ABT import * # big  14+2 state  # uses model01.py
-from simp_ABT import *  # small 4+2 state # uses model00.py
-
+from peg2_ABT import * # big  14+2 state  # uses model01.py
+#from simp_ABT import *  # small 4+2 state # uses model00.py
 
 #############################################
 #
 #      Manage outer loop (a set of runs)
 #
 Nruns = 10
-
 
 ########## results output files
 
@@ -156,8 +154,8 @@ for run in range(Nruns):
     #
     #    HMM setup
     #
-
-    M = HMM_setup(Pi,A,sig,names)
+    Ac = A.copy()
+    M = HMM_setup(Pi,Ac,sig,names)
 
     #############################################
     #

@@ -2,12 +2,14 @@
 # 
 ## hmm model params for SIMPLE 4-state BT
 import numpy as np
-from abt_constants import *
 import sys
+
+
+
+from abt_constants import *
 
 # Select the ABT file here
 from simp_ABT import *    # basic 4-state HMM 
-
 #from peg2_ABT import *         # elaborate 16-state HMM
 #
 
