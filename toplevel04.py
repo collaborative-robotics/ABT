@@ -210,10 +210,11 @@ for run in range(Nruns):
     #       Forward Algorithm
     #
     if(task == Forward):
-        logprob, wakku = M.score_samples(Y,Ls)
+        sample = Y[0:Ls[0]]
+        logprob, wakku = M.score_samples(sample,[Ls[0]])
         logprob = np.array(logprob)
-        np.save("Logprob",logprob)
-        np.save("Post",wakku)
+        print "########################### :", logprob
+        #print "$$$$$$$$$$$$$$$$$$$$$$$$$$$ :", wakku
     ##################################################
     #if CSVOUTPUT:
     #    print >>fcsv, '{:3d} {:.3f}, {:3d}, {:.3f}, {:2d}, {:2d}, {:.3f}, {:.3f}'.format(task, Ratio, int(di), float(di)/float(sig),run+1,Nruns,e2,em)

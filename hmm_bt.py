@@ -213,6 +213,8 @@ def Veterbi_Eval(p,x,names,l):
         if cost[i]==0:
             count+=1
     return [totald, cost, count]
+#######################################################
+# Evaluation of Foward
 
 #print "shapes:"
 #print "outputs", len(outputs)
