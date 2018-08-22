@@ -30,7 +30,7 @@ task = Forward #BaumWelch   # Viterbi / Forward
 
 global NEpochs
 
-Mil = 1000
+Mil = 1000000
 
 NEpochs = Mil  # number of simulations
 
@@ -55,18 +55,20 @@ Nruns = 7
 ##############################################
 #
 # Master Data holder
-master = np.zeros((3,len(delta),Nruns))
+master = np.zeros((3,Nruns,len(delta),3))
 #
 
 ########## results output files
 
 logdir = 'logs04/'
 outputdir = 'out04/'
-oname = outputdir +  'hmm_fit_out_'+datetime.datetime.now().strftime("%y-%m-%d-%H-%M")
-vname = outputdir +  'Veterbi_Stats_'+datetime.datetime.now().strftime("%y-%m-%d-%H-%M")
-fowname = outputdir +  'Foward_Stats_'+datetime.datetime.now().strftime("%y-%m-%d-%H-%M")
+oname = outputdir +  'hmm_fit_out_Simple'+datetime.datetime.now().strftime("%y-%m-%d-%H-%M")
+vname = outputdir +  'Veterbi_Stats_Simple'+datetime.datetime.now().strftime("%y-%m-%d-%H-%M")
+fowname = outputdir +  'Foward_Stats_Simple'+datetime.datetime.now().strftime("%y-%m-%d-%H-%M")
 # HMM analysis output
 of = open(oname,'w')
+fow = open(fowname,'w')
+ov = open(vname,'w')
 if not (os.path.exists(os.path.dirname("test/otest"))):
     os.mkdir("test/")
 otest = open("test/otest",'w')
@@ -197,7 +199,9 @@ for task in seq:
                 if len(erasures) == 0:
                     anoms = 'None'
                 print >> of, 'Erasures : ', erasures
-                master[BaumWelch][c][run] = e2
+                master[BaumWelch][run][c][0] = e2
+                master[BaumWelch][run][c][0] = e
+                master[BaumWelch][run][c][0] = em
             ##################################################
             #
             #       Veterbi Algorithm
@@ -205,38 +209,40 @@ for task in seq:
             if(task == Viterbi):
                 print "Identifying State Sequence of the generated data at different peturbations with ", len(Y)," observations"
                 log_test,state_test= M.decode(Y,Ls,"viterbi")
-                np.save("Tester",state_test)
-                np.save("Original_Data",Y)
-                np.save("State_Names",X)
-                np.save("Lengths",Ls)
+                # np.save("Tester",state_test)
+                # np.save("Original_Data",Y)
+                # np.save("State_Names",X)
+                # np.save("Lengths",Ls)
                 totald, cost, count = Veterbi_Eval(state_test,X,names,Ls)
-                with open(vname,'w') as ov:
-                    for rline in rep:
-                        print >>ov, rline
-                    print >>ov, "The total Edit distance:", totald
-                    print >>ov, "Summed cost of individual records: ", np.sum(cost)
-                    print >>ov, "Number of exact state matches are: ", count
-                master[Viterbi][c][run] = totald
-
+                for rline in rep:
+                    print >>ov, rline
+                print >>ov, "The total Edit distance:", totald
+                print >>ov, "Summed cost of individual records: ", np.sum(cost)
+                print >>ov, "Number of exact state matches are: ", count
+                master[Viterbi][run][c][0] = np.sum(cost)
+                master[Viterbi][run][c][1] = totald
+                master[Viterbi][run][c][0] = count
             ##################################################
             #
             #       Forward Algorithm
             #
             if(task == Forward):
                 prob = Foward_eval(Y,Ls,M)
-                with open(fowname,'w') as fow:
-                    for rline in rep:
-                        print >>fow, rline
-                    print >>fow, "The average log Probability is :", prob
-                master[Forward][c][run] = prob
+                for rline in rep:
+                    print >>fow, rline
+                print >>fow, "The average log Probability is :", prob
+                master[Forward][run][c][0] = prob
                 #print "$$$$$$$$$$$$$$$$$$$$$$$$$$$ :", wakku
             ##################################################
             #if CSVOUTPUT:
             #    print >>fcsv, '{:3d} {:.3f}, {:3d}, {:.3f}, {:2d}, {:2d}, {:.3f}, {:.3f}'.format(task, Ratio, int(di), float(di)/float(sig),run+1,Nruns,e2,em)
 
 #  End of loop of runs
+Plotter(master,delta)
 np.save("Master",master)
 of.close()
+fow.close()
+ov.close()
 os.system('cp {:s} {:s}'.format(oname,outputdir+'lastoutput'))
 
 

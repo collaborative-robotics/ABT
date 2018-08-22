@@ -238,10 +238,38 @@ def Foward_eval(obs,l,M):
         sample = obs[counter:counter+l[i]]
         logprob += M.score(sample,[l[i]])
         counter += l[i]
-    #log_avg = logprob/length
+    log_avg = logprob/len(l)
     return log_avg
-
-
+######################################################
+#Plotter
+######################################################
+def Plotter(master,y):
+    #Foward_eval
+    ffig, fax = plt.subplots(1,1)
+    for run in range(master.shape[1]):
+        labeler = "Run Number "+ str(run)
+        fax.plot(y,master[0,run,:,0],label = labeler)
+        fax.set(ylabel='Average Log Probability',xlabel='HMM Delta',title = 'Forward')
+        fax.grid()
+    vfig, vax = plt.subplots(1,1)
+    for run in range(master.shape[1]):
+        labeler = "Run Number "+ str(run)
+        vax.plot(y,master[1,run,:,0], label  = labeler)
+        vax.set(ylabel='Total Edit Distance',xlabel='HMM Delta',title = 'Viterbi')
+        vax.grid()
+    bfig, bax = plt.subplots(1,1)
+    for run in range(master.shape[1]):
+        labeler = "Run Number "+ str(run)
+        bax.plot(y,master[2,run,:,0], label = labeler)
+        bax.set(ylabel='Eaverage Distance',xlabel='HMM Delta',title = 'BaumWelch')
+        bax.grid()
+    plt.legend(handles=[fax,vax,bax ])
+    ffig.show()
+    vfig.show()
+    bfig.show()
+    ffig.savefig("forward.png")
+    vfig.savefig("Veterbi.png")
+    bfig.savefig("BaumWelch.png")
 #print "shapes:"
 #print "outputs", len(outputs)
 #print "means_", (M.means_.shape)
