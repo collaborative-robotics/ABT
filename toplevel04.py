@@ -200,8 +200,8 @@ for task in seq:
                     anoms = 'None'
                 print >> of, 'Erasures : ', erasures
                 master[BaumWelch][run][c][0] = e2
-                master[BaumWelch][run][c][0] = e
-                master[BaumWelch][run][c][0] = em
+                master[BaumWelch][run][c][1] = e
+                master[BaumWelch][run][c][2] = em
             ##################################################
             #
             #       Veterbi Algorithm
@@ -221,7 +221,7 @@ for task in seq:
                 print >>ov, "Number of exact state matches are: ", count
                 master[Viterbi][run][c][0] = np.sum(cost)
                 master[Viterbi][run][c][1] = totald
-                master[Viterbi][run][c][0] = count
+                master[Viterbi][run][c][2] = count
             ##################################################
             #
             #       Forward Algorithm
