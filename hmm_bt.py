@@ -213,30 +213,34 @@ def Veterbi_Eval(p,x,names,l):
         if cost[i]==0:
             count+=1
     return [totald, cost, count]
-<<<<<<< HEAD
-#######################################################
-# Evaluation of Foward
-=======
+
 ##############################################
 #Forward Pass
 ##############################################
 def Foward_eval(obs,l,M):
+    # counter = 0
+    # os.system('clear')
+    # print "######################################",obs.shape
+    # obs_sequence = 0
+    # while counter < len(l):
+    #     obs_slice = obs[counter:(l[obs_sequence]-1)]
+    #     foward = np.zeros((M.transmat_.shape[0],l[obs_sequence]))
+    #     for s in range(M.transmat_.shape[0]):
+    #         forward[s][0] = M.startprob_[s] * obs_slice[0,s]
+    #     for t in range (1,len(obs.slice)):
+    #         for s in range (M.transmat_.shape[0]):
+    #             for last_step in range(M.transmat_.shape[0]):
+    #                 foward[s,t] += foward[t-1,last_step]*M.transmat_[last_step,s]*obs_slice[t,s]
     counter = 0
-    os.system('clear')
-    print "######################################",obs.shape
-    obs_sequence = 0
-    while counter < len(l):
-        obs_slice = obs[counter:(l[obs_sequence]-1)]
-        foward = np.zeros((M.transmat_.shape[0],l[obs_sequence]))
-        for s in range(M.transmat_.shape[0]):
-            forward[s][0] = M.startprob_[s] * obs_slice[0,s]
-        for t in range (1,len(obs.slice)):
-            for s in range (M.transmat_.shape[0]):
-                for last_step in range(M.transmat_.shape[0]):
-                    foward[s,t] += foward[t-1,last_step]*M.transmat_[last_step,s]*obs_slice[t,s]
+    logprob = 0
+    log_avg = 0
+    for i in range(len(l)):
+        sample = obs[counter:counter+l[i]]
+        logprob += M.score(sample,[l[i]])
+        counter += l[i]
+    #log_avg = logprob/length
+    return log_avg
 
-    return log_record
->>>>>>> 299c062af8fa60d00e434efaba4d4d8472e2fe6b
 
 #print "shapes:"
 #print "outputs", len(outputs)
