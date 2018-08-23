@@ -117,17 +117,17 @@ def randsign():
 # read in observation sequences data file
 def read_obs_seqs(logf):
     #logf = open(fn,'r')
-
     X = []   # state names
     Y = []   # observations
     Ls =[]   # lengths
 
     seq = [] # current state seq
     os  = [] # current obs seq
-
+    print logf
     for line in logf:
         #print '>>>',line
         line = line.strip()
+        print line
         if line == '---':
             Ls.append(len(os))
             os  = []
