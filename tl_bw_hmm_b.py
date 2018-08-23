@@ -34,7 +34,7 @@ global NEpochs
 
 Mil = 1000000
 
-NEpochs = 500  # number of simulations
+NEpochs = Mil  # number of simulations
 
 # amount HMM parameters should be ofset 
 #   from the ABT parameters.  Offset has random sign (+/-)
@@ -80,6 +80,8 @@ if CSVOUTPUT:
 #
 for run in range(Nruns):
     print >> infolog, datetime.datetime.now().strftime("%y-%m-%d-%H-%M"), 'task: ', task, ' run ',run+1,'/',Nruns, ' NEpochs: ', NEpochs,'Emax: ', em
+    print >> infolog, 'Perturbing HMM by ',HMM_delta
+
     infolog.flush()    # make sure this info visible in file
     os.fsync(infolog.fileno())
     
