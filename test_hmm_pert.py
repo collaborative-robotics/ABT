@@ -48,6 +48,28 @@ A[5,5] = 1.0
 A[6,6] = 1.0
 
 A = A[1:N+1,1:N+1]  # get zero offset index
+
+# A1 is a second A matrix to test for the special case of A[ij] == 1.0
+# INITIAL State Transition Probabilities
+#  make A one bigger to make index humannode
+# note dummy value for PS[0] for math consistency
+PS = [0, 1.0, 0.75, .8, 0.9, 1.0,1.0]
+if len(PS) != N+1:
+    print 'Incorrect PS length'
+    quit()
+A1 = np.zeros((N+1,N+1))
+A1[1,2] = PS[1]
+A1[1,6] = 1.0-PS[1]
+A1[2,3] = PS[2]
+A1[2,6] = 1.0-PS[2]
+A1[3,4] = 1.0-PS[3]
+A1[3,5] = PS[3]
+A1[4,5] = PS[4]
+A1[4,6] = 1.0-PS[4]
+A1[5,5] = 1.0
+A1[6,6] = 1.0
+
+A1 = A1[1:N+1,1:N+1]  # get zero offset index
  
 ######################
 sig = 2.0 
@@ -78,6 +100,7 @@ of = open('HMM_test_rep.txt', 'w')
 M = HMM_setup(Pi, A, sig, names)
 B = A.copy()
 outputAmat(A,"Initial A Matrix",names,of)
+print 'Perturbing by 0.25'
 HMM_perturb(M, 0.25)  
 outputAmat(M.transmat_, "Perturbed A Matrix", names, of)
 
@@ -85,6 +108,7 @@ A_row_check(M.transmat_, of)
 A_row_test(M.transmat_, of)
 
 outputAmat(B,'Initial A Matrix',names, of)
+
 print '-------------------------- resulting distance metrics -------------------'
 
 x = Adiff(A, B ,names)
@@ -107,10 +131,28 @@ print ' each element += 0.2  both errors should = 0.2'
 x = Adiff(A, B ,names)
 #    return [e,e2,em,N2,imax,jmax,anoms,erasures]
 
-outputAmat(A,'A', names, sys.stdout)
-outputAmat(B,'B', names, sys.stdout)
-
+#outputAmat(A,'A', names, sys.stdout)
+#outputAmat(B,'B', names, sys.stdout)
+fs = 'Problem with distance metrics Adiff(A,B,names)'
 print 'EAinfty = ',x[2]    # em
-print 'EAavg   = ',x[1]    # e2            
-            
+testeps = 0.00001
+assert x[2] - 0.2 < testeps, fs
+print 'EAavg   = ',x[1]    # e2
+assert x[1] - 0.2 < testeps, fs
+
+##  Test special A matrix with 1.0 element in it
+
+
+print '\n\nTesting A matrix with a 1.0 element'
+M1 = HMM_setup(Pi, A1, sig, names)
+B = A1.copy()
+#outputAmat(A,"Initial A Matrix",names,of)
+print 'Perturbing by 0.25'
+HMM_perturb(M1, 0.25)  
+#outputAmat(M.transmat_, "Perturbed A Matrix", names, of)
+
+A_row_check(M1.transmat_, of)
+A_row_test(M1.transmat_, of)
+          
+print '\n\n HMM_perturb(M, d) PASSES all tests\n\n'
 of.close()

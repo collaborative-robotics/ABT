@@ -9,8 +9,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 from hmm_bt import *
 
-from model00 import *
 from abt_constants import * 
+
+# Select the ABT file here
+#from simp_ABT import *    # basic 4-state HMM 
+from peg2_ABT import *         # elaborate 16-state HMM
+#
 
 nargs = len(sys.argv) - 1
 
@@ -19,12 +23,19 @@ nargs = len(sys.argv) - 1
 #quit()
 
 if nargs == 1:
-    lfname = logdir+sys.argv[1]
-else:
+    lfname = sys.argv[1]
+elif nargs == 2:
 # read in data file 
     lfname = logdir+'statelog.txt'
+else:
+    print 'bad command line - quitting'
+    quit()
     
 logf = open(lfname,'r')
+
+
+print '\n\n\n                       Sequence Test Report '
+print '                                     checking state transition stats from ground truth \n\n'
 
 state_selection = 'l2'
 
@@ -86,15 +97,23 @@ for i in range(len(X)):
             #print X[j], s1[j], s2[j]
     
     
-print 'Statistics for all state outputs in {:d} observations, {:d} epochs.'.format(len(X),len(Ls))
-for j in range(N):
-    mu = s1[j]/n[j]
-    sigma = np.sqrt(n[j]*s2[j] - s1[j]*s1[j]) / n[j]
-    error = mu - outputs[names[j]]
-    print  '{:3d}, {: <6}, {:.1f}, {:.2f}      {:.2f}'.format(1+j, names[j], mu,sigma,error)
     
-outputAmat(A,   "Initial   A Matrix",names, sys.stdout)
+#####  replaced by test_obs_stats.py
+#print 'Statistics for all state outputs in {:d} observations, {:d} epochs.'.format(len(X),len(Ls))
+#print '     mu     sig    mu-error'
+#for j in range(N):
+    #mu = s1[j]/n[j]
+    #sigma = np.sqrt(n[j]*s2[j] - s1[j]*s1[j]) / n[j]
+    #error = mu - outputs[names[j]]
+    #print  '{:3d}, {: <6}, {:.1f}, {:.2f}      {:.2f}'.format(1+j, names[j], mu,sigma,error)
+    
+#outputAmat(A,   "Initial   A Matrix",names, sys.stdout)
 outputAmat(Ahat,"Empirical A Matrix",names, sys.stdout)
+
+print 'A-matrix estimation errors: '
+
+Adiff_Report(A,Ahat,names) 
+
 
 if(False):
     # print histogram of specified state observations
