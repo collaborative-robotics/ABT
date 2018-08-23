@@ -6,28 +6,17 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-<<<<<<< HEAD
 import editdistance as ed
 from tqdm import tqdm
 import os
-=======
 import sys
 
->>>>>>> 9810aa4a9236afb64e93973dcfff1b7715af3c25
 #sudo pip install scikit-learn  # dep for hmmlearn
 #pip install -U --user hmmlearn
 from hmmlearn import hmm
 import random as random
 
-<<<<<<< HEAD
-# BT and HMM parameters here
-#from  model00 import *
-
-
 def outputAmat(A,title,names,of):
-=======
-def outputAmat(A,title,names,of):        
->>>>>>> 9810aa4a9236afb64e93973dcfff1b7715af3c25
     print >> of, title   # eg, "Original  A matrix:"
     for i in range(A.shape[0]):
         print >> of, '{0: <7}'.format(names[i]),
@@ -46,13 +35,8 @@ def A_row_check(A,of):
             r += A[i,j]
         print >> of, i,r
         if abs(r-1.0) > eps:
-<<<<<<< HEAD
-            print >> of, 'Problem: row ',i,' of A-matrix sum is != 1.0'
-
-=======
             print >> of, 'Problem: row ',i,' of A-matrix sum is != 1.0 -or- row contains a P<0'
- 
->>>>>>> 9810aa4a9236afb64e93973dcfff1b7715af3c25
+
 def A_row_test(A,of):
     eps = 1.0E-6        # accuracy
     print 'A-matrix row test'
@@ -101,16 +85,9 @@ def HMM_perturb(M, d):
             continue
         for c in range(c1):
             # second non-zero element of row
-<<<<<<< HEAD
-            print 'looking at element: ',r,c
-            print 'flag = ', flag
-            print ''
-            if flag > 0  and A[r][c] > 0:
-=======
             #print 'looking at element: ',r,c
             #print 'flag = ', flag
-            if flag > 0  and A[r][c] > 0: 
->>>>>>> 9810aa4a9236afb64e93973dcfff1b7715af3c25
+            if flag > 0  and A[r][c] > 0:
                 A[r][c] = 1.0 - flag
                 #print 'setting second element to', 1.0 - flag
             # first non-zero element of row
@@ -123,26 +100,13 @@ def HMM_perturb(M, d):
                 flag = A[r][c]      # store value (for use above)
 
     M.transmat_ = A
-    
+
     # B matrix means
-<<<<<<< HEAD
-    B = M.means_
-    for i in range(len(B)):
-        if np.count_nonzero(A[r1]) == 1:
-            continue
-        B[i] = B[i] * (1.0 +  randsign() * d)
-    M.means_ = B
-    np.save("Amat",A)
-    np.save("Bmat",B)
-
-
-=======
     #B = M.means_
     #for i in range(len(B)):
         #B[i] = B[i] * (1.0 +  randsign() * d)
     #M.means_ = B
-    
->>>>>>> 9810aa4a9236afb64e93973dcfff1b7715af3c25
+
 def randsign():
     a = random.random()
     if a > 0.500:
@@ -202,7 +166,7 @@ def Adiff(A1,A2,names):
     anoms = [] #identification
     erasures = []
     for i in range(N-2): # skip last two rows which are 1.000
-        for j in range(N): 
+        for j in range(N):
             e1 = (A1[i,j]-A2[i,j])**2
             #print 'error: ', e1,i,j
             #print 'A1[ij] ',A1[i,j], '  A2[ij] ',A2[i,j], (A1[i,j]-A2[i,j])
@@ -249,7 +213,6 @@ def Veterbi_Eval(p,x,names,l):
             count+=1
     return [totald, cost, count]
 
-<<<<<<< HEAD
 ##############################################
 #Forward Pass
 ##############################################
@@ -329,7 +292,6 @@ def Plotter(master,y):
 #print "means_", (M.means_.shape)
 #print "covars", (tmpcovars.shape)
 #print "trans",  (M.transmat_.shape)
-=======
 ######################################################
 #
 #   Print an A matrix comparison/diff report
@@ -337,7 +299,6 @@ def Plotter(master,y):
 
 def Adiff_Report(A1,A2,names,of=sys.stdout):
     [e,e2,em,N2,im,jm,anoms,erasures] = Adiff(A1, A2, names)
->>>>>>> 9810aa4a9236afb64e93973dcfff1b7715af3c25
 
 
     print >> of, 'RMS  A-matrix error: {:.3f}'.format(e)
@@ -348,12 +309,4 @@ def Adiff_Report(A1,A2,names,of=sys.stdout):
     print >> of, 'Anomalies: ', anoms
     if len(erasures) == 0:
         anoms = 'None'
-    print >> of, 'Erasures : ', erasures 
-
-<<<<<<< HEAD
-#for i in range(len(Z)):
-    #print names[Z[i]], int(0.5 + X[i,0])
-=======
-
-
->>>>>>> 9810aa4a9236afb64e93973dcfff1b7715af3c25
+    print >> of, 'Erasures : ', erasures
