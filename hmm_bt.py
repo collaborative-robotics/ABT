@@ -1,8 +1,7 @@
 #!/usr/bin/python
 #
-#   Track a BT evolution with corresponding HMM!!
-#   match fig BT-01164_Huge.png
-#     from BT-Hmm proposal   May 18
+#   Utilities for BT-HMM_
+#
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -22,7 +21,7 @@ def outputAmat(A,title,names,of):
         print >> of, '\n'
 
 def A_row_check(A,of):
-    print >> of, "A-matrix row check"  
+    #print >> of, "A-matrix row check"  
     eps = 1.0E-6        # accuracy 
     for i in range(A.shape[0]):
         r = 0
@@ -36,18 +35,16 @@ def A_row_check(A,of):
  
 def A_row_test(A,of):
     eps = 1.0E-6        # accuracy 
-    print 'A-matrix row test'
+    #print 'A-matrix row test'
     for i in range(A.shape[0]):
         r = 0
         for j in range(A.shape[1]):
             assert A[i,j] >= 0.0, ' A matrix Prob value < 0.0!'
+            assert A[i,j] <= 1.0, ' A matrix Prob value > 1!'
             r += A[i,j]
-        print  'assertion:', i,r
+        #print  'assertion:', i,r
         assert abs(r-1.0) < eps, 'Assert Problem: a row sum of A-matrix is != 1.0'
         
-
-#quit()
-
 def HMM_setup(Pi, A, sig, names):
     #print 'Size: A: ', A.shape
     l = A.shape[0]
@@ -61,7 +58,7 @@ def HMM_setup(Pi, A, sig, names):
         #tmpmeans.append( [ outputs[names[i]] ] )
     #M.means_ = np.array(tmpmeans)
     M.means_ = 0.5*np.ones(l).reshape([l,1])  # is this a bug??? what about \delta\mu * i???
-    print 'means shape: ', M.means_.shape
+    #print 'means shape: ', M.means_.shape
     tmpcovars = sig * np.ones((l))
     tmpcovars.shape = [l,1]
     M.covars_ = np.array(tmpcovars)

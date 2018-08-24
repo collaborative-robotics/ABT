@@ -15,7 +15,6 @@ from abt_constants import *
  
 global NEpochs 
 
-
 # BT and HMM parameters here
 from  model00 import *
 
@@ -65,14 +64,11 @@ class aug_leaf(b3.Action):
         #normalize the Observation distrib so it sums to 1.000
         for j in range(NSYMBOLS):
             self.Obs[j] /= psum
-            #print "j/Obs:",j,self.Obs[j]
-
-            
-        #print self.Name, 'obs:', mu, sig
         
         
     # initialize Success Prob for leaf    
     def set_Ps(self, P):
+        assert P >= 0 and P <= 1.0, 'Invalid Success Probability'
         self.pS = P
         self.pF = 1.0-P
         
@@ -92,9 +88,9 @@ class aug_leaf(b3.Action):
         return j
     
     def tick(self,tick):
-        f = tick.blackboard.get('logfileptr')
-        a = np.random.uniform(0,0.999)
-        f.write(self.Name+', '+str(self.gen_obs())+'\n')
+        f = tick.blackboard.get('logfileptr')   # this output is for the HMM analysis (not testing)
+        a = np.random.uniform(0,0.99999)
+        f.write(self.Name+', '+str(self.gen_obs())+'\n')  # this output is for the HMM analysis (not testing)
         if a<self.pS:
             return b3.SUCCESS 
         else:
