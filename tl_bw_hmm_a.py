@@ -70,6 +70,7 @@ em = 9999
 
 if CSVOUTPUT:
     fcsv = open('csvlog'+script_name,'a')
+    print >>fcsv, script_name
     print >> fcsv, '-------',datetime.datetime.now().strftime("%y-%m-%d-%H-%M"), 'Nruns: ', Nruns, 'x', NEpochs
     #task, Ratio, int(di), float(di)/float(sig),run+1,Nruns,e2,em)
     print >> fcsv, 'N  tsk Ratio     di   Sigma  run#       e2  emax '
@@ -201,7 +202,7 @@ for run in range(Nruns):
         print >> of, 'Erasures : ', erasures
 
     if CSVOUTPUT:
-        print >>fcsv, '{:2d} | {:3d} {:.3f}, {:3d}, {:.3f}, {:2d}, {:2d}, {:.3f}, {:.3f}'.format(N, task, Ratio, int(di), float(sig),run+1,Nruns,e2,em)
+        print >>fcsv, '{:2d}|{:2d} {:.3f}, {:3d}, {:.3f}, {:2d}, {:2d}, {:.3f}, {:.3f}'.format(N, task, Ratio, int(di), float(sig),run+1,Nruns,e2,em)
 
     nsims += 1
     emT += em
