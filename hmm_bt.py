@@ -123,9 +123,10 @@ def read_obs_seqs(logf):
 
     seq = [] # current state seq
     os  = [] # current obs seq
-
+    logf = open(logf,'r')
     for line in logf:
         #print '>>>',line
+        print logf,"#########################", line
         line = line.strip()
         if line == '---':
             Ls.append(len(os))
@@ -137,7 +138,7 @@ def read_obs_seqs(logf):
             os.append([int(obs)])
     Y=np.array(Y).reshape(-1,1)  # make 2D
     Ls = np.array(Ls)
-    #logf.close()
+    logf.close()
     return [X,Y,Ls]
 
 #print 'Shapes: '
