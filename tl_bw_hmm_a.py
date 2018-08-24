@@ -45,8 +45,8 @@ HMM_delta = 0.00   # no perturb
 
 ##  The ABT file for the task (CHOOSE ONE)
 
-from peg2_ABT import * # big  14+2 state  # uses model01.py
-#from simp_ABT import *  # small 4+2 state # uses model00.py
+#from peg2_ABT import * # big  14+2 state  # uses model01.py
+from simp_ABT import *  # small 4+2 state # uses model00.py
 
 #############################################
 #
@@ -204,7 +204,7 @@ for run in range(Nruns):
         print >>fcsv, '{:2d} | {:3d} {:.3f}, {:3d}, {:.3f}, {:2d}, {:2d}, {:.3f}, {:.3f}'.format(N, task, Ratio, int(di), float(sig),run+1,Nruns,e2,em)
 
     nsims += 1
-    emT += emT
+    emT += em
     e2T += e2
     # update an information log on this run
     print >> infolog, datetime.datetime.now().strftime("%y-%m-%d-%H-%M"), 'task: ', task, ' run ',run+1,'/',Nruns, ' NEpochs: ', NEpochs,'Emax: ', em
