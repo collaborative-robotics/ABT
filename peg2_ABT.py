@@ -58,8 +58,8 @@ def ABTtree():
     l2b1.Name = 'l2b1'
     leafs.append(l2b1)
 
-    l21 = b3.Sequence([l2a1,l2b1]) 
-    l21.Name = 'Node 21'
+    node_21 = b3.Sequence([l2a1,l2b1]) 
+    node_21.Name = 'Node 21'
 
     # try 2
     l2a2 = aug_leaf(0.9)
@@ -70,11 +70,11 @@ def ABTtree():
     l2b2.Name = 'l2b2'
     leafs.append(l2b2)
 
-    l22 = b3.Sequence([l2a2,l2b2]) 
-    l22.Name = 'Node 22' 
+    node_22 = b3.Sequence([l2a2,l2b2]) 
+    node_22.Name = 'Node 22' 
 
-    l2 = b3.Priority([l21,l22])
-    l2.Name = 'Node 2'
+    node_2 = b3.Priority([node_21,node_22])
+    node_2.Name = 'Node 2'
 
 
     ##########  Steps 3-5  Lift clear / reorient / move
@@ -103,10 +103,10 @@ def ABTtree():
     l6b2.Name = 'l6b2'
     leafs.append(l6b2)
 
-    l61 = b3.Sequence([l6a1,l6b1])
-    l62 = b3.Sequence([l6a2,l6b2])
-    l6  = b3.Priority([l61,l62]) 
-    l6.Name = "node 6"
+    node_61 = b3.Sequence([l6a1,l6b1])
+    node_62 = b3.Sequence([l6a2,l6b2])
+    node_6  = b3.Priority([node_61,node_62]) 
+    node_6.Name = "node 6"
 
     ########  Steps 7-9   Release Left / Reorient / Position
 
@@ -128,11 +128,11 @@ def ABTtree():
     l10c1.Name = 'l10c1'
     leafs.append(l10c1)
 
-    l10 = b3.Sequence([l10a1,l10b1,l10c1])
-    l10.Name = 'Node 10: Position/Release'
+    node_10 = b3.Sequence([l10a1,l10b1,l10c1])
+    node_10.Name = 'Node 10: Position/Release'
 
     ######  Top level sequence node
-    N1 = b3.Sequence([l1, l2, l345, l6, l789, l10])
+    N1 = b3.Sequence([l1, node_2, l345, node_6, l789, node_10])
     N1.Name = 'Sequencer Node'
     N1.BHdebug = F
     
