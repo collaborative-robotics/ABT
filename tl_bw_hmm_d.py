@@ -38,7 +38,7 @@ NEpochs = 5000  # number of simulations
 
 # amount HMM parameters should be ofset
 #   from the ABT parameters.  Offset has random sign (+/-)
-HMM_delta = 0.20   # 10%
+HMM_delta = 0.50   # 10%
 
 #
 ############################################
@@ -74,6 +74,10 @@ if CSVOUTPUT:
     #task, Ratio, int(di), float(di)/float(sig),run+1,Nruns,e2,em)
     print >> fcsv, 'tsk Ratio     di   Sigma  run#       e2  emax '
 
+
+nsims = 0
+e2T = 0.0
+emT = 0.0
 #################################################
 #
 #   Outer Loop
@@ -83,7 +87,7 @@ for run in range(Nruns):
     print '\n-------------------------------------------\n   Starting Run ',run+1, 'of', Nruns, '\n\n'
     # open the log file
     id = str(int(100*(Ratio)))+'iter'+str(run)  # encode the ratio (delta mu/sigma) into filename
-    lfname = logdir+'statelog.txt'
+    lfname = logdir+script_name+'_statelog.txt'
 
 
     #####    make a string report describing the setup
@@ -199,6 +203,9 @@ for run in range(Nruns):
     if CSVOUTPUT:
         print >>fcsv, '{:3d} {:.3f}, {:3d}, {:.3f}, {:2d}, {:2d}, {:.3f}, {:.3f}'.format(task, Ratio, int(di), float(sig),run+1,Nruns,e2,em)
 
+    nsims += 1
+    emT += emT
+    e2T += e2
     # update an information log on this run
     print >> infolog, datetime.datetime.now().strftime("%y-%m-%d-%H-%M"), 'task: ', task, ' run ',run+1,'/',Nruns, ' NEpochs: ', NEpochs,'Emax: ', em
     infolog.flush()    # make sure this info visible in file
@@ -206,11 +213,11 @@ for run in range(Nruns):
 
 #  End of loop of runs
 
+if CSVOUTPUT:
+    print >>fcsv, '{:3d} {:s} {:.3f}, {:.3f}'.format(task, 'Average e2, em: ',e2,em)
+    fcsv.close()
+    
 of.close()
 os.system('cp {:s} {:s}'.format(oname,outputdir+'lastoutput'))
 
-
-#
-#    HMM state tracking analysis
-#
-
+ 
