@@ -30,7 +30,7 @@ task = Forward #BaumWelch   # Viterbi / Forward
 
 global NEpochs
 
-Mil = 1000000
+Mil = 100
 
 NEpochs = Mil  # number of simulations
 

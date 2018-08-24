@@ -123,11 +123,10 @@ def read_obs_seqs(logf):
 
     seq = [] # current state seq
     os  = [] # current obs seq
-    print logf
+
     for line in logf:
         #print '>>>',line
         line = line.strip()
-        print line
         if line == '---':
             Ls.append(len(os))
             os  = []
