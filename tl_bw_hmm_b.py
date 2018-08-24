@@ -45,8 +45,8 @@ HMM_delta = 0.10   # 10%
 
 ##  The ABT file for the task (CHOOSE ONE)
 
-from peg2_ABT import * # big  14+2 state  # uses model01.py
-#from simp_ABT import *  # small 4+2 state # uses model00.py
+#from peg2_ABT import * # big  14+2 state  # uses model01.py
+from simp_ABT import *  # small 4+2 state # uses model00.py
 
 #############################################
 #
@@ -72,7 +72,7 @@ if CSVOUTPUT:
     fcsv = open('csvlog'+script_name,'a')
     print >> fcsv, '-------',datetime.datetime.now().strftime("%y-%m-%d-%H-%M"), 'Nruns: ', Nruns, 'x', NEpochs
     #task, Ratio, int(di), float(di)/float(sig),run+1,Nruns,e2,em)
-    print >> fcsv, 'tsk Ratio     di   Sigma  run#       e2  emax '
+    print >> fcsv, 'N  tsk Ratio     di   Sigma  run#       e2  emax '
 
 
 nsims = 0
@@ -201,7 +201,7 @@ for run in range(Nruns):
         print >> of, 'Erasures : ', erasures
 
     if CSVOUTPUT:
-        print >>fcsv, '{:3d} {:.3f}, {:3d}, {:.3f}, {:2d}, {:2d}, {:.3f}, {:.3f}'.format(task, Ratio, int(di), float(sig),run+1,Nruns,e2,em)
+        print >>fcsv, '{:2d} | {:3d} {:.3f}, {:3d}, {:.3f}, {:2d}, {:2d}, {:.3f}, {:.3f}'.format(N, task, Ratio, int(di), float(sig),run+1,Nruns,e2,em)
 
     nsims += 1
     emT += emT
@@ -214,7 +214,7 @@ for run in range(Nruns):
 #  End of loop of runs
 
 if CSVOUTPUT:
-    print >>fcsv, '{:3d} {:s} {:.3f}, {:.3f}'.format(task, 'Average e2, em: ',e2,em)
+    print >>fcsv, '{:3d} {:s} {:.3f}, {:.3f}'.format(task, 'Average e2, em: ',e2T/nsims,emT/nsims)
     fcsv.close()
     
 of.close()
