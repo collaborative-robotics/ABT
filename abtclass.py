@@ -48,7 +48,6 @@ class aug_leaf(b3.Action):
             self.Obs[j] = 0.0001  # a nominal non-zero value
         
     def set_Obs_Density(self, mu, sig):
-        print '\n\n'
         if (mu+sig) > NSYMBOLS or ((mu-sig) < 0):
             print 'aug_leaf: Warning may gen negative observations'
             #quit()

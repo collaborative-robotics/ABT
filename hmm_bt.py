@@ -29,7 +29,7 @@ def A_row_check(A,of):
             if A[i,j] < 0.0:
                 r += 10000000
             r += A[i,j]
-        print >> of, i,r
+        #print >> of, i,r
         if abs(r-1.0) > eps:
             print >> of, 'Problem: row ',i,' of A-matrix sum is != 1.0 -or- row contains a P<0'
  
