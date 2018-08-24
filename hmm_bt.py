@@ -36,7 +36,7 @@ def A_row_check(A,of):
         print >> of, i,r
         if abs(r-1.0) > eps:
             print >> of, 'Problem: row ',i,' of A-matrix sum is != 1.0 -or- row contains a P<0'
- 
+
 def A_row_test(A,of):
     eps = 1.0E-6        # accuracy
     print 'A-matrix row test'
@@ -87,7 +87,7 @@ def HMM_perturb(M, d):
             # second non-zero element of row
             #print 'looking at element: ',r,c
             #print 'flag = ', flag
-            if flag > 0  and A[r][c] > 0: 
+            if flag > 0  and A[r][c] > 0:
                 A[r][c] = 1.0 - flag
                 #print 'setting second element to', 1.0 - flag
             # first non-zero element of row
@@ -100,23 +100,19 @@ def HMM_perturb(M, d):
                 flag = A[r][c]      # store value (for use above)
 
     M.transmat_ = A
-    
+
     # B matrix means
     #B = M.means_
     #for i in range(len(B)):
         #B[i] = B[i] * (1.0 +  randsign() * d)
     #M.means_ = B
-    
+
 def randsign():
     a = random.random()
     if a > 0.500:
         return 1
     else:
         return -1
-    
-# read in observation sequences data file
-def read_obs_seqs(logf):
-    #logf = open(fn,'r')
 
 # read in observation sequences data file
 def read_obs_seqs(logf):
@@ -130,7 +126,6 @@ def read_obs_seqs(logf):
     logf = open(logf,'r')
     for line in logf:
         #print '>>>',line
-        print logf,"#########################", line
         line = line.strip()
         if line == '---':
             Ls.append(len(os))
@@ -142,7 +137,7 @@ def read_obs_seqs(logf):
             os.append([int(obs)])
     Y=np.array(Y).reshape(-1,1)  # make 2D
     Ls = np.array(Ls)
-    #logf.close()
+    logf.close()
     return [X,Y,Ls]
 
 #print 'Shapes: '
