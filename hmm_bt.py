@@ -36,7 +36,7 @@ def A_row_check(A,of):
         print >> of, i,r
         if abs(r-1.0) > eps:
             print >> of, 'Problem: row ',i,' of A-matrix sum is != 1.0 -or- row contains a P<0'
- 
+
 def A_row_test(A,of):
     eps = 1.0E-6        # accuracy
     print 'A-matrix row test'
@@ -87,7 +87,7 @@ def HMM_perturb(M, d):
             # second non-zero element of row
             #print 'looking at element: ',r,c
             #print 'flag = ', flag
-            if flag > 0  and A[r][c] > 0: 
+            if flag > 0  and A[r][c] > 0:
                 A[r][c] = 1.0 - flag
                 #print 'setting second element to', 1.0 - flag
             # first non-zero element of row
@@ -100,23 +100,20 @@ def HMM_perturb(M, d):
                 flag = A[r][c]      # store value (for use above)
 
     M.transmat_ = A
-    
+
     # B matrix means
     #B = M.means_
     #for i in range(len(B)):
         #B[i] = B[i] * (1.0 +  randsign() * d)
     #M.means_ = B
-    
+
 def randsign():
     a = random.random()
     if a > 0.500:
         return 1
     else:
         return -1
-    
-# read in observation sequences data file
-def read_obs_seqs(logf):
-    #logf = open(fn,'r')
+
 
 # read in observation sequences data file
 def read_obs_seqs(logf):
@@ -193,7 +190,7 @@ def Adiff(A1,A2,names):
     return [e,e2,em,N2,imax,jmax,anoms,erasures]
 ###############################################################
 # Evaluation of Veterbi
-def Veterbi_Eval(p,x,names,l):
+def Veterbi_Eval(p,x,names,l,statenos):
     x = np.array(x)
     counter = 0
     b = np.zeros((len(l),len(names)))
@@ -207,6 +204,9 @@ def Veterbi_Eval(p,x,names,l):
             x_sorted[i][j] = x[counter] # Orignal Sorted Simulation
             e[counter] = names[p[counter]] # Predicted Names list
             counter+=1
+    for i in range(len(e)):
+        e[i] = statenos[np.ndarray.item(e[i])]
+        x[i] = statenos[x[i]]
     totald = ed.eval(np.array2string(e),np.array2string(x))
     cost = np.empty(len(l))
     count = 0
