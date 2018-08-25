@@ -30,7 +30,7 @@ task = Forward #BaumWelch   # Viterbi / Forward
 
 global NEpochs
 
-Mil = 100
+Mil = 500
 
 NEpochs = Mil  # number of simulations
 
@@ -51,7 +51,7 @@ from simp_ABT import *  # small 6 state # uses model00.py
 #
 #      Manage outer loop (a set of runs)
 #
-Nruns = 7
+Nruns = 5
 ##############################################
 #
 # Master Data holder
@@ -84,9 +84,9 @@ if CSVOUTPUT:
 #
 #   Outer Loop
 #
-for task in seq:
+for task in tqdm(seq):
     for c,HMM_delta in enumerate(delta):
-        for run in range(Nruns):
+        for run in tqdm(range(Nruns)):
             print >> infolog, datetime.datetime.now().strftime("%y-%m-%d-%H-%M"), 'task: ', task, ' run ',run+1,'/',Nruns, ' NEpocs: ', NEpochs,'Emax: ', em
             infolog.flush()    # make sure this info visible in file
             os.fsync(infolog.fileno())
@@ -213,7 +213,7 @@ for task in seq:
                 # np.save("Original_Data",Y)
                 # np.save("State_Names",X)
                 # np.save("Lengths",Ls)
-                totald, cost, count = Veterbi_Eval(state_test,X,names,Ls)
+                totald, cost, count = Veterbi_Eval(state_test,X,names,Ls,statenos)
                 for rline in rep:
                     print >>ov, rline
                 print >>ov, "The total Edit distance:", totald

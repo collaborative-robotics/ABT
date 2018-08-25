@@ -28,7 +28,7 @@ NEWDATA = True  # flag to generate data once
 
 task = BaumWelch   # Viterbi / Forward
 
-script_name = 'bw_hmm_b'
+script_name = 'bw_hmm_a'
 
 global NEpochs
 
@@ -38,7 +38,7 @@ NEpochs = 5000  # number of simulations
 
 # amount HMM parameters should be ofset
 #   from the ABT parameters.  Offset has random sign (+/-)
-HMM_delta = 0.10   # 10%   
+HMM_delta = 0.00   # no perturb
 
 #
 ############################################

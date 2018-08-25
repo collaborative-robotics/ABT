@@ -114,6 +114,7 @@ def randsign():
     else:
         return -1
 
+
 # read in observation sequences data file
 def read_obs_seqs(logf):
     #logf = open(fn,'r')
@@ -189,7 +190,7 @@ def Adiff(A1,A2,names):
     return [e,e2,em,N2,imax,jmax,anoms,erasures]
 ###############################################################
 # Evaluation of Veterbi
-def Veterbi_Eval(p,x,names,l):
+def Veterbi_Eval(p,x,names,l,statenos):
     x = np.array(x)
     counter = 0
     b = np.zeros((len(l),len(names)))
@@ -203,6 +204,9 @@ def Veterbi_Eval(p,x,names,l):
             x_sorted[i][j] = x[counter] # Orignal Sorted Simulation
             e[counter] = names[p[counter]] # Predicted Names list
             counter+=1
+    for i in range(len(e)):
+        e[i] = statenos[np.ndarray.item(e[i])]
+        x[i] = statenos[x[i]]
     totald = ed.eval(np.array2string(e),np.array2string(x))
     cost = np.empty(len(l))
     count = 0
