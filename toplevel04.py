@@ -30,7 +30,7 @@ task = Forward #BaumWelch   # Viterbi / Forward
 
 global NEpochs
 
-Mil = 100
+Mil = 1000000
 
 NEpochs = Mil  # number of simulations
 
@@ -51,7 +51,7 @@ from simp_ABT import *  # small 6 state # uses model00.py
 #
 #      Manage outer loop (a set of runs)
 #
-Nruns = 7
+Nruns = 1
 ##############################################
 #
 # Master Data holder
@@ -84,9 +84,9 @@ if CSVOUTPUT:
 #
 #   Outer Loop
 #
-for task in seq:
+for task in tqdm(seq):
     for c,HMM_delta in enumerate(delta):
-        for run in range(Nruns):
+        for run in tqdm(range(Nruns)):
             print >> infolog, datetime.datetime.now().strftime("%y-%m-%d-%H-%M"), 'task: ', task, ' run ',run+1,'/',Nruns, ' NEpocs: ', NEpochs,'Emax: ', em
             infolog.flush()    # make sure this info visible in file
             os.fsync(infolog.fileno())

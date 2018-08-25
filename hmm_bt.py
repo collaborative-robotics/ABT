@@ -126,7 +126,6 @@ def read_obs_seqs(logf):
     logf = open(logf,'r')
     for line in logf:
         #print '>>>',line
-        print logf,"#########################", line
         line = line.strip()
         if line == '---':
             Ls.append(len(os))
