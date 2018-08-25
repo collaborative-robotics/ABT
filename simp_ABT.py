@@ -23,6 +23,7 @@ from abt_constants import *
  
 from model02 import *
 
+leafs = []
 
 def ABTtree():
 ####################################################################################
@@ -44,12 +45,11 @@ def ABTtree():
     #print outputs
     #quit()
     
-    leafs = []
     
 
     ########  Leaf 1
         
-    l1 = aug_leaf(0.75) 
+    l1 = aug_leaf(0.75)  # placeholder Ps value of 0.75
     l1.Name = 'l1'
     leafs.append(l1)
 
@@ -71,20 +71,22 @@ def ABTtree():
     l4.Name = 'l4'
     leafs.append(l4)
  
+ 
+ 
     ########     Second Level 
     
-    l12 = b3.Sequence([l1,l2]) 
-    l12.Name = 'Node 12' 
+    node_12 = b3.Sequence([l1,l2]) 
+    node_12.Name = 'Node 12' 
 
-    l34 = b3.Priority([l3,l4])
-    l34.Name = 'Node 2'
+    node_34 = b3.Priority([l3,l4])
+    node_34.Name = 'Node 2'
 
  
 
     ######  Top level sequence node
-    N1 = b3.Sequence([l12,l34])
-    N1.Name = 'top level'
-    N1.BHdebug = F
+    node_root = b3.Sequence([node_12,node_34])
+    node_root.Name = 'top level'
+    node_root.BHdebug = F
     
     # make fake leafs for OutS and OutF
     
@@ -96,7 +98,7 @@ def ABTtree():
     OF.Name = 'OutF'
     leafs.append(OF)
     
-    demo_bt.root = N1
+    demo_bt.root = node_root
 
     bb = b3.Blackboard()
 
@@ -107,10 +109,8 @@ def ABTtree():
     # set up leaf probabilities
     for l in leafs:
         # output observeation mu, sigma
-        #print 'Setting Pobs for {:s} to ({:.2f},{:.2f})'.format(l.Name,outputs[l.Name],sig)
         l.set_Obs_Density(outputs[l.Name],sig)
         # set up the Ps
-        #print 'setting PS for:', l.Name, PS[statenos[l.Name]]
         l.set_Ps(PS[statenos[l.Name]])
         #print ''
 

@@ -17,7 +17,7 @@ N = len(names)
  
 # PS = prob of success for each node
 # note dummy value for PS[0] for math consistency
-PS = [0, 0.65, 0.75, .8, 0.9, 1.0,1.0]
+PS = [0, 0.65, 0.75, .33333, 0.9, 1.0,1.0]
 if len(PS) != N+1:
     print 'Incorrect PS length'
     quit()
@@ -29,8 +29,8 @@ A[1,2] = PS[1]
 A[1,6] = 1.0-PS[1]
 A[2,3] = PS[2]
 A[2,6] = 1.0-PS[2]
-A[3,4] = 1.0-PS[3]
 A[3,5] = PS[3]
+A[3,4] = 1.0 - PS[3]
 A[4,5] = PS[4]
 A[4,6] = 1.0-PS[4]
 A[5,5] = 1.0

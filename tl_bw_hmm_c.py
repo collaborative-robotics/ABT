@@ -28,7 +28,7 @@ NEWDATA = True  # flag to generate data once
 
 task = BaumWelch   # Viterbi / Forward
 
-script_name = 'bw_hmm_b'
+script_name = 'bw_hmm_c'
 
 global NEpochs
 
@@ -38,15 +38,15 @@ NEpochs = 5000  # number of simulations
 
 # amount HMM parameters should be ofset
 #   from the ABT parameters.  Offset has random sign (+/-)
-HMM_delta = 0.10   # 10%   
+HMM_delta = 0.20   #  perturb
 
 #
 ############################################
 
 ##  The ABT file for the task (CHOOSE ONE)
 
-from peg2_ABT import * # big  14+2 state  # uses model01.py
-#from simp_ABT import *  # small 4+2 state # uses model00.py
+#from peg2_ABT import * # big  14+2 state  # uses model01.py
+from simp_ABT import *  # small 4+2 state # uses model00.py
 
 #############################################
 #
