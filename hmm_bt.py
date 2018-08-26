@@ -138,7 +138,7 @@ def read_obs_seqs(logf):
             os.append([int(obs)])
     Y=np.array(Y).reshape(-1,1)  # make 2D
     Ls = np.array(Ls)
-    #logf.close()
+    logf.close()
     return [X,Y,Ls]
 
 #print 'Shapes: '
