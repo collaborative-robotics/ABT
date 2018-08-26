@@ -8,8 +8,8 @@ class Sequence(b3.Composite):
         super(Sequence, self).__init__(children)
         self.Name = '*Sequence*'
 
-    def tick(self, tick): 
-        tmpCost = 0    
+    def tick(self, tick):
+        tmpCost = 0
         for node in self.children:
             status = node._execute(tick)
             #Add in cost of selected leaf (requires zero cost for Seq node)
@@ -20,3 +20,8 @@ class Sequence(b3.Composite):
                 return status
         self.Cost = tmpCost
         return b3.SUCCESS
+
+    def HMM_build(self,matrix,i,js,jf,size):
+        for current,child in enumerate(self.children):
+            if isinstance(child,b3.Sequence):
+                child.HMM_build(matrix,i,js,jf,size)

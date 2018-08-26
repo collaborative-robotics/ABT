@@ -17,3 +17,8 @@ class Priority(b3.Composite):
                 return status
 
         return b3.FAILURE
+
+    def HMM_build(self,matrix,i,js,jf,size):
+        for current,child in enumerate(self.children):
+            if isinstance(child,b3.Sequence):
+                child.HMM_build(matrix,i,js,jf,size)

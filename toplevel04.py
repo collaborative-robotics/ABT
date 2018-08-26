@@ -30,7 +30,7 @@ task = Forward #BaumWelch   # Viterbi / Forward
 
 global NEpochs
 
-Mil = 500
+Mil = 5000
 
 NEpochs = Mil  # number of simulations
 
@@ -219,7 +219,7 @@ for task in tqdm(seq):
                 print >>ov, "The total Edit distance:", totald
                 print >>ov, "Summed cost of individual records: ", np.sum(cost)
                 print >>ov, "Number of exact state matches are: ", count
-                master[Viterbi][run][c][0] = np.sum(cost)
+                master[Viterbi][run][c][0] = np.sum(cost)/len(Ls)
                 master[Viterbi][run][c][1] = totald
                 master[Viterbi][run][c][2] = count
             ##################################################
