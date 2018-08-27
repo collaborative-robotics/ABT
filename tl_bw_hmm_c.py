@@ -34,7 +34,9 @@ global NEpochs
 
 Mil = 1000000
 
-NEpochs = 5000  # number of simulations
+n20k = 20000
+
+NEpochs = n20k  # number of simulations 
 
 # amount HMM parameters should be ofset
 #   from the ABT parameters.  Offset has random sign (+/-)
@@ -45,8 +47,8 @@ HMM_delta = 0.20   #  perturb
 
 ##  The ABT file for the task (CHOOSE ONE)
 
-#from peg2_ABT import * # big  14+2 state  # uses model01.py
-from simp_ABT import *  # small 4+2 state # uses model00.py
+from peg2_ABT import * # big  14+2 state  # uses model01.py
+#from simp_ABT import *  # small 4+2 state # uses model00.py
 
 #############################################
 #
@@ -74,7 +76,6 @@ if CSVOUTPUT:
     #task, Ratio, int(di), float(di)/float(sig),run+1,Nruns,e2,em)
     print >> fcsv, 'tsk Ratio     di   Sigma  run#       e2  emax '
 
-
 nsims = 0
 e2T = 0.0
 emT = 0.0
@@ -83,7 +84,7 @@ emT = 0.0
 #   Outer Loop
 #
 for run in range(Nruns):
-
+ 
     print '\n-------------------------------------------\n   Starting Run ',run+1, 'of', Nruns, '\n\n'
     # open the log file
     id = str(int(100*(Ratio)))+'iter'+str(run)  # encode the ratio (delta mu/sigma) into filename
@@ -204,7 +205,7 @@ for run in range(Nruns):
         print >>fcsv, '{:3d} {:.3f}, {:3d}, {:.3f}, {:2d}, {:2d}, {:.3f}, {:.3f}'.format(task, Ratio, int(di), float(sig),run+1,Nruns,e2,em)
 
     nsims += 1
-    emT += emT
+    emT += em
     e2T += e2
     # update an information log on this run
     print >> infolog, datetime.datetime.now().strftime("%y-%m-%d-%H-%M"), 'task: ', task, ' run ',run+1,'/',Nruns, ' NEpochs: ', NEpochs,'Emax: ', em
@@ -214,7 +215,7 @@ for run in range(Nruns):
 #  End of loop of runs
 
 if CSVOUTPUT:
-    print >>fcsv, '{:3d} {:s} {:.3f}, {:.3f}'.format(task, 'Average e2, em: ',e2,em)
+    print >>fcsv, '{:3d} {:s} {:.3f}, {:.3f}'.format(task, 'Average e2, em: ',e2T/nsims,emT/nsims)
     fcsv.close()
     
 of.close()
