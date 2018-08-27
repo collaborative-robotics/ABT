@@ -199,7 +199,7 @@ def Veterbi_Eval(p,x,names,l,statenos):
     e = np.empty((p.shape[0],1), dtype = object)
     for i in range(len(l)):
         for j in range(l[i]):
-            b[i][j] = p[counter] # sorted prediction according to the state number (1 Million * 16)
+            b[i][j] = p[counter] # sorted prediction according to the state number (Number of itertions * number of states)
             predict[i][j] = names[p[counter]] # sorted predicted data with names
             x_sorted[i][j] = x[counter] # Orignal Sorted Simulation
             e[counter] = names[p[counter]] # Predicted Names list
