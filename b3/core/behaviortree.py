@@ -152,17 +152,26 @@ class BehaviorTree(object):
         return state
     def HMM_create(self):
         self.size = self.root.scan(self.size)
+        self.root.compositeid()
+        self.htm = np.zeros((self.size+2,self.size+2))
+        self.htm = self.root.HMM(self.htm)
         print "The size of the behaviour tree is : ",self.size
         i = 0
-        js = 0
-        jf = 0
-        self.htm = np.zeros((self.size+2,self.size+2))
-        self.htm,i,js,jf,self.root.HMM_build(self.htm,i,js,jf,self.size)
-        if i != self.size-1 or j != self.size-1:
-            print "Build Unsuccesful"
-            print self.htm
-        else:
-            print self.htm
+        # if isinstance(self.root,b3.Sequence):
+        #     js = self.root.children_start+self.root.children_size
+        #     jf = self.size+1
+        # if isinstance(self.root,b3.Priority):
+        #     js = self.size
+        #     jf = self.root.children_start+sel.root.children_size
+        # js = self.root.children_size
+        # jf = self.root.children_size+1
+        # self.htm = np.zeros((self.size+2,self.size+2))
+        # self.htm,i,js,jf,self.root.HMM_build(self.htm,i,js,jf,self.size)
+        # if i != self.size-1 or j != self.size-1:
+        #     print "Build Unsuccesful"
+        #     print self.htm
+        # else:
+        #     print self.htm
 
 
         #return state

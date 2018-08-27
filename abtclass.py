@@ -100,7 +100,7 @@ class aug_leaf(b3.Action):
         else:
             return b3.FAILURE
 
-    def HMM_build(self,matrix,i,js,jf,size):
-        matrix[i,js] = self.pS
-        matrix[i,jf] = self.pF
-        return matrix,i,js,jf
+    def HMM_build(self,matrix):
+        matrix[self.description,self.suc] = self.pS
+        matrix[self.description,self.fail] = self.pF
+        return matrix

@@ -147,7 +147,7 @@ def ABTtree():
     leafs.append(OF)
 
     demo_bt.root = N1
-
+    demo_bt.root.ifroot = True # Implementation could be better
     bb = b3.Blackboard()
 
     ##################################################################################################
@@ -165,3 +165,4 @@ def ABTtree():
         #print ''
 
     return [demo_bt, bb]
+ABTtree()
