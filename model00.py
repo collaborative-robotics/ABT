@@ -44,7 +44,7 @@ statenos = {'l1':1, 'l2': 2, 'l3':3, 'l4':4,  'OutS':5, 'OutF':6}
 
 ###  Regenerate output means:
 i = 20
-di = Ratio*sig  # = nxsigma !!
+#di = Ratio*sig  # = nxsigma !!  now in abt_constants
 for n in outputs.keys():
     outputs[n] = i
     i += di
