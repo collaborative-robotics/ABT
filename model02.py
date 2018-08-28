@@ -4,10 +4,6 @@
 import numpy as np
 from abt_constants import *
 
-######################
-sig = 2.0 
-
-Ratio = 10.0
 #
 
 logdir = 'logs/'

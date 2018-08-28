@@ -3,10 +3,7 @@
 ## hmm model params for SIMPLE 4-state BT
 import numpy as np
 from abt_constants import *
-
-######################
-sig = 2.0 
-Ratio = 10.0
+ 
 #
 
 names = ['l1','l2','l3','l4', 'OutS', 'OutF']
