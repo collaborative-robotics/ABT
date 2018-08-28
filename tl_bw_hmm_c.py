@@ -30,13 +30,6 @@ task = BaumWelch   # Viterbi / Forward
 
 script_name = 'bw_hmm_c'
 
-global NEpochs
-
-Mil = 1000000
-
-n20k = 20000
-
-NEpochs = n20k  # number of simulations 
 
 # amount HMM parameters should be ofset
 #   from the ABT parameters.  Offset has random sign (+/-)
@@ -54,8 +47,6 @@ from peg2_ABT import * # big  14+2 state  # uses model01.py
 #
 #      Manage outer loop (a set of runs)
 #
-Nruns = 10
-
 ########## results output files
 
 logdir = 'logs_'+script_name+'/'
@@ -84,7 +75,7 @@ emT = 0.0
 #   Outer Loop
 #
 for run in range(Nruns):
- 
+
     print '\n-------------------------------------------\n   Starting Run ',run+1, 'of', Nruns, '\n\n'
     # open the log file
     id = str(int(100*(Ratio)))+'iter'+str(run)  # encode the ratio (delta mu/sigma) into filename
@@ -217,8 +208,8 @@ for run in range(Nruns):
 if CSVOUTPUT:
     print >>fcsv, '{:3d} {:s} {:.3f}, {:.3f}'.format(task, 'Average e2, em: ',e2T/nsims,emT/nsims)
     fcsv.close()
-    
+
 of.close()
 os.system('cp {:s} {:s}'.format(oname,outputdir+'lastoutput'))
 
- 
+
