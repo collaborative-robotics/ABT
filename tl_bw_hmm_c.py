@@ -63,7 +63,7 @@ em = 9999
 
 if CSVOUTPUT:
     fcsv = open('csvlog'+script_name,'a')
-    print >> fcsv, '-------',datetime.datetime.now().strftime("%y-%m-%d-%H-%M"), 'Nruns: ', Nruns, 'x', NEpochs
+    print >> fcsv, '-------',datetime.datetime.now().strftime("%y-%m-%d-%H-%M"), 'Nruns: ', Nruns, 'x', NEpochs, ' #states: ',len(names)
     #task, Ratio, int(di), float(di)/float(sig),run+1,Nruns,e2,em)
     print >> fcsv, 'tsk Ratio     di   Sigma  run#       e2  emax '
 
@@ -87,7 +87,7 @@ for run in range(Nruns):
     #
     rep = []
     rep.append('-------------------------- BT to HMM ---------------------------------------------')
-    rep.append('NSYMBOLS: {:d}   NEpochs: {:d} '.format(NSYMBOLS,NEpochs))
+    rep.append('NSYMBOLS: {:d}   NEpochs: {:d} N-States: {:d} '.format(NSYMBOLS,NEpochs,len(names)))
     rep.append('sigma: {:.2f}    Symbol delta: {:d}   Ratio:  {:.2f}'.format(sig, int(di), float(di)/float(sig)))
     rep.append('----------------------------------------------------------------------------------')
     rep.append(' ')
