@@ -111,8 +111,8 @@ for line in logf:
         dS2[st] += x*x
 
 
-print ''
-print 'File analyzed: ', lfname 
+
+print '\nFile analyzed: ', lfname 
 for rl in rep:
     print rl
 print '    name        N            sum           sum^2     mu         S.D.'

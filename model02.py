@@ -4,10 +4,6 @@
 import numpy as np
 from abt_constants import *
 
-######################
-sig = 2.0 
-
-Ratio = 10.0
 #
 
 logdir = 'logs/'
@@ -49,7 +45,7 @@ statenos = {'l1':1, 'l2': 2, 'l3':3, 'l4':4,  'OutS':5, 'OutF':6}
 
 ###  Regenerate output means:
 i = 20
-di = Ratio*sig  # = nxsigma !!
+#di = Ratio*sig  # = nxsigma !!
 for n in outputs.keys():
     outputs[n] = i
     i += di
