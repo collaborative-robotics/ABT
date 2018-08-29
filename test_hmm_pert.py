@@ -150,8 +150,7 @@ B = A1.copy()
 print 'Perturbing by 0.25'
 HMM_perturb(M1, 0.25)  
 #outputAmat(M.transmat_, "Perturbed A Matrix", names, of)
-
-A_row_check(M1.transmat_, of)
+ 
 A_row_test(M1.transmat_, of)
           
 print '\n\n HMM_perturb(M, d) PASSES all tests\n\n'
