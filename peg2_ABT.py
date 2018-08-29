@@ -152,7 +152,7 @@ def ABTtree():
 
     ##################################################################################################
     ##  Set leaf params
-    demo_bt.HMM_create()
+    # demo_bt.HMM_create() # Automated creation of ABT
 
     # set up leaf probabilities
     for l in leafs:
@@ -165,4 +165,6 @@ def ABTtree():
         #print ''
 
     return [demo_bt, bb]
-ABTtree()
+# demo_bt,bb = ABTtree()
+# np.save("Original",A)
+# np.save("Generated",demo_bt.htm)

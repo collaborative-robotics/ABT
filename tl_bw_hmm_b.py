@@ -30,15 +30,10 @@ task = BaumWelch   # Viterbi / Forward
 
 script_name = 'bw_hmm_b'
 
-global NEpochs
-
-Mil = 1000000
-
-NEpochs = 5000  # number of simulations
 
 # amount HMM parameters should be ofset
 #   from the ABT parameters.  Offset has random sign (+/-)
-HMM_delta = 0.10   # 10%   
+HMM_delta = 0.10   # 10%
 
 #
 ############################################
@@ -52,8 +47,6 @@ from peg2_ABT import * # big  14+2 state  # uses model01.py
 #
 #      Manage outer loop (a set of runs)
 #
-Nruns = 10
-
 ########## results output files
 
 logdir = 'logs_'+script_name+'/'
@@ -70,10 +63,9 @@ em = 9999
 
 if CSVOUTPUT:
     fcsv = open('csvlog'+script_name,'a')
-    print >> fcsv, '-------',datetime.datetime.now().strftime("%y-%m-%d-%H-%M"), 'Nruns: ', Nruns, 'x', NEpochs
+    print >> fcsv, '-------',datetime.datetime.now().strftime("%y-%m-%d-%H-%M"), 'Nruns: ', Nruns, 'x', NEpochs, ' #states: ',len(names)
     #task, Ratio, int(di), float(di)/float(sig),run+1,Nruns,e2,em)
     print >> fcsv, 'tsk Ratio     di   Sigma  run#       e2  emax '
-
 
 nsims = 0
 e2T = 0.0
@@ -95,7 +87,7 @@ for run in range(Nruns):
     #
     rep = []
     rep.append('-------------------------- BT to HMM ---------------------------------------------')
-    rep.append('NSYMBOLS: {:d}   NEpochs: {:d} '.format(NSYMBOLS,NEpochs))
+    rep.append('NSYMBOLS: {:d}   NEpochs: {:d} N-States: {:d} '.format(NSYMBOLS,NEpochs,len(names)))
     rep.append('sigma: {:.2f}    Symbol delta: {:d}   Ratio:  {:.2f}'.format(sig, int(di), float(di)/float(sig)))
     rep.append('----------------------------------------------------------------------------------')
     rep.append(' ')
@@ -204,7 +196,7 @@ for run in range(Nruns):
         print >>fcsv, '{:3d} {:.3f}, {:3d}, {:.3f}, {:2d}, {:2d}, {:.3f}, {:.3f}'.format(task, Ratio, int(di), float(sig),run+1,Nruns,e2,em)
 
     nsims += 1
-    emT += emT
+    emT += em
     e2T += e2
     # update an information log on this run
     print >> infolog, datetime.datetime.now().strftime("%y-%m-%d-%H-%M"), 'task: ', task, ' run ',run+1,'/',Nruns, ' NEpochs: ', NEpochs,'Emax: ', em
@@ -214,10 +206,10 @@ for run in range(Nruns):
 #  End of loop of runs
 
 if CSVOUTPUT:
-    print >>fcsv, '{:3d} {:s} {:.3f}, {:.3f}'.format(task, 'Average e2, em: ',e2,em)
+    print >>fcsv, '{:3d} {:s} {:.3f}, {:.3f}'.format(task, 'Average e2, em: ',e2T/nsims,emT/nsims)
     fcsv.close()
-    
+
 of.close()
 os.system('cp {:s} {:s}'.format(oname,outputdir+'lastoutput'))
 
- 
+
