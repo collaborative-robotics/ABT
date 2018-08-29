@@ -104,7 +104,7 @@ def ABTtree():
 
     ##############################################################ABTtree()####################################
     ##  Set leaf params
-    demo_bt.HMM_create()
+    #demo_bt.HMM_create() # Automatic creation function 
 
     # set up leaf probabilities
     for l in leafs:
@@ -115,4 +115,4 @@ def ABTtree():
         #print ''
 
     return [demo_bt, bb]
-ABTtree()
+#ABTtree()

@@ -3,10 +3,7 @@
 ## hmm model params for SIMPLE 4-state BT
 import numpy as np
 from abt_constants import *
-
-######################
-sig = 2.0 
-Ratio = 10.0
+ 
 #
 
 names = ['l1','l2','l3','l4', 'OutS', 'OutF']
@@ -47,7 +44,7 @@ statenos = {'l1':1, 'l2': 2, 'l3':3, 'l4':4,  'OutS':5, 'OutF':6}
 
 ###  Regenerate output means:
 i = 20
-di = Ratio*sig  # = nxsigma !!
+#di = Ratio*sig  # = nxsigma !!  now in abt_constants
 for n in outputs.keys():
     outputs[n] = i
     i += di

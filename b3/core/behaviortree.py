@@ -150,11 +150,11 @@ class BehaviorTree(object):
         blackboard.set('node_count', tick._node_count, self.id)
 
         return state
-    def HMM_create(self):
-        self.size = self.root.scan(self.size)
-        self.root.compositeid()
+    def HMM_create(self): # Automatic creation of HMM function
+        self.size = self.root.scan(self.size) # Determining the size of the Behaviour tree in terms of action sequences
+        self.root.compositeid() # Iding the succes and faliure nodes of the behaviour Tree
         self.htm = np.zeros((self.size+2,self.size+2))
-        self.htm = self.root.HMM(self.htm)
+        self.htm = self.root.HMM(self.htm) # Calling the function for populating probabilities in the matrix
         print "The size of the behaviour tree is : ",self.size
         i = 0
         # if isinstance(self.root,b3.Sequence):
