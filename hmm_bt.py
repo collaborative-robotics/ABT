@@ -21,7 +21,7 @@ def outputAmat(A,title,names,of):
         print >> of, '\n'
 
 def A_row_check(A,of):
-    #print >> of, "A-matrix row check"  
+    print >> of, "A-matrix row check"  
     eps = 1.0E-6        # accuracy 
     for i in range(A.shape[0]):
         r = 0
@@ -29,9 +29,9 @@ def A_row_check(A,of):
             if A[i,j] < 0.0:
                 r += 10000000
             r += A[i,j]
-        #print >> of, i,r
+        print >> of, i,r
         if abs(r-1.0) > eps:
-            print >> of, 'Problem: row ',i,' of A-matrix sum is != 1.0 -or- row contains a P<0'
+            print >> of, 'Problem: row ',i,' of A-matrix sum is != 1.0 -or- row contains a P<0  sum = ', r
  
 def A_row_test(A,of):
     eps = 1.0E-6        # accuracy 
@@ -43,7 +43,7 @@ def A_row_test(A,of):
             assert A[i,j] <= 1.0, ' A matrix Prob value > 1!'
             r += A[i,j]
         #print  'assertion:', i,r
-        assert abs(r-1.0) < eps, 'Assert Problem: a row sum of A-matrix is != 1.0'
+        assert abs(r-1.0) < eps, 'Assert Problem: a row sum of A-matrix is != 1.0, sum = '+str(r)
         
 def HMM_setup(Pi, A, sig, names):
     #print 'Size: A: ', A.shape
@@ -64,6 +64,36 @@ def HMM_setup(Pi, A, sig, names):
     M.covars_ = np.array(tmpcovars)
     return M
 
+
+
+
+#  Replace ABT transition probabilities with 
+# random values (only the non-zero elements tho).
+
+def HMM_ABT_to_random(M):
+    # A matrix  
+    A = M.transmat_
+    [r1, c1] = A.shape
+    r1 -= 2    # don't perturb for output states:  Os and Of
+    for r in range(r1):
+        flag = -1
+        for c in range(c1):
+            # second non-zero element of row
+            #print 'looking at element: ',r,c
+            #print 'flag = ', flag
+            if flag > 0  and A[r][c] > 0: 
+                A[r][c] = 1.0 - flag
+                #print 'setting second element to', 1.0 - flag
+            # first non-zero element of row
+            elif A[r][c] > 0:
+                if abs(A[r][c] - 1.0) < 0.000001: # don't mess with 1.0 transitions
+                    continue
+                A[r][c] = random.random() # Uniform(0.0-1.0)
+                flag = A[r][c]      # store value (for use above)
+    M.transmat_ = A  # maybe unnecessary??
+    
+
+    
 # apply a delta (random +-) to the elements of A
 #   subject to sum of row = 1.
 def HMM_perturb(M, d):
@@ -82,14 +112,14 @@ def HMM_perturb(M, d):
                 #print 'setting second element to', 1.0 - flag
             # first non-zero element of row
             elif A[r][c] > 0:
-                if abs(A[r][c] - 1.0) < 0.000001:
+                if abs(A[r][c] - 1.0) < 0.000001: # don't mess with 1.0 transitions
                     continue
                 A[r][c] *= 1.0 + randsign() * d
                 if A[r][c] > 0.99:
                     A[r][c] = 0.99  # don't allow going to 1.0 or above
                 flag = A[r][c]      # store value (for use above)
                 
-    M.transmat_ = A
+    M.transmat_ = A    # maybe unnecessary??
     
     # B matrix means
     #B = M.means_
