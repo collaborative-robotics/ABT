@@ -30,11 +30,6 @@ task = BaumWelch   # Viterbi / Forward
 
 script_name = 'bw_hmm_a'
 
-global NEpochs
-
-Mil = 1000000
-
-NEpochs = 5000  # number of simulations
 
 # amount HMM parameters should be ofset
 #   from the ABT parameters.  Offset has random sign (+/-)
@@ -45,15 +40,13 @@ HMM_delta = 0.00   # no perturb
 
 ##  The ABT file for the task (CHOOSE ONE)
 
-#from peg2_ABT import * # big  14+2 state  # uses model01.py
-from simp_ABT import *  # small 4+2 state # uses model00.py
+from peg2_ABT import * # big  14+2 state  # uses model01.py
+#from simp_ABT import *  # small 4+2 state # uses model02.py
 
 #############################################
 #
 #      Manage outer loop (a set of runs)
 #
-Nruns = 10
-
 ########## results output files
 
 logdir = 'logs_'+script_name+'/'
@@ -70,11 +63,9 @@ em = 9999
 
 if CSVOUTPUT:
     fcsv = open('csvlog'+script_name,'a')
-    print >>fcsv, script_name
-    print >> fcsv, '-------',datetime.datetime.now().strftime("%y-%m-%d-%H-%M"), 'Nruns: ', Nruns, 'x', NEpochs
+    print >> fcsv, '-------',datetime.datetime.now().strftime("%y-%m-%d-%H-%M"), 'Nruns: ', Nruns, 'x', NEpochs, ' #states: ',len(names)
     #task, Ratio, int(di), float(di)/float(sig),run+1,Nruns,e2,em)
     print >> fcsv, 'N  tsk Ratio     di   Sigma  run#       e2  emax '
-
 
 nsims = 0
 e2T = 0.0
@@ -96,7 +87,7 @@ for run in range(Nruns):
     #
     rep = []
     rep.append('-------------------------- BT to HMM ---------------------------------------------')
-    rep.append('NSYMBOLS: {:d}   NEpochs: {:d} '.format(NSYMBOLS,NEpochs))
+    rep.append('NSYMBOLS: {:d}   NEpochs: {:d} N-States: {:d} '.format(NSYMBOLS,NEpochs,len(names)))
     rep.append('sigma: {:.2f}    Symbol delta: {:d}   Ratio:  {:.2f}'.format(sig, int(di), float(di)/float(sig)))
     rep.append('----------------------------------------------------------------------------------')
     rep.append(' ')
@@ -217,8 +208,8 @@ for run in range(Nruns):
 if CSVOUTPUT:
     print >>fcsv, '{:3d} {:s} {:.3f}, {:.3f}'.format(task, 'Average e2, em: ',e2T/nsims,emT/nsims)
     fcsv.close()
-    
+
 of.close()
 os.system('cp {:s} {:s}'.format(oname,outputdir+'lastoutput'))
 
- 
+
