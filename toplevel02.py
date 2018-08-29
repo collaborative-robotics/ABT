@@ -13,14 +13,14 @@ from abt_constants import *
 
 ##   Set up research parameters
 
-global NEpochs  
+global NEpochs
 
 Mil = 1000000
 
 NEpochs = 1000  # number of simulations
 
 ##  The ABT file for the task (in this case FLS block Xfer)
-from peg2 import * 
+from peg2_ABT import *
 
 #############################################
 #
@@ -29,7 +29,7 @@ from peg2 import *
 
 #####    make a string report describing the setup
 #
-# 
+#
 rep = []
 rep.append('-------------------------- BT to HMM ---------------------------------------------')
 rep.append('NSYMBOLS: {:d}   NEpochs: {:d} '.format(NSYMBOLS,NEpochs))
@@ -37,13 +37,13 @@ rep.append('sigma: {:.2f}    Symbol delta: {:d}   Ratio:  {:.2f}'.format(sig, in
 rep.append('----------------------------------------------------------------------------------')
 rep.append(' ')
 
-           
+
 #############################################
 #
 #    Build the ABT and its blackboard
 #
 
-[ABT, bb] = flsblockABT()
+[ABT, bb] = ABTtree()
 
 #############################################
 #
@@ -59,7 +59,7 @@ bb.set('logfileptr',logf)
 
 osu = names[-2]  # state names
 ofa = names[-1]
-    
+
 for i in range(NEpochs):
     result = ABT.tick("ABT Simulation", bb)
     if (result == b3.SUCCESS):
@@ -67,12 +67,12 @@ for i in range(NEpochs):
     else:
         logf.write('{:s}, {:.0f}\n'.format(ofa,outputs[ofa]))
     logf.write('---\n')
-    
+
 logf.close()
 
 print 'Finished simulating ',NEpochs,'  epochs'
-    
-    
+
+
 #############################################
 #
 #    HMM model Initialization
@@ -139,8 +139,7 @@ print >> of, 'Erasures : ', erasures
 of.close()
 os.system('cp {:s} {:s}'.format(outputdir+oname,outputdir+'lastoutput'))
 
- 
+
 #
 #    HMM state tracking analysis
-# 
-
+#
