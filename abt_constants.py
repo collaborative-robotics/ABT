@@ -9,9 +9,9 @@ NSYMBOLS = 150
 T = True
 F = False
 
-Forward   = 1
-Viterbi   = 2
-BaumWelch = 3
+Forward   = 0
+Viterbi   = 1
+BaumWelch = 2
 
 ######################
 sig = 2.0
@@ -21,7 +21,7 @@ di = int(Ratio*sig)   # change in output obs mean per state
 K = 1000
 M = 1000*1000
 
-NEpochs = 20*K
+NEpochs = 1000
 
 ####  How many analysis runs to do
 Nruns = 10
