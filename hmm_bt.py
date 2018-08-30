@@ -151,7 +151,6 @@ def read_obs_seqs(logf):
 
     seq = [] # current state seq
     os  = [] # current obs seq
-    logf = open(logf,'r')
     for line in logf:
         #print '>>>',line
         line = line.strip()
