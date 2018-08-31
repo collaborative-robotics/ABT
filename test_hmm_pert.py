@@ -221,6 +221,18 @@ assert x[1] - 0.2 < testeps, fs
 
 
 print '\n\n'
+print '-------------------------- Testing perturbation coin-flip  -------------------'
+
+sum = 0.0
+for i in range(1000):
+    if(randsign() <0.0):
+        sum += 1
+print '1000 coin flips:'
+print '-1 :', sum
+print ' 1 :', 1000-sum
+assert (450 < sum < 550), 'Coin flip bias detected'
+
+print '\n\n'
 print '-------------------------- Testing A-matrix 1.00 elements  -------------------'
 
 M1 = HMM_setup(Pi, A1, sig, names)
