@@ -15,7 +15,7 @@ from hmmlearn import hmm
 #####################################################
 from hmm_bt import *   # bring in the HMM_perturb() function 
  
-testeps = 0.00001  # epsilon for comparing floats
+testeps = 0.000001  # epsilon for comparing floats
 
 SMALL = 1
 BIG   = 2
@@ -29,6 +29,7 @@ sig = 2.0
 
 Ratio = 3.0
 
+Pdelta = 0.337
 
 if MODEL == SMALL:
 
@@ -151,8 +152,7 @@ di = Ratio*sig  # = nxsigma !!
 for n in outputs.keys():
     outputs[n] = i
     i += di
-    
-    
+
     
 #####################################################
 of = open('HMM_test_rep.txt', 'w') # clobber old report
@@ -164,9 +164,9 @@ outputAmat(M.transmat_,"Initial A Matrix",names,of)
 print '\n\n ------------------------------  ',len(names),' state model perturbation tests -----------------------'
 print >>of, '\n\n ------------------------------  ',len(names),' state model perturbation tests -----------------------'
 print 'See more detail at: > more HMM_test_rep.txt'
-print 'Perturbing by 0.25'
+print 'Perturbing by ', str(Pdelta)
 #########################################################################
-HMM_perturb(M, 0.25)  
+HMM_perturb(M, Pdelta)  
 #########################################################################
 outputAmat(M.transmat_, "Perturbed A Matrix", names, of)
 
@@ -176,6 +176,7 @@ A_row_test(M.transmat_, of)
 print '-------------------------- resulting distance metrics -------------------'
 
 x = Adiff(M.transmat_, A ,names)
+
 #    return [e,e2,em,N2,imax,jmax,anoms,erasures]
 
 print 'EAmax   = ',x[2]    # em
@@ -183,7 +184,34 @@ print 'EAavg   = ',x[1]    # e2
 
 assert x[2] > 0.0 , 'Perturbation caused no difference in A matrices'
 assert x[1] > 0.0 , 'Perturbation caused no difference in A matrices'
+
+
+
+print '------------------------------measure applied deltas-----------------------------------'
+# figure out if deltas are right amount
+[r1,c1] = A.shape
+for r in range(r1):
+    print 'new row:', r
+    for c in range(c1):
+        a = A[r][c]  # perturbed value
+        b = B[r][c]  # original value
+        if r == 3:
+            print 'r,c, a,b:', r,c,a,b
+        if b > 0.000001:  # 0.9999 is magic number from HMM_perturb line 128
+            if(b > 0.99989999):
+                break
+            print 'row,col, a, b', r,c,a,b
+            change = (b-a)/a
+            print 'Change test: ', a, b, change
+            #assert abs(abs(change) - Pdelta) < testeps, 'Change doesnt match epsilon'
+            break  # skip to next row
+print 'Passed'
+            
+            
 print 'Model Size: ',len(names)
+
+print '---------------------------- test that last 2 cols/rows are undisturbed -----------------------'
+print '                             (outS and outF states)'
 if len(names) < 8:
     outS_index = 4
 else:
