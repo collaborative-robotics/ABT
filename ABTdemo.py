@@ -20,42 +20,6 @@ LeafDebug = False
 SolverDebug = False
 
 
-# some examples from IKBT
-
-#tanSolver = tan_solve()
-#tanSolver.BHdebug = SolverDebug
-#tanSolver.Name = "Tangent Solver"
-
-#tanSol = b3.Sequence([tanID, tanSolver])
-#tanSol.Name = "TanID+Solv"
-#tanSol.BHdebug =  LeafDebug
-
-
-#algID = algebra_id()
-#algID.Name = "Algebra ID"
-#algID.BHdebug = LeafDebug
-
-#algSolver = algebra_solve()
-#algSolver.Name = "Algebra Solver"
-##algSolver.BHdebug = LeafDebug
-
-#algSol = b3.Sequence([algID, algSolver])
-#algSol.Name = "Algebra ID and Solve"
-#algSol.BHdebug = SolverDebug
- 
-#           ONE BT TO RULE THEM ALL!
-#   Higher level BT nodes here
-##
-
-#sc_tan = b3.Sequence([b3.OrNode([tanSol, scSol]), rk])
-#worktools = b3.Priority([algSol, sc_tan, Simu_Eqn_Sol, sacSol, x2z2_Solver])
-#subtree = b3.RepeatUntilSuccess(b3.Sequence([asgn, worktools]), 6)
-#solveRoutine = b3.Sequence([sub_trans, subtree,  updateL, compDetect])
-
-#topnode = b3.RepeatUntilSuccess(solveRoutine, 7) #max 10 loops
-
-#ikbt.root = topnode 
-
 NSYMBOLS = 30 # number of VQ symbols for observations
 
 T = True

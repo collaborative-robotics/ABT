@@ -203,7 +203,7 @@ for r in range(r1):
             print 'row,col, a, b', r,c,a,b
             change = (b-a)/a
             print 'Change test: ', a, b, change
-            #assert abs(abs(change) - Pdelta) < testeps, 'Change doesnt match epsilon'
+            assert abs(abs(change) - Pdelta) < testeps, 'Change does not match epsilon'
             break  # skip to next row
 print 'Passed'
             

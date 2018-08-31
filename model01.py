@@ -56,7 +56,7 @@ statenos = {'l1':1, 'l2a1': 2, 'l2b1':3, 'l2a2':4,  'l2b2':5, 'l345':6, 'l6a1':7
 
 #################################################################
 ##  Regenerate output means:  (easier to change below)
-i = 8
+i = 20
 #di = Ratio*sig  #  now set up in abt_constants
 for n in names:
     outputs[n] = i

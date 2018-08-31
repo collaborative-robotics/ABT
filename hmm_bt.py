@@ -119,12 +119,17 @@ def HMM_perturb(M, d):
             elif A[r][c] > 0:
                 if abs(A[r][c] - 1.0) < 0.000001: # don't mess with 1.0 transitions
                     continue
-                A[r][c] *= 1.0 + randsign() * d
-                if A[r][c] > 0.99:
-                    A[r][c] = 0.99  # don't allow going to 1.0 or above
+                change =  randsign() * d
+                #print 'Applying change 1.0 + ',change
+                pbef = A[r][c]
+                A[r][c] *= (1.0 + change)
+                paft =  A[r][c]
+                #print 'Actual Change: ', (paft-pbef)/pbef
+                if A[r][c] >  0.9999:
+                    A[r][c] = 0.9999  # don't allow going to 1.0 or above
                 flag = A[r][c]      # store value (for use above)
                 
-    M.transmat_ = A    # maybe unnecessary??
+    #M.transmat_ = A    # maybe unnecessary??
     
     # B matrix means
     #B = M.means_

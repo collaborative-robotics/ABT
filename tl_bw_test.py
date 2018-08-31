@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-#   Top-level scripted task   TEST
+#   Top-level scripted task   TEST VERSION   31-Aug-18
 #
 #   21-Aug  see spreadsheet:
 # https://docs.google.com/spreadsheets/d/1Ky3YH7SmxLFGL0PH2aNlbJbTtUTGU-UjAokIZUBkl9M/edit#gid=0
@@ -39,8 +39,8 @@ script_name = 'tmp_testing'
 
 ##  The ABT file for the task (CHOOSE ONE)
 
-from peg2_ABT import * # big  14+2 state  # uses model01.py
-#from simp_ABT import *  # small 4+2 state # uses model02.py
+#from peg2_ABT import * # big  14+2 state  # uses model01.py
+from simp_ABT import *  # small 4+2 state # uses model02.py
 
 #############################################
 #
@@ -76,10 +76,10 @@ nsims = 0
 e2T = 0.0
 emT = 0.0
 
-Nruns = 2  #testing
+Nruns = 5  #testing
 Ratio = 2.0  #testing
-HMM_delta = 0.25  #testing 
-NEpochs = 10000    # testing
+HMM_delta = 0.3  #testing 
+NEpochs = 20000    # testing
 
 #################################################
 #
@@ -98,7 +98,10 @@ for run in range(Nruns):
     #
     rep = []
     rep.append('-------------------------- BT to HMM ---------------------------------------------')
+    stringtime = datetime.datetime.now().strftime("%y-%m-%d-%H-%M")
+    rep.append(stringtime)
     rep.append('NSYMBOLS: {:d}   NEpochs: {:d} N-States: {:d} '.format(NSYMBOLS,NEpochs,len(names)))
+    rep.append('HMM_delta: {:.3f}'.format(HMM_delta))
     rep.append('sigma: {:.2f}    Symbol delta: {:d}   Ratio:  {:.2f}'.format(sig, int(di), float(di)/float(sig)))
     rep.append('----------------------------------------------------------------------------------')
     rep.append(' ')
@@ -161,6 +164,8 @@ for run in range(Nruns):
     Ac = A.copy()
     M = HMM_setup(Pi,Ac,sig,names)
 
+
+
     #############################################
     #
     #   Perturb the HMM's parameters (optional)
@@ -173,8 +178,8 @@ for run in range(Nruns):
     #print 'Applied Random Matrix Perturbation'
     HMM_perturb(M, HMM_delta)
     print 'Applied Matrix Perturbation: ' + str(HMM_delta)
-
     A_row_test(M.transmat_, sys.stdout)
+    B = M.transmat_.copy()  # store perturbed
     
     
     # special test code
@@ -195,7 +200,10 @@ for run in range(Nruns):
     outF_index = outS_index+1
     assert M.transmat_[outS_index,outS_index] - 1.0 < testeps, 'A 1.0 element was modified'
     assert M.transmat_[outF_index,outF_index] - 1.0 < testeps, 'A 1.0 element was modified'
+    print 'Passed A-matrix Assertions'
     #end of special test code
+    
+    
 
     if(task == BaumWelch):
         #############################################
@@ -210,7 +218,8 @@ for run in range(Nruns):
             print >>of, rline
 
         outputAmat(A,"Original A Matrix", names, of)
-        outputAmat(M.transmat_,"New A Matrix", names, of)
+        outputAmat(B,"Perturbed A Matrix", names, of)
+        outputAmat(M.transmat_,"New A Matrix (pertb + HMM fit)", names, of)
 
 
         ##  compare the two A matrices
@@ -228,6 +237,7 @@ for run in range(Nruns):
         print >> of, 'Erasures : ', erasures
 
     if CSVOUTPUT:
+        print >>fcsv, datetime.datetime.now().strftime("%y-%m-%d-%H-%M\n")
         print >>fcsv, '{:2d}, {:.3f}, {:3d}, {:.3f}, {:2d}, {:2d}, {:.3f}, {:.3f}'.format(task, Ratio, int(di), float(sig),run+1,Nruns,e2,em)
 
     nsims += 1
