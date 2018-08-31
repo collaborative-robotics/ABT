@@ -13,13 +13,9 @@ from hmmlearn import hmm
 #####################################################
 
 #####################################################
-from hmm_bt import *
+from hmm_bt import *   # bring in the HMM_perturb() function 
  
  
-
-#####################################################
-#from model00 import *
-
 
 logdir = 'logs/'
 names = ['l1','l2','l3','l4', 'OutS', 'OutF']
@@ -95,39 +91,43 @@ for n in outputs.keys():
     
     
 #####################################################
-of = open('HMM_test_rep.txt', 'w')
+of = open('HMM_test_rep.txt', 'w') # clobber old report
 
-M = HMM_setup(Pi, A, sig, names)
 B = A.copy()
-outputAmat(A,"Initial A Matrix",names,of)
-print 'Perturbing by 0.25'
+M = HMM_setup(Pi, B, sig, names)
+
+outputAmat(M.transmat_,"Initial A Matrix",names,of)
+print 'Perturbing by 0.25 -----'
 HMM_perturb(M, 0.25)  
 outputAmat(M.transmat_, "Perturbed A Matrix", names, of)
 
 A_row_check(M.transmat_, of)
 A_row_test(M.transmat_, of)
 
-outputAmat(B,'Initial A Matrix',names, of)
-
 print '-------------------------- resulting distance metrics -------------------'
 
-x = Adiff(A, B ,names)
+x = Adiff(M.transmat_, A ,names)
 #    return [e,e2,em,N2,imax,jmax,anoms,erasures]
 
 print 'EAinfty = ',x[2]    # em
 print 'EAavg   = ',x[1]    # e2
 
-A = B.copy()  # restore init values
+assert x[2] > 0.0 , 'Perturbation caused no difference in A matrices'
+assert x[1] > 0.0 , 'Perturbation caused no difference in A matrices'
 
-[r1, c1] = A.shape
-#r1 -= 2    # don't perturb for Os and Of states
-for r in range(r1):
-    for c in range(c1):
-        if A[r][c] > 0:
-            A[r][c] += 0.2  #  test for metrics
 
 print '-------------------------- test distance metrics -------------------'
 print ' each element += 0.2  both errors should = 0.2'
+
+# reset the two matrices A and B to identical
+B = A.copy()
+[r1, c1] = B.shape
+#r1 -= 2    # don't perturb for Os and Of states
+for r in range(r1):
+    for c in range(c1):
+        if B[r][c] > 0:  # apply NON RANDOM perturb
+            B[r][c] += 0.2  #  test for metrics
+
 x = Adiff(A, B ,names)
 #    return [e,e2,em,N2,imax,jmax,anoms,erasures]
 

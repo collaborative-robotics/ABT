@@ -15,7 +15,7 @@ import sys
 from hmmlearn import hmm
 import random as random
 
-def outputAmat(A,title,names,of):
+def outputAmat(A,title,names,of=sys.stdout):
     print >> of, title   # eg, "Original  A matrix:"
     for i in range(A.shape[0]):
         print >> of, '{0: <7}'.format(names[i]),
@@ -102,14 +102,12 @@ def HMM_ABT_to_random(M):
 def HMM_perturb(M, d):
       # A matrix
     A = M.transmat_
-    np.save("M_trans",M.transmat_)
-    np.save("Means",M.means_)
+    #np.save("M_trans",M.transmat_)
+    #np.save("Means",M.means_)
     [r1, c1] = A.shape
     r1 -= 2    # don't perturb for Os and Of states
     for r in range(r1):
         flag = -1
-        if np.count_nonzero(A[r1]) == 1:
-            continue
         for c in range(c1):
             # second non-zero element of row
             #print 'looking at element: ',r,c
@@ -175,6 +173,25 @@ def read_obs_seqs(logf):
 
 #quit()
 
+
+######################################################
+#
+#   Print an A matrix comparison/diff report
+#
+
+def Adiff_Report(A1,A2,names,of=sys.stdout):
+    [e,e2,em,N2,im,jm,anoms,erasures] = Adiff(A1, A2, names)
+
+
+    print >> of, 'RMS  A-matrix error: {:.3f}'.format(e)
+    print >> of, 'RMS  A-matrix error: {:.8f} ({:d} non zero elements)'.format(e2,N2)
+    print >> of, 'Max  A-matrix error: {:.3f} (at {:d} to {:d})'.format(em,im,jm)
+    if len(anoms) == 0:
+        anoms = 'None'
+    print >> of, 'Anomalies: ', anoms
+    if len(erasures) == 0:
+        anoms = 'None'
+    print >> of, 'Erasures : ', erasures
 
 
 ###############################################
@@ -321,21 +338,3 @@ def Plotter(master,y):
 #print "means_", (M.means_.shape)
 #print "covars", (tmpcovars.shape)
 #print "trans",  (M.transmat_.shape)
-######################################################
-#
-#   Print an A matrix comparison/diff report
-#
-
-def Adiff_Report(A1,A2,names,of=sys.stdout):
-    [e,e2,em,N2,im,jm,anoms,erasures] = Adiff(A1, A2, names)
-
-
-    print >> of, 'RMS  A-matrix error: {:.3f}'.format(e)
-    print >> of, 'RMS  A-matrix error: {:.8f} ({:d} non zero elements)'.format(e2,N2)
-    print >> of, 'Max  A-matrix error: {:.3f} (at {:d} to {:d})'.format(em,im,jm)
-    if len(anoms) == 0:
-        anoms = 'None'
-    print >> of, 'Anomalies: ', anoms
-    if len(erasures) == 0:
-        anoms = 'None'
-    print >> of, 'Erasures : ', erasures
