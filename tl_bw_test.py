@@ -15,6 +15,13 @@ from hmm_bt import *
 
 from abt_constants import *
 
+##
+#     Uncomment to supress Deprecation Warnings from hmm_lean / scikit
+#            (untested as yet becasue I commented out the warning in scikit)
+#import warnings
+#with warnings.catch_warnings():
+    #warnings.filterwarnings('ignore', category=DeprecationWarning)
+
 ##   Set up research parameters
 
 CSVOUTPUT = True
