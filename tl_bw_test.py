@@ -39,8 +39,8 @@ script_name = 'tmp_testing'
 
 ##  The ABT file for the task (CHOOSE ONE)
 
-#from peg2_ABT import * # big  14+2 state  # uses model01.py
-from simp_ABT import *  # small 4+2 state # uses model02.py
+from peg2_ABT import * # big  14+2 state  # uses model01.py
+#from simp_ABT import *  # small 4+2 state # uses model02.py
 
 #############################################
 #
@@ -53,10 +53,10 @@ logdir = 'logs_'+script_name+'/'
 outputdir = 'out_'+script_name+'/'
 
 if not os.path.isdir(logdir):  # if this doesn't exist, create it.
-    os.mkdir(logdir) 
+    os.mkdir(logdir)
 if not os.path.isdir(outputdir):  # if this doesn't exist, create it.
-    os.mkdir(outputdir) 
-    
+    os.mkdir(outputdir)
+
 oname = outputdir +  'hmm_fit_out_'+datetime.datetime.now().strftime("%y-%m-%d-%H-%M")
 
 # HMM analysis output
@@ -68,18 +68,21 @@ em = 9999
 
 if CSVOUTPUT:
     fcsv = open('csvlog'+script_name,'a')
-    print >> fcsv, '-------',datetime.datetime.now().strftime("%y-%m-%d-%H-%M"), 'Nruns: ', Nruns, 'x', NEpochs, ' #states: ',len(names)
+    print >> fcsv, '-------',datetime.datetime.now().strftime("%y-%m-%d-%H:%M"), 'Nruns: ', Nruns, 'x', NEpochs, ' #states: ',len(names)
     #task, Ratio, int(di), float(di)/float(sig),run+1,Nruns,e2,em)
-    print >> fcsv, 'N  tsk Ratio     di   Sigma  run#       e2  emax '
+    print >> fcsv, 'tsk  Ratio   di   Sigma  run#     e2     emax '
 
 nsims = 0
 e2T = 0.0
 emT = 0.0
 
 Nruns = 5  #testing
-Ratio = 2.0  #testing
-HMM_delta = 0.3  #testing 
-NEpochs = 20000    # testing
+sig = 2.000
+Ratio = 1.0  #testing
+HMM_delta = 0.2  #testing
+NEpochs = 2000    # testing
+
+di = int(Ratio*sig)   # change in output obs mean per state
 
 #################################################
 #
@@ -173,15 +176,15 @@ for run in range(Nruns):
     #outputAmat(M.transmat_,'Model A matrix',names,sys.stdout)
 
     A_row_test(M.transmat_, sys.stdout)
- 
+
     #HMM_ABT_to_random(M)   # randomize probabilites
     #print 'Applied Random Matrix Perturbation'
     HMM_perturb(M, HMM_delta)
     print 'Applied Matrix Perturbation: ' + str(HMM_delta)
     A_row_test(M.transmat_, sys.stdout)
     B = M.transmat_.copy()  # store perturbed
-    
-    
+
+
     # special test code
     #  compare the two A matrices
     #     (compute error metrics)
@@ -202,8 +205,8 @@ for run in range(Nruns):
     assert M.transmat_[outF_index,outF_index] - 1.0 < testeps, 'A 1.0 element was modified'
     print 'Passed A-matrix Assertions'
     #end of special test code
-    
-    
+
+
 
     if(task == BaumWelch):
         #############################################
@@ -228,7 +231,7 @@ for run in range(Nruns):
 
         print >> of, 'EAavg    A-matrix error: {:.8f} ({:d} non zero elements)'.format(e2,N2)
         print >> of, 'EAinfty  A-matrix error: {:.3f} (at {:d} to {:d})'.format(em,im,jm)
-        
+
         if len(anoms) == 0:
             anoms = 'None'
         print >> of, 'Anomalies: ', anoms
@@ -237,7 +240,6 @@ for run in range(Nruns):
         print >> of, 'Erasures : ', erasures
 
     if CSVOUTPUT:
-        print >>fcsv, datetime.datetime.now().strftime("%y-%m-%d-%H-%M\n")
         print >>fcsv, '{:2d}, {:.3f}, {:3d}, {:.3f}, {:2d}, {:2d}, {:.3f}, {:.3f}'.format(task, Ratio, int(di), float(sig),run+1,Nruns,e2,em)
 
     nsims += 1

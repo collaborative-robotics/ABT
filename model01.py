@@ -11,7 +11,7 @@ names = ['l1','l2a1','l2b1','l2a2','l2b2', 'l345', 'l6a1', 'l6b1', 'l6a2', 'l6b2
 N = len(names)
 # prob success for each node
 # note dummy value for PS[0] for math consistency
-PS = [0.0, 1.0, 0.9, 0.8, 0.9, 0.9, 1.0, 0.9, 0.8, 0.9, 0.9, 1.0,0.9,0.75, 0.5, 1.0, 1.0]
+PS = [0.0, 1.0, 0.9, 0.8, 0.9, 0.9, 1.0, 0.9, 0.8, 0.9, 0.9, 1.0,0.9,0.75, 0.8, 1.0, 1.0]
 if len(PS) != N+1:
     print 'Incorrect PS length'
     quit()
