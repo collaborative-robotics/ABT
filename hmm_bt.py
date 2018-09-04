@@ -188,9 +188,9 @@ def Adiff_Report(A1,A2,names,of=sys.stdout):
     [e,e2,em,N2,im,jm,anoms,erasures] = Adiff(A1, A2, names)
 
 
-    print >> of, 'RMS  A-matrix error: {:.3f}'.format(e)
-    print >> of, 'RMS  A-matrix error: {:.8f} ({:d} non zero elements)'.format(e2,N2)
-    print >> of, 'Max  A-matrix error: {:.3f} (at {:d} to {:d})'.format(em,im,jm)
+    print >> of, 'Avg abs A-matrix error: {:.3f}'.format(e)
+    print >> of, 'Avg abs A-matrix error: {:.8f} ({:d} non zero elements)'.format(e2,N2)
+    print >> of, 'Max abs A-matrix error: {:.3f} (at {:d} to {:d})'.format(em,im,jm)
     if len(anoms) == 0:
         anoms = 'None'
     print >> of, 'Anomalies: ', anoms
@@ -205,6 +205,7 @@ def Adiff_Report(A1,A2,names,of=sys.stdout):
 
 def Adiff(A1,A2,names):
     e = 0
+    e_abs_total = 0.0
     em = -99999.9
     e2 = 0   # avg error of NON ZERO elements
     N = A1.shape[0]
@@ -216,24 +217,24 @@ def Adiff(A1,A2,names):
     for i in range(N-2): # skip last two rows which are 1.000
         for j in range(N):
             e1 = (A1[i,j]-A2[i,j])**2
+            ea  = abs(A1[i,j]-A2[i,j])
             #print 'error: ', e1,i,j
             #print 'A1[ij] ',A1[i,j], '  A2[ij] ',A2[i,j], (A1[i,j]-A2[i,j])
-            if(e1 > em):
-                em = e1
-                imax = i
-                jmax = j
+            if(ea > em):   # should be absolute error not e^2
+                em = ea
+                imax = i+1   # change from array index to state numbers
+                jmax = j+1  
                 #print "storing emax: ", em, i,j
             if(A1[i,j] > 0.000001):
-                e2 += e1
+                e2 += ea              # accumulate error for non-zero Aij
                 N2 += 1
-            e += e1
-            if(A1[i,j]==0.0 and A2[i,j]>0.0):
+            e_abs_total += ea
+            if(A1[i,j]==0.0 and A2[i,j]>0.0):  # NOTE: implies direction btwn A1 and A2
                 anoms.append([i,j])
             if(A1[i,j]>0.0 and A2[i,j] < 0.0000001):
                 erasures.append([names[i],names[j]])
-    e  = np.sqrt(e/(N*N))  # div total number of Aij elements
-    e2 = np.sqrt(e2/N2)  # RMS error of NON zero Aij
-    em = np.sqrt(em)     # Max error
+    e  = (e_abs_total/(N*N))  # div total number of Aij elements
+    e2 = (e2/N2)  # RMS error of NON zero Aij
     #print 'imax, jmax; ', imax, jmax
     return [e,e2,em,N2,imax,jmax,anoms,erasures]
 ###############################################################
