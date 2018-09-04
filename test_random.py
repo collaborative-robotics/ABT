@@ -12,11 +12,13 @@ import b3 as b3          # behavior trees
 import math as m
 import numpy as np
 from abt_constants import *
-from abt_class import *
+#from abt_class import *
 
 
 NEpochs = 10000000
 Nbins = 20
+
+print 'Testing np.random.uniform with',NEpochs, ' trials ... '
 
 delta = 1.0 / float(Nbins)
 
@@ -44,6 +46,4 @@ print 'Min: ', mind
 print 'Max: ', maxd
 print '% variation: ', 100.0 * (maxd-mind)/(NEpochs/Nbins), '%'
 
-
-print '\n\n\n'
-print 'Testing gaussian function: '
+ 
