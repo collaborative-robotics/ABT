@@ -14,12 +14,11 @@ from hmmlearn import hmm
 
 #####################################################
 from hmm_bt import *   # bring in the HMM_perturb() function 
- 
+from abt_constants import *
+
 testeps = 0.000001  # epsilon for comparing floats
 
-SMALL = 1
-BIG   = 2
-MODEL = BIG
+MODEL = BIG    #  values SMALL BIG
 
 logdir = 'logs/'
 
@@ -239,14 +238,14 @@ x = Adiff(A, B ,names)
 #outputAmat(A,'A', names, sys.stdout)
 #outputAmat(B,'B', names, sys.stdout)
 fs = 'Problem with distance metrics Adiff(A,B,names)'
-print 'EAinfty = ',x[2]    # em
+print 'EAinfty = ',x[2]    # max difference
+print 'EAavg   = ',x[1]    # avg non-zero elements
 
-assert x[2] - 0.2 < testeps, fs
-print 'EAavg   = ',x[1]    # e2
-assert x[1] - 0.2 < testeps, fs
+assert abs(x[2] - 0.2) < testeps, fs+' (max diff)'
+assert abs(x[1] - 0.2) < testeps, fs+' (avg diff non-zero)'
 
-##  Test special A matrix with 1.0 element in it
-
+print 'Passed distance metric assertions'
+ 
 
 print '\n\n'
 print '-------------------------- Testing perturbation coin-flip  -------------------'
@@ -259,6 +258,7 @@ print '1000 coin flips:'
 print '-1 :', sum
 print ' 1 :', 1000-sum
 assert (450 < sum < 550), 'Coin flip bias detected'
+print 'Passed coin flip bias "test": (450 < sum < 550)'
 
 print '\n\n'
 print '-------------------------- Testing A-matrix 1.00 elements  -------------------'

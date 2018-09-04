@@ -198,14 +198,8 @@ def Adiff_Report(A1,A2,names,of=sys.stdout):
         anoms = 'None'
     print >> of, 'Erasures : ', erasures
 
-
-###############################################
-# compare two A-matrices
-#
-
-def Adiff(A1,A2,names):
+def Adiff(A1,A2,names):    # from 8/28
     e = 0
-    e_abs_total = 0.0
     em = -99999.9
     e2 = 0   # avg error of NON ZERO elements
     N = A1.shape[0]
@@ -217,26 +211,66 @@ def Adiff(A1,A2,names):
     for i in range(N-2): # skip last two rows which are 1.000
         for j in range(N):
             e1 = (A1[i,j]-A2[i,j])**2
-            ea  = abs(A1[i,j]-A2[i,j])
             #print 'error: ', e1,i,j
             #print 'A1[ij] ',A1[i,j], '  A2[ij] ',A2[i,j], (A1[i,j]-A2[i,j])
-            if(ea > em):   # should be absolute error not e^2
-                em = ea
-                imax = i+1   # change from array index to state numbers
-                jmax = j+1  
+            if(e1 > em):
+                em = e1
+                imax = i
+                jmax = j
                 #print "storing emax: ", em, i,j
             if(A1[i,j] > 0.000001):
-                e2 += ea              # accumulate error for non-zero Aij
+                e2 += e1
                 N2 += 1
-            e_abs_total += ea
-            if(A1[i,j]==0.0 and A2[i,j]>0.0):  # NOTE: implies direction btwn A1 and A2
+            e += e1
+            if(A1[i,j]==0.0 and A2[i,j]>0.0):
                 anoms.append([i,j])
             if(A1[i,j]>0.0 and A2[i,j] < 0.0000001):
                 erasures.append([names[i],names[j]])
-    e  = (e_abs_total/(N*N))  # div total number of Aij elements
-    e2 = (e2/N2)  # RMS error of NON zero Aij
+    e  = np.sqrt(e/(N*N))  # div total number of Aij elements
+    e2 = np.sqrt(e2/N2)  # RMS error of NON zero Aij
+    em = np.sqrt(em)     # Max error
     #print 'imax, jmax; ', imax, jmax
     return [e,e2,em,N2,imax,jmax,anoms,erasures]
+
+
+###############################################
+# compare two A-matrices  (NEW)
+#
+
+#def Adiff(A1,A2,names):
+    #e = 0
+    #e_abs_total = 0.0
+    #em = -99999.9
+    #e2 = 0   # avg error of NON ZERO elements
+    #N = A1.shape[0]
+    ##print 'Adiff: A shape: ', A1.shape
+    #N2 = 0   # count the non-zero Aij entries
+            ##  should be 2(l+2) of course
+    #anoms = [] #identification
+    #erasures = []
+    #for i in range(N-2): # skip last two rows which are 1.000
+        #for j in range(N):
+            #e1 = (A1[i,j]-A2[i,j])**2
+            #ea  = abs(A1[i,j]-A2[i,j])
+            ##print 'error: ', e1,i,j
+            ##print 'A1[ij] ',A1[i,j], '  A2[ij] ',A2[i,j], (A1[i,j]-A2[i,j])
+            #if(ea > em):   # should be absolute error not e^2
+                #em = ea
+                #imax = i+1   # change from array index to state numbers
+                #jmax = j+1  
+                ##print "storing emax: ", em, i,j
+            #if(A1[i,j] > 0.000001):
+                #e2 += ea              # accumulate error for non-zero Aij
+                #N2 += 1
+            #e_abs_total += ea
+            #if(A1[i,j]==0.0 and A2[i,j]>0.0):  # NOTE: implies direction btwn A1 and A2
+                #anoms.append([i,j])
+            #if(A1[i,j]>0.0 and A2[i,j] < 0.0000001):
+                #erasures.append([names[i],names[j]])
+    #e  = (e_abs_total/(N*N))  # div total number of Aij elements
+    #e2 = (e2/N2)  # RMS error of NON zero Aij
+    ##print 'imax, jmax; ', imax, jmax
+    #return [e,e2,em,N2,imax,jmax,anoms,erasures]
 ###############################################################
 # Evaluation of Veterbi
 def Veterbi_Eval(p,x,names,l,statenos):

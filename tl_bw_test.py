@@ -12,8 +12,10 @@ import sys
 import os
 import datetime
 from hmm_bt import *
-
 from abt_constants import *
+
+#MODEL = SMALL 
+MODEL = BIG
 
 ##
 #     Uncomment to supress Deprecation Warnings from hmm_lean / scikit
@@ -46,8 +48,10 @@ script_name = 'tmp_testing'
 
 ##  The ABT file for the task (CHOOSE ONE)
 
-from peg2_ABT import * # big  14+2 state  # uses model01.py
-#from simp_ABT import *  # small 4+2 state # uses model02.py
+if MODEL== BIG:
+    from peg2_ABT import * # big  14+2 state  # uses model01.py
+if MODEL==SMALL:
+    from simp_ABT import *  # small 4+2 state # uses model02.py
 
 #############################################
 #
@@ -73,12 +77,6 @@ of = open(oname,'w')
 infolog = open('infolog'+script_name, 'a')  # append
 em = 9999
 
-if CSVOUTPUT:
-    fcsv = open('csvlog'+script_name,'a')
-    print >> fcsv, '-------',datetime.datetime.now().strftime("%y-%m-%d-%H:%M"), 'Nruns: ', Nruns, 'x', NEpochs, ' #states: ',len(names)
-    #task, Ratio, int(di), float(di)/float(sig),run+1,Nruns,e2,em)
-    print >> fcsv, 'tsk  Ratio   di   Sigma  run#     e2     emax '
-
 nsims = 0
 e2T = 0.0
 emT = 0.0
@@ -90,6 +88,12 @@ HMM_delta = 0.2  #testing
 NEpochs = 2000    # testing
 
 di = int(Ratio*sig)   # change in output obs mean per state
+
+if CSVOUTPUT:
+    fcsv = open('csvlog'+script_name,'a')
+    print >> fcsv, '-------',datetime.datetime.now().strftime("%y-%m-%d-%H:%M"), 'Nruns: ', Nruns, 'x', NEpochs, 'HMM_delta: ', HMM_delta, ' #states: ',len(names)
+    #task, Ratio, int(di), float(di)/float(sig),run+1,Nruns,e2,em)
+    print >> fcsv, 'tsk  Ratio   di   Sigma  run#     e2     emax '
 
 #################################################
 #

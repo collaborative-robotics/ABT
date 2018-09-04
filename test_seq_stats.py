@@ -12,8 +12,8 @@ from hmm_bt import *
 from abt_constants import * 
 
 # Select the ABT file here
-#from simp_ABT import *    # basic 4-state HMM 
-from peg2_ABT import *         # elaborate 16-state HMM
+from simp_ABT import *    # basic 4-state HMM 
+#from peg2_ABT import *         # elaborate 16-state HMM
 #
 
 nargs = len(sys.argv) - 1
@@ -24,11 +24,16 @@ nargs = len(sys.argv) - 1
 
 if nargs == 1:
     lfname = sys.argv[1]
-elif nargs == 2:
+elif nargs == 0:
 # read in data file 
     lfname = logdir+'statelog.txt'
 else:
     print 'bad command line - quitting'
+    print 'you typed: ',
+    for a in sys.argv:
+        print '[',a,']',
+    print ''        
+    print 'usage test_seq_stats [filename] (containing state seq output data)'
     quit()
     
 logf = open(lfname,'r')
@@ -69,12 +74,11 @@ for line in logf:
        Y.append([int(obs)])
        os.append([int(obs)])
 
-outputAmat(Ahat,"raw Ahat",names,sys.stdout)
 
 #  divide to create frequentist prob estimates
 for i in range(N-2):  # rows (but NOT OutS and OutF cause they don't transition out)
     rsum = np.sum(Ahat[i,:])
-    print 'A,sum', Ahat[i,:], rsum
+    #print 'A,sum', Ahat[i,:], rsum
     for j in range(N): # cols
         Ahat[i,j] /= rsum
         
@@ -95,19 +99,8 @@ for i in range(len(X)):
             s2[j] += (Y[i][0])**2
             n[j]  += 1
             #print X[j], s1[j], s2[j]
-    
-    
-    
-#####  replaced by test_obs_stats.py
-#print 'Statistics for all state outputs in {:d} observations, {:d} epochs.'.format(len(X),len(Ls))
-#print '     mu     sig    mu-error'
-#for j in range(N):
-    #mu = s1[j]/n[j]
-    #sigma = np.sqrt(n[j]*s2[j] - s1[j]*s1[j]) / n[j]
-    #error = mu - outputs[names[j]]
-    #print  '{:3d}, {: <6}, {:.1f}, {:.2f}      {:.2f}'.format(1+j, names[j], mu,sigma,error)
-    
-#outputAmat(A,   "Initial   A Matrix",names, sys.stdout)
+
+outputAmat(A,   "Model A Matrix",    names, sys.stdout)    
 outputAmat(Ahat,"Empirical A Matrix",names, sys.stdout)
 
 print 'A-matrix estimation errors: '
