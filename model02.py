@@ -44,7 +44,7 @@ Pi[0] = 1.0      # always start at state 1
 statenos = {'l1':1, 'l2': 2, 'l3':3, 'l4':4,  'OutS':5, 'OutF':6}
 
 ###  Regenerate output means:
-i = 20
+i = FIRSTSYMBOL
 #di = Ratio*sig  # = nxsigma !!
 for n in outputs.keys():
     outputs[n] = i
