@@ -11,30 +11,44 @@ from hmm_bt import *
 
 from abt_constants import * 
 
+
+from abt_constants import *
+
+MODEL = BIG
+
+testeps = 400 / float(NEpochs)   # should be sqrt()^-1 I guess
+print 'Test epsilon: ', testeps
+
 # Select the ABT file here
-from simp_ABT import *    # basic 4-state HMM 
-#from peg2_ABT import *         # elaborate 16-state HMM
+if MODEL==SMALL:
+    from simp_ABT import *    # basic 4-state HMM 
+elif MODEL==BIG:
+    from peg2_ABT import *         # elaborate 16-state HMM
 #
 
-nargs = len(sys.argv) - 1
+GENDATA = False  #  (determined by # args below)
 
-#print 'Nargs: ', nargs
-#print 'Argv:  ', sys.argv
-#quit()
+logdir = 'logs/'
+
+# use this filename to know exact observation count.
+lfname = logdir + 'REF_test_statelog.txt'
+refdataname = lfname
+
+nargs = len(sys.argv)
 
 if nargs == 1:
-    lfname = sys.argv[1]
-elif nargs == 0:
-# read in data file 
-    lfname = logdir+'statelog.txt'
-else:
-    print 'bad command line - quitting'
-    print 'you typed: ',
-    for a in sys.argv:
-        print '[',a,']',
-    print ''        
-    print 'usage test_seq_stats [filename] (containing state seq output data)'
-    quit()
+    GENDATA = False  # use standard data 
+elif nargs == 2:
+    if(sys.argv[1] == "GENDATA"):
+        GENDATA = True
+        lfname = logdir+'TSTstatelog.txt'
+    else:
+        lfname = str(sys.argv[1])
+
+print 'Starting state sequence stats test on ', lfname
+if GENDATA:
+    print ' Generating NEW data'
+
     
 logf = open(lfname,'r')
 
@@ -53,10 +67,12 @@ os  = [] # current obs seq
 
 Ahat = np.zeros((N,N))  # N def in model0x
 
+nsims = 0
 for line in logf:
    #print '>>>',line
    line = line.strip()
    if line == '---': 
+       nsims += 1
        # store freq of state transitions
        for i in range(len(seq)):
            if(i>0):  # no transition INTO first state
@@ -107,24 +123,25 @@ print 'A-matrix estimation errors: '
 
 Adiff_Report(A,Ahat,names) 
 
+print 'Studied ',len(X), 'observations,', len(names), 'state model'
 
-if(False):
-    # print histogram of specified state observations
-    state = names[statenos[state_selection]-1]
-    hist = np.zeros(NSYMBOLS)
-
-    n2 = 0
-    for i in range(len(X)):
-        s = X[i]
-        n2 += 1
-        #print n,s,Y[i]
-        if s == state:
-            hist[Y[i][0]] += 1  # count the output 
-        
-    print 'Studied {:d} symbols for state {:s}'.format(n2,state)
-    for i in range(len(hist)):
-        if hist[i] > 0.001:
-            print i, hist[i]
+#################################################################
+#
+#   Generate state visit frequencies
+#
+#
+nv = np.zeros(len(names))
+for i in range(len(X)):    # go through data once
+    s = X[i]  # current true state    
+    nv[names.index(s)] += 1 # count the visit 
+    
+print '\n\nState Visit Frequency Report'
+for n in names:
+    v = nv[names.index(n)]
+    print n, ' visited ', v ,'times out of ', nsims, ' = ', float(v)/float(nsims)
         
     
     
+print 'WARNING: No Assertions Yet for this test'
+
+
