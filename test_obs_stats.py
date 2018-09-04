@@ -8,7 +8,7 @@ from abt_constants import *
 
 MODEL = BIG
 
-testeps = 400 / float(NEpochs)   # should be sqrt()^-1 I guess
+testeps = 600 / float(NEpochs)   # should be sqrt()^-1 I guess
 print 'Test epsilon: ', testeps
 
 # Select the ABT file here
