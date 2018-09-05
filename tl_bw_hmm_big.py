@@ -97,25 +97,29 @@ rep.append('--------------------------------------------------------------------
 rep.append(' ')
 
 if METAOUTPUT:
-    print >>fmeta, rep
+    for line in rep:
+        print >>fmeta, line
+    print >>fmeta, 'tsk,Ratio, H_del, di, sig, r, Nr, e_avg, e_max'
+        #task, Ratio, HMM_delta, int(di), float(sig),run+1,Nruns,e2,em
 
 #################################################
 #
 #   Outer Loop
-for Ratio in smallratiotest:
-    print 'Starting run with Ratio = ',Ratio
+loopsize = len(bigratiotest)*4*Nruns
+loopcount = 0
+for Ratio in bigratiotest:
     ################################################
     #
     #   amount initial HMM params are changed from exact
     #
-    for HMM_delta in [0.5, 1.0, 5.0]:
-        print 'Starting run with Hmm_delta = ', HMM_delta
+    for HMM_delta in [0.50, 0.20, 0.10, 0.00]:
+        print 'Starting run with Ratio = ', Ratio, 'Hmm_delta = ', HMM_delta, ' loop: ',loopcount,'/',loopsize
         ########################
         # 
         #  run loop 
         #
         for run in range(Nruns):
-
+            loopcount += 1
             print '\n-------------------------------------------\n   Starting Run ',run+1, 'of', Nruns, '\n\n'
             # open the log file
             id = str(int(100*(Ratio)))+'iter'+str(run)  # encode the ratio (delta mu/sigma) into filename
@@ -227,6 +231,8 @@ for Ratio in smallratiotest:
 
             if METAOUTPUT:
                 print >>fmeta, '{:2d}, {:.3f}, {:.3f}, {:3d}, {:.3f}, {:2d}, {:2d}, {:.3f}, {:.3f}'.format(task, Ratio, HMM_delta, int(di), float(sig),run+1,Nruns,e2,em)
+                fmeta.flush()             # make sure this writes to HDD now
+                os.fsync(fmeta.fileno())  #
 
             nsims += 1
             emT += em
