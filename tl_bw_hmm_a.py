@@ -59,17 +59,18 @@ of = open(oname,'w')
 
 # log file for progress info
 infolog = open('infolog'+script_name, 'a')  # append
+
 em = 9999
-
-if CSVOUTPUT:
-    fcsv = open('csvlog'+script_name,'a')
-    print >> fcsv, '-------',datetime.datetime.now().strftime("%y-%m-%d-%H-%M"), 'Nruns: ', Nruns, 'x', NEpochs, ' #states: ',len(names)
-    #task, Ratio, int(di), float(di)/float(sig),run+1,Nruns,e2,em)
-    print >> fcsv, 'N  tsk Ratio     di   Sigma  run#       e2  emax '
-
 nsims = 0
 e2T = 0.0
 emT = 0.0
+
+if CSVOUTPUT:
+    fcsv = open('csvlog'+script_name,'a')
+    print >> fcsv, '-------',datetime.datetime.now().strftime("%y-%m-%d-%H-%M"), 'Nruns: ', Nruns, 'x', NEpochs, ' #states: ',len(names), ' HMM_delta: ',HMM_delta
+    #task, Ratio, int(di), float(di)/float(sig),run+1,Nruns,e2,em)
+    print >> fcsv, ' tsk Ratio     di   Sigma  run#       e2  emax '
+
 #################################################
 #
 #   Outer Loop
@@ -124,7 +125,7 @@ for run in range(Nruns):
             seq_data_f.write('---\n')
 
         seq_data_f.close()
-        seq_data_f = open(lfname,'r') # save file and reset pointer
+        #seq_data_f = open(lfname,'r') # save file and reset pointer
 
         print 'Finished simulating ',NEpochs,'  epochs'
 
@@ -133,7 +134,9 @@ for run in range(Nruns):
     #
     #    Read simulated sequence data
     #
-
+    X = []
+    Y = []
+    Ls = []
     seq_data_f = open(lfname,'r')
     [X,Y,Ls] = read_obs_seqs(seq_data_f)
     seq_data_f.close()

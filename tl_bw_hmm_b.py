@@ -39,10 +39,9 @@ HMM_delta = 0.10   # 10%
 ############################################
 
 ##  The ABT file for the task (CHOOSE ONE)
-if(MODEL==BIG):
-    from peg2_ABT import * # big  14+2 state  # uses model01.py
-elif(MODEL==SMALL):
-    from simp_ABT import *  # small 4+2 state # uses model02.py
+
+from peg2_ABT import * # big  14+2 state  # uses model01.py
+#from simp_ABT import *  # small 4+2 state # uses model02.py
 
 #############################################
 #
@@ -60,17 +59,18 @@ of = open(oname,'w')
 
 # log file for progress info
 infolog = open('infolog'+script_name, 'a')  # append
+
 em = 9999
-
-if CSVOUTPUT:
-    fcsv = open('csvlog'+script_name,'a')
-    print >> fcsv, '-------',datetime.datetime.now().strftime("%y-%m-%d-%H-%M"), 'Nruns: ', Nruns, 'x', NEpochs, ' #states: ',len(names)
-    #task, Ratio, int(di), float(di)/float(sig),run+1,Nruns,e2,em)
-    print >> fcsv, 'N  tsk Ratio     di   Sigma  run#       e2  emax '
-
 nsims = 0
 e2T = 0.0
 emT = 0.0
+
+if CSVOUTPUT:
+    fcsv = open('csvlog'+script_name,'a')
+    print >> fcsv, '-------',datetime.datetime.now().strftime("%y-%m-%d-%H-%M"), 'Nruns: ', Nruns, 'x', NEpochs, ' #states: ',len(names), ' HMM_delta: ',HMM_delta
+    #task, Ratio, int(di), float(di)/float(sig),run+1,Nruns,e2,em)
+    print >> fcsv, ' tsk Ratio     di   Sigma  run#       e2  emax '
+
 #################################################
 #
 #   Outer Loop
