@@ -1,1 +1,10 @@
 *.pyc
+*.png
+*.csv
+*.txt
+*.npy
+*csvlog*
+infolog*
+logs*
+out*
+__init__*
