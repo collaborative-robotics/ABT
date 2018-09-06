@@ -13,8 +13,8 @@ import matplotlib.pyplot as plt
 
 from matplotlib.colors import BoundaryNorm
 from matplotlib.ticker import MaxNLocator
- 
-# 
+
+#
 
 Ratio = []
 pert  = []
@@ -25,7 +25,7 @@ nrow = 0
 
 with open('tmp.csv','rb') as f:
     d1 = csv.reader(f,delimiter=',',quotechar='"')
-    
+
     for row in d1:
         nrow += 1
         sttask  = row[0]
@@ -46,7 +46,6 @@ with open('tmp.csv','rb') as f:
 
 print 'Read in ', nrow,' rows'
 print 'len(Ratio): ', len(Ratio)
-print Ratio
 print ''
 fig, ax1 = plt.subplots(figsize=(14,6))
 #plt.subplots_adjust(left=.25)
@@ -54,19 +53,36 @@ rect = fig.patch
 rect.set_facecolor('white')
 ax1.xaxis.grid(True,linestyle='-', which='major', color='lightgrey',alpha=0.5)
 
+
+ymax = 0.4   #error plotting range 0.0--ymax
+
 data = []
 rs = set(Ratio)
+print 'Ratios: ', sorted(rs)
 epsilon = 0.0001
 for r in rs:
     l = []
     for [j, v] in enumerate(Eavg):
         if abs(r-Ratio[j])<epsilon:
-            l.append(v) 
+            l.append(v)
     data.append(l)
- 
+
+dperts= []
+perts = set(pert)
+for p in perts:
+    l = []
+    for [j,v] in enumerate(Eavg):
+        if abs(p-pert[j])<epsilon:
+            l.append(v)
+    dperts.append(l)
+
 #print data
- 
+
 # make boxplots for Eavg
+
+##########
+#
+#  Plot 1: Error vs. Ratio
 bp = plt.boxplot(data, notch=True,vert=True ,patch_artist=True)
 for b in bp['boxes']:
     b.set_facecolor('lightblue')
@@ -74,14 +90,34 @@ for b in bp['boxes']:
 
 plt.xlabel('Ratio (di/sig)')
 plt.ylabel('Error')
+plt.ylim(0.0, ymax)
 plt.title('Avg Error vs. Ratio')
 
-tstrs = []
-for r in rs:
+tstrs = [0.00]
+for r in sorted(rs):
     tstrs.append(str(r))
-plt.xticks([1, 2], tstrs)
+plt.xticks(range(len(rs)+1), tstrs)
 
 plt.show()
 
-#plt.ylabel('Route')
-#plt.xlabel('sec/km')
+##########
+#
+#  Plot 2: Error vs. Ratio
+#
+
+bp2 = plt.boxplot(dperts, notch=True,vert=True ,patch_artist=True)
+for b in bp['boxes']:
+    b.set_facecolor('lightblue')
+
+
+plt.xlabel('HMM A-matrix Perturbation')
+plt.ylabel('Error')
+plt.ylim(0.0, ymax)
+plt.title('Avg Error vs. Perturbation')
+
+tstrs = [0.00]
+for p in sorted(perts):
+    tstrs.append(str(p))
+plt.xticks(range(len(perts)+1), tstrs)
+
+plt.show()
