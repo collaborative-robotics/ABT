@@ -81,11 +81,11 @@ nsims = 0
 e2T = 0.0
 emT = 0.0
 
-Nruns = 5  #testing
+Nruns = 10  #testing
 sig = 2.000
 Ratio = 1.0  #testing
 HMM_delta = 0.2  #testing
-NEpochs = 2000    # testing
+NEpochs = 20000    # testing
 
 di = int(Ratio*sig)   # change in output obs mean per state
 

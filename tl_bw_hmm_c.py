@@ -35,7 +35,8 @@ script_name = 'bw_hmm_c'
 
 # amount HMM parameters should be ofset
 #   from the ABT parameters.  Offset has random sign (+/-)
-HMM_delta = 0.20   #  perturb
+HMM_delta = 0.2   # no perturb
+
 
 #
 ############################################
@@ -201,7 +202,7 @@ for run in range(Nruns):
         print >> of, 'Erasures : ', erasures
 
     if CSVOUTPUT:
-        print >>fcsv, '{:2d}, {:.3f}, {:3d}, {:.3f}, {:2d}, {:2d}, {:.3f}, {:.3f}'.format(task, Ratio, int(di), float(sig),run+1,Nruns,e2,em)
+        print >>fcsv, '{:2d}, {:.3f}, {:.3f}, {:3d}, {:.3f}, {:2d}, {:2d}, {:.3f}, {:.3f}'.format(task, Ratio, HMM_delta, int(di), float(sig),run+1,Nruns,e2,em)
 
     nsims += 1
     emT += em
