@@ -19,6 +19,8 @@ from abt_constants import *
 
 CSVOUTPUT = True
 
+#MODEL = BIG    # already set to small in abt_constants
+
 ############################################
 #
 #        Basic Job Config
@@ -35,13 +37,17 @@ script_name = 'bw_hmm_a'
 #   from the ABT parameters.  Offset has random sign (+/-)
 HMM_delta = 0.00   # no perturb
 
+
 #
 ############################################
 
 ##  The ABT file for the task (CHOOSE ONE)
 
-from peg2_ABT import * # big  14+2 state  # uses model01.py
-#from simp_ABT import *  # small 4+2 state # uses model02.py
+if MODEL== BIG:
+    from peg2_ABT import * # big  14+2 state  # uses model01.py
+if MODEL==SMALL:
+    from simp_ABT import *  # small 4+2 state # uses model02.py
+
 
 #############################################
 #
