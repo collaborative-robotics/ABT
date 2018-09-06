@@ -233,8 +233,8 @@ for Ratio in bigratiotest:
                     anoms = 'None'
                 print >> of, 'Erasures : ', erasures
 
-    if CSVOUTPUT:
-        print >>fcsv, '{:2d}, {:.3f}, {:.3f}, {:3d}, {:.3f}, {:2d}, {:2d}, {:.3f}, {:.3f}'.format(task, Ratio, HMM_delta, int(di), float(sig),run+1,Nruns,e2,em)
+            if CSVOUTPUT:
+                print >>fcsv, '{:2d}, {:.3f}, {:.3f}, {:3d}, {:.3f}, {:2d}, {:2d}, {:.3f}, {:.3f}'.format(task, Ratio, HMM_delta, int(di), float(sig),run+1,Nruns,e2,em)
 
             if METAOUTPUT:
                 print >>fmeta, '{:2d}, {:.3f}, {:.3f}, {:3d}, {:.3f}, {:2d}, {:2d}, {:.3f}, {:.3f}'.format(task, Ratio, HMM_delta, int(di), float(sig),run+1,Nruns,e2,em)

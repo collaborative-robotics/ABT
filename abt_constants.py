@@ -10,6 +10,8 @@ FIRSTSYMBOL = 20
 SMALL = 1   # flags to switch models 
 BIG   = 2
 
+MODEL = SMALL  # can override
+
 T = True
 F = False
 
@@ -19,7 +21,7 @@ BaumWelch = 2
 
 ######################
 sig = 2.0
-Ratio = 0.5    # spread of symbols relative to obs SD
+Ratio = 1.0    # spread of symbols relative to obs SD
 di = int(Ratio*sig)   # change in output obs mean per state
 
 K = 1000
