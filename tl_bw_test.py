@@ -18,18 +18,15 @@ from abt_constants import *
 #MODEL = SMALL 
 MODEL = BIG
 
+comment = 'testing new output system'
+
 ##
 #     Uncomment to supress Deprecation Warnings from hmm_lean / scikit
-#            (untested as yet becasue I commented out the warning in scikit)
-#import warnings
-#with warnings.catch_warnings():
-    #warnings.filterwarnings('ignore', category=DeprecationWarning)
+import warnings
+warnings.filterwarnings('ignore', category=DeprecationWarning)
 
-##   Set up research parameters
+##   Set up research parameters mostly in abt_constants.py
 
-
-ownname = sys.argv[0]
- 
  
 ############################################
 #
@@ -59,16 +56,52 @@ if MODEL==SMALL:
 #
 #      Manage outer loop (a set of runs)
 #
-########## define metadata and output data files
+
+
+#######################################################################
+#
+# define output files for metadata and output data
+#
+#
+
+ownname = sys.argv[0]
+ 
+datadir = 'bw_output/'
+seqdir  = 'sequences/'
 
 metadata_name = 'hmm_bw_metadata.txt'
-
+# Metadata file format:  each line: (comma sep)
+#
+# 1) date and time stamp
+# 2) name of data file
+# 3) ownname  (name of the top level file)
+# 4) number of HMM / BT states
+# 5) text field (comment)
+#
 datafile_name = 'data_'+str(uuid.uuid4())+'.csv'  # a unique filename
+# Datafile format:  comma sep
+#
+#  1)  Task code (2=Baum Welch)
+#  2)  Ratio  (codeword mean spacing / sigma)
+#  3)  di     (codeword spacing)
+#  4)  Sigma
+#  5)  run#
+#  6)  # of runs
+#  7)  e2 (RMS error)
+#  8)  emax (max error)
 
-sequence_name = 'seq_'+str(uuid.uuid4())
-# HMM analysis output
-of = open(oname,'w')
- 
+sequence_name =  seqdir+'seq_'+str(uuid.uuid4())
+#
+#  sequence file format
+#
+#  1) true state name
+#  2) observation codeword value
+#  
+
+fmeta = fopen(metadata_name, 'a')  #  append metadata to a big log
+fdata = fopen(datafile_name, 'w')  #  unique filename for csv output 
+# open sequence_name   in NEWDATA section below 
+
 em = 9999
 
 nsims = 0
@@ -83,11 +116,8 @@ NEpochs = 20000    # testing
 
 di = int(Ratio*sig)   # change in output obs mean per state
 
-if CSVOUTPUT:
-    fdata = open(datafile_name,'w')
-    print >> fdata, '-------',datetime.datetime.now().strftime("%y-%m-%d-%H:%M"), 'Nruns: ', Nruns, 'x', NEpochs, 'HMM_delta: ', HMM_delta, ' #states: ',len(names)
-    #task, Ratio, int(di), float(di)/float(sig),run+1,Nruns,e2,em)
-    print >> fdata, 'tsk  Ratio   di   Sigma  run#     e2     emax '
+##  output the metadata
+print >> fmeta , datetime.datetime.now().strftime("%y-%m-%d-%H:%M"), datafile_name, ownname, len(names),  comment
 
 #################################################
 #
@@ -98,9 +128,7 @@ for run in range(Nruns):
     print '\n-------------------------------------------\n   Starting Run ',run+1, 'of', Nruns, '\n\n'
     # open the log file
     id = str(int(100*(Ratio)))+'iter'+str(run)  # encode the ratio (delta mu/sigma) into filename
-    lfname = logdir+script_name+'_statelog.txt'
-
-
+ 
     #####    make a string report describing the setup
     #
     #
@@ -132,7 +160,7 @@ for run in range(Nruns):
     #    Generate Simulated Data only on first round
     #
     if(NEWDATA):
-        seq_data_f = open(lfname,'w')
+        seq_data_f = open(sequence_name,'w')
         bb.set('logfileptr',seq_data_f)   #allow BT nodes to access file
         osu = names[-2]  # state names
         ofa = names[-1]
@@ -146,7 +174,6 @@ for run in range(Nruns):
             seq_data_f.write('---\n')
 
         seq_data_f.close()
-        seq_data_f = open(lfname,'r') # save file and reset pointer
 
         print 'Finished simulating ',NEpochs,'  epochs'
 
@@ -156,7 +183,7 @@ for run in range(Nruns):
     #    Read simulated sequence data
     #
 
-    seq_data_f = open(lfname,'r')
+    seq_data_f = open(sequence_name,'r')
     [X,Y,Ls] = read_obs_seqs(seq_data_f)
     seq_data_f.close()
 
@@ -196,8 +223,8 @@ for run in range(Nruns):
     testeps = 0.00001
     [e,e2,em,N2,im,jm,anoms,erasures] = Adiff(A,M.transmat_, names)
 
-    print >> of, 'EAavg    A-matrix error: {:.8f} ({:d} non zero elements)'.format(e2,N2)
-    print >> of, 'EAinfty  A-matrix error: {:.3f} (at {:d} to {:d})'.format(em,im,jm)
+    ##  some assertions to make sure pertubations are being done right
+    #   (if they aren't there's not point in doing the sim)
     assert em > 0.0 , 'Perturbation caused no difference in A matrices'
     assert e2 > 0.0 , 'Perturbation caused no difference in A matrices'
     print 'Model Size: ',len(names)
@@ -221,47 +248,40 @@ for run in range(Nruns):
         print "starting HMM fit with ", len(Y), ' observations.'
 
         M.fit(Y,Ls)
-        # print the output file header
-        for rline in rep:
-            print >>of, rline
+        ## print the output file header
+        #for rline in rep:
+            #print >>of, rline
 
-        outputAmat(A,"Original A Matrix", names, of)
-        outputAmat(B,"Perturbed A Matrix", names, of)
-        outputAmat(M.transmat_,"New A Matrix (pertb + HMM fit)", names, of)
+        #outputAmat(A,"Original A Matrix", names, of)
+        #outputAmat(B,"Perturbed A Matrix", names, of)
+        #outputAmat(M.transmat_,"New A Matrix (pertb + HMM fit)", names, of)
 
 
         ##  compare the two A matrices
         #     (compute error metrics)
         [e,e2,em,N2,im,jm,anoms,erasures] = Adiff(A,M.transmat_, names)
 
-        print >> of, 'EAavg    A-matrix error: {:.8f} ({:d} non zero elements)'.format(e2,N2)
-        print >> of, 'EAinfty  A-matrix error: {:.3f} (at {:d} to {:d})'.format(em,im,jm)
+        #print >> of, 'EAavg    A-matrix error: {:.8f} ({:d} non zero elements)'.format(e2,N2)
+        #print >> of, 'EAinfty  A-matrix error: {:.3f} (at {:d} to {:d})'.format(em,im,jm)
 
         if len(anoms) == 0:
             anoms = 'None'
-        print >> of, 'Anomalies: ', anoms
+        #print >> of, 'Anomalies: ', anoms
         if len(erasures) == 0:
             anoms = 'None'
-        print >> of, 'Erasures : ', erasures
+        #print >> of, 'Erasures : ', erasures
 
-    if CSVOUTPUT:
         print >>fdata, '{:2d}, {:.3f}, {:3d}, {:.3f}, {:2d}, {:2d}, {:.3f}, {:.3f}'.format(task, Ratio, int(di), float(sig),run+1,Nruns,e2,em)
 
     nsims += 1
     emT += em
     e2T += e2
-    # update an information log on this run
-    print >> infolog, datetime.datetime.now().strftime("%y-%m-%d-%H-%M"), 'task: ', task, ' run ',run+1,'/',Nruns, ' NEpochs: ', NEpochs,'Emax: ', em
-    infolog.flush()    # make sure this info visible in file
-    os.fsync(infolog.fileno())
 
 #  End of loop of runs
 
-if CSVOUTPUT:
-    print >>fdata, '{:3d} {:s} {:.3f}, {:.3f}'.format(task, 'Average e2, em: ',e2T/nsims,emT/nsims)
-    fdata.close()
+#print >>fdata, '{:3d} {:s} {:.3f}, {:.3f}'.format(task, 'Average e2, em: ',e2T/nsims,emT/nsims)
+fdata.close()
+fmeta.close()
 
-of.close()
-os.system('cp {:s} {:s}'.format(oname,outputdir+'lastoutput'))
 
 
