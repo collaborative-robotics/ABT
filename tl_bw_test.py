@@ -10,6 +10,7 @@
 
 import sys
 import os
+import uuid
 import datetime
 from hmm_bt import *
 from abt_constants import *
@@ -26,8 +27,10 @@ MODEL = BIG
 
 ##   Set up research parameters
 
-CSVOUTPUT = True
 
+ownname = sys.argv[0]
+ 
+ 
 ############################################
 #
 #        Basic Job Config
@@ -36,8 +39,7 @@ CSVOUTPUT = True
 NEWDATA = True  # flag to generate data once
 
 task = BaumWelch   # Viterbi / Forward
-
-script_name = 'tmp_testing'
+ 
 
 #
 #    Change non-zero A-matrix elements to RANDOM [0.0-1.0)
@@ -57,24 +59,16 @@ if MODEL==SMALL:
 #
 #      Manage outer loop (a set of runs)
 #
-########## results output files
+########## define metadata and output data files
 
-logdir = 'logs_'+script_name+'/'
+metadata_name = 'hmm_bw_metadata.txt'
 
-outputdir = 'out_'+script_name+'/'
+datafile_name = 'data_'+str(uuid.uuid4())+'.csv'  # a unique filename
 
-if not os.path.isdir(logdir):  # if this doesn't exist, create it.
-    os.mkdir(logdir)
-if not os.path.isdir(outputdir):  # if this doesn't exist, create it.
-    os.mkdir(outputdir)
-
-oname = outputdir +  'hmm_fit_out_'+datetime.datetime.now().strftime("%y-%m-%d-%H-%M")
-
+sequence_name = 'seq_'+str(uuid.uuid4())
 # HMM analysis output
 of = open(oname,'w')
-
-# log file for progress info
-infolog = open('infolog'+script_name, 'a')  # append
+ 
 em = 9999
 
 nsims = 0
@@ -90,10 +84,10 @@ NEpochs = 20000    # testing
 di = int(Ratio*sig)   # change in output obs mean per state
 
 if CSVOUTPUT:
-    fcsv = open('csvlog'+script_name,'a')
-    print >> fcsv, '-------',datetime.datetime.now().strftime("%y-%m-%d-%H:%M"), 'Nruns: ', Nruns, 'x', NEpochs, 'HMM_delta: ', HMM_delta, ' #states: ',len(names)
+    fdata = open(datafile_name,'w')
+    print >> fdata, '-------',datetime.datetime.now().strftime("%y-%m-%d-%H:%M"), 'Nruns: ', Nruns, 'x', NEpochs, 'HMM_delta: ', HMM_delta, ' #states: ',len(names)
     #task, Ratio, int(di), float(di)/float(sig),run+1,Nruns,e2,em)
-    print >> fcsv, 'tsk  Ratio   di   Sigma  run#     e2     emax '
+    print >> fdata, 'tsk  Ratio   di   Sigma  run#     e2     emax '
 
 #################################################
 #
@@ -251,7 +245,7 @@ for run in range(Nruns):
         print >> of, 'Erasures : ', erasures
 
     if CSVOUTPUT:
-        print >>fcsv, '{:2d}, {:.3f}, {:3d}, {:.3f}, {:2d}, {:2d}, {:.3f}, {:.3f}'.format(task, Ratio, int(di), float(sig),run+1,Nruns,e2,em)
+        print >>fdata, '{:2d}, {:.3f}, {:3d}, {:.3f}, {:2d}, {:2d}, {:.3f}, {:.3f}'.format(task, Ratio, int(di), float(sig),run+1,Nruns,e2,em)
 
     nsims += 1
     emT += em
@@ -264,8 +258,8 @@ for run in range(Nruns):
 #  End of loop of runs
 
 if CSVOUTPUT:
-    print >>fcsv, '{:3d} {:s} {:.3f}, {:.3f}'.format(task, 'Average e2, em: ',e2T/nsims,emT/nsims)
-    fcsv.close()
+    print >>fdata, '{:3d} {:s} {:.3f}, {:.3f}'.format(task, 'Average e2, em: ',e2T/nsims,emT/nsims)
+    fdata.close()
 
 of.close()
 os.system('cp {:s} {:s}'.format(oname,outputdir+'lastoutput'))
