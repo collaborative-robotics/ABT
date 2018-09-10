@@ -69,6 +69,11 @@ ownname = sys.argv[0]
 datadir = 'bw_output/'
 seqdir  = 'sequences/'
 
+#if these don't exist, create them 
+for ndir in [datadir, seqdir]:
+    if not (os.path.exists(os.path.dirname(ndir))):
+        os.mkdir(ndir)
+
 metadata_name = 'hmm_bw_metadata.txt'
 # Metadata file format:  each line: (comma sep)
 #
@@ -78,7 +83,7 @@ metadata_name = 'hmm_bw_metadata.txt'
 # 4) number of HMM / BT states
 # 5) text field (comment)
 #
-datafile_name = 'data_'+str(uuid.uuid4())+'.csv'  # a unique filename
+datafile_name = datadir+'data_'+str(uuid.uuid4())+'.csv'  # a unique filename
 # Datafile format:  comma sep
 #
 #  1)  Task code (2=Baum Welch)
@@ -98,8 +103,8 @@ sequence_name =  seqdir+'seq_'+str(uuid.uuid4())
 #  2) observation codeword value
 #  
 
-fmeta = fopen(metadata_name, 'a')  #  append metadata to a big log
-fdata = fopen(datafile_name, 'w')  #  unique filename for csv output 
+fmeta = open(metadata_name, 'a')  #  append metadata to a big log
+fdata = open(datafile_name, 'w')  #  unique filename for csv output 
 # open sequence_name   in NEWDATA section below 
 
 em = 9999
@@ -117,7 +122,8 @@ NEpochs = 20000    # testing
 di = int(Ratio*sig)   # change in output obs mean per state
 
 ##  output the metadata
-print >> fmeta , datetime.datetime.now().strftime("%y-%m-%d-%H:%M"), datafile_name, ownname, len(names),  comment
+line = '{:s} | {:s} | {:s} | {:d} | {:s}'.format(datetime.datetime.now().strftime("%y-%m-%d-%H:%M"), datafile_name, ownname, len(names),  comment)
+print >> fmeta , line
 
 #################################################
 #
