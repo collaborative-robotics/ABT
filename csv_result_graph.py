@@ -76,9 +76,8 @@ for file in files:
             stpert  = row[3]
             stsig   = row[4]
             strn    = row[5]
-            stnr    = row[6]
-            stEavg  = row[7]
-            stEmax  = row[8]
+            stEavg  = row[6]
+            stEmax  = row[7]
 
             Ratio.append(float(stRatio))
             pert.append(float(stpert))
