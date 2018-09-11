@@ -18,8 +18,6 @@ from abt_constants import *
 #MODEL = SMALL 
 MODEL = BIG
 
-comment = 'testing new output system'
-
 ##
 #     Uncomment to supress Deprecation Warnings from hmm_lean / scikit
 import warnings
@@ -63,6 +61,8 @@ if MODEL==SMALL:
 # define output files for metadata and output data
 #
 #
+
+comment = 'testing new output system: 0.5Ratio'
 
 ownname = sys.argv[0]
  
@@ -115,7 +115,7 @@ emT = 0.0
 
 Nruns = 10  #testing
 sig = 2.000
-Ratio = 1.0  #testing
+Ratio = 0.50  #testing
 HMM_delta = 0.2  #testing
 NEpochs = 20000    # testing
 
@@ -190,6 +190,9 @@ for run in range(Nruns):
     #
 
     seq_data_f = open(sequence_name,'r')
+    X = []
+    Y = []
+    Ls = []
     [X,Y,Ls] = read_obs_seqs(seq_data_f)
     seq_data_f.close()
 
