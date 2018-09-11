@@ -45,13 +45,15 @@ script_name = 'bw_hmm'
 # amount HMM parameters should be ofset
 #   from the ABT parameters.  Offset has random sign (+/-)
 
-if len(sys.argv) != 2:
-    print 'Please use a single command line argument:'
-    print ' > tl_bw_hmm    X.XXX'
+if len(sys.argv) != 3:
+    print 'Please use two command line arguments as follows:'
+    print ' > tl_bw_hmm    X.XXX comment'
     print '  to indicate the HMM perturbation value (0.0--1.0)'
+    print '  and a comment (use single quotes for multiple words) to describe the run'
     quit()
     
 HMM_delta = float(sys.argv[1])
+comment = str(sys.argv[2])
 
 #
 ############################################
@@ -74,8 +76,6 @@ if MODEL==SMALL:
 # define output files for metadata and output data
 #
 #
-
-comment = ''  # add a comment to define your experiment for record. 
 
 ownname = sys.argv[0]
  
@@ -292,7 +292,7 @@ for run in range(Nruns):
             anoms = 'None'
         #print >> of, 'Erasures : ', erasures
 
-        print >>fdata, '{:2d}, {:.3f}, {:3d}, {:.3f}, {:.3f}, {:2d}, {:2d}, {:.3f}, {:.3f}'.format(task, Ratio, int(di), HMM_delta, float(sig), run+1, e2,em)
+        print >>fdata, '{:2d}, {:.3f}, {:3d}, {:.3f}, {:.3f}, {:2d}, {:.3f}, {:.3f}'.format(task, Ratio, int(di), HMM_delta, float(sig), run+1, e2,em)
 
     nsims += 1
     emT += em

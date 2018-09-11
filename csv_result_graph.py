@@ -34,8 +34,9 @@ for line in fmeta:
     runfacts = line.split('|')
     runs.append(runfacts)
 
+MenuSize = 30
 print 'Select one or more files to plot:'
-menu = runs[-10:]
+menu = runs[-MenuSize:]
 for [i,r] in enumerate(menu):  # last 10 runs for ref 
     date = r[0]
     nstates = r[4]
@@ -72,8 +73,8 @@ for file in files:
             nrow += 1
             sttask  = row[0]
             stRatio = row[1]
-            stdi    = row[2]   # same as HMM_delta
-            stpert  = row[3]
+            stdi    = row[2]   
+            stpert  = row[3]    # same as HMM_delta
             stsig   = row[4]
             strn    = row[5]
             stEavg  = row[6]
@@ -85,8 +86,7 @@ for file in files:
             Emax.append(float(stEmax))
 
 
-print 'Read in ', nrow,' rows'
-print 'len(Ratio): ', len(Ratio)
+print 'Read in ', nrow,' rows' 
 print ''
 fig, ax1 = plt.subplots(figsize=(14,6))
 #plt.subplots_adjust(left=.25)
@@ -97,6 +97,7 @@ ax1.xaxis.grid(True,linestyle='-', which='major', color='lightgrey',alpha=0.5)
 
 ymax = 0.4   #error plotting range 0.0--ymax
 
+##   Collect error values for each "X" value
 data = []
 rs = set(Ratio)
 print 'Ratios: ', sorted(rs)
@@ -106,16 +107,17 @@ for r in rs:
     for [j, v] in enumerate(Eavg):
         if abs(r-Ratio[j])<epsilon:
             l.append(v)
-    data.append(l)
+    data.append(l)   # get a list of lists: [ ... [Eavg samples for given ratio ] ....]
 
 dperts= []
 perts = set(pert)
+print 'Perturbations (HMM_deltas):', sorted(perts)
 for p in perts:
     l = []
     for [j,v] in enumerate(Eavg):
         if abs(p-pert[j])<epsilon:
             l.append(v)
-    dperts.append(l)
+    dperts.append(l)  # get a list of lists: [ ... [Eavg samples for given perturbation ] ....]
 
 #print data
 
@@ -130,7 +132,7 @@ for b in bp['boxes']:
 
 
 plt.xlabel('Ratio (di/sig)')
-plt.ylabel('Error')
+plt.ylabel('RMS Error')
 plt.ylim(0.0, ymax)
 plt.title('Avg Error vs. Ratio')
 
@@ -150,13 +152,12 @@ bp2 = plt.boxplot(dperts, notch=True,vert=True ,patch_artist=True)
 for b in bp['boxes']:
     b.set_facecolor('lightblue')
 
-
 plt.xlabel('HMM A-matrix Perturbation')
-plt.ylabel('Error')
+plt.ylabel('RMS Error')
 plt.ylim(0.0, ymax)
 plt.title('Avg Error vs. Perturbation')
 
-tstrs = [0.00]
+tstrs = ['0.0']
 for p in sorted(perts):
     tstrs.append(str(p))
 plt.xticks(range(len(perts)+1), tstrs)
