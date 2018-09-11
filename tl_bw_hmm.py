@@ -84,6 +84,8 @@ git_hash = subprocess.check_output(['git', 'rev-parse', 'HEAD'])[:10]  # first 1
 datadir = 'bw_output/'
 seqdir  = 'sequences/'
 
+urunid = str(uuid.uuid4())  # a unique hash code for this run 
+
 #if these don't exist, create them 
 for ndir in [datadir, seqdir]:
     if not (os.path.exists(os.path.dirname(ndir))):
@@ -100,7 +102,7 @@ metadata_name = 'hmm_bw_metadata.txt'
 # 5) number of HMM / BT states
 # 6) text field (comment)
 #
-datafile_name = datadir+'data_'+str(uuid.uuid4())+'.csv'  # a unique filename
+datafile_name = datadir+'data_'+urunid+'.csv'  # a unique filename
 # Datafile format:  comma sep
 #
 #  1)  Task code (2=Baum Welch)
@@ -112,7 +114,7 @@ datafile_name = datadir+'data_'+str(uuid.uuid4())+'.csv'  # a unique filename
 #  7)  e2 (RMS error)
 #  8)  emax (max error)
 
-sequence_name =  seqdir+'seq_'+str(uuid.uuid4())
+sequence_name =  seqdir+'seq_'+urunid+'.txt'   # name of sim sequence file
 #
 #  sequence file format
 #
@@ -215,7 +217,7 @@ for run in range(Nruns):
     #
     #    HMM setup
     #
-    Ac = A.copy()
+    Ac = A.copy()  # isolate orig A matrix from HMM
     Ar = A.copy()  # reference original copy
     M = HMM_setup(Pi,Ac,sig,names)
 
