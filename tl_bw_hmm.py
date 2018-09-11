@@ -51,7 +51,7 @@ if len(sys.argv) != 2:
     print '  to indicate the HMM perturbation value (0.0--1.0)'
     quit()
     
-HMM_delta = sys.argv[1]
+HMM_delta = float(sys.argv[1])
 
 #
 ############################################
@@ -216,6 +216,7 @@ for run in range(Nruns):
     #    HMM setup
     #
     Ac = A.copy()
+    Ar = A.copy()  # reference original copy
     M = HMM_setup(Pi,Ac,sig,names)
 
     #############################################
@@ -232,14 +233,14 @@ for run in range(Nruns):
     print 'Applied Matrix Perturbation: ' + str(HMM_delta)
     A_row_test(M.transmat_, sys.stdout)
 
-
     # special test code
     #  compare the two A matrices
     #     (compute error metrics)
     testeps = 0.00001
-    if HMM_delta > testeps:
-        [e,e2,em,N2,im,jm,anoms,erasures] = Adiff(Ac,M.transmat_, names)
+    if HMM_delta > testeps: 
+        [e,e2,em,N2,im,jm,anoms,erasures] = Adiff(Ar,M.transmat_, names)
 
+        
         ##  some assertions to make sure pertubations are being done right
         #   (if they aren't there's not point in doing the sim)
         assert em > 0.0 , 'Perturbation caused no difference in A matrices'
