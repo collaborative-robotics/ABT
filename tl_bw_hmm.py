@@ -95,24 +95,24 @@ for ndir in [datadir, seqdir]:
 metadata_name = 'hmm_bw_metadata.txt'
 # Metadata file format:  each line: (comma sep)
 #
-# 1) date and time stamp
-# 2) name of data file
-# 3) ownname  (name of the top level file)
-# 4) git hash (1st 10 chars of current git hash)
-# 5) number of HMM / BT states
-# 6) text field (comment)
+#  0) date and time stamp
+#  1) name of data file
+#  2) ownname  (name of the top level file)
+#  3) git hash (1st 10 chars of current git hash)
+#  4) number of HMM / BT states
+#  5) text field (comment)
 #
 datafile_name = datadir+'data_'+urunid+'.csv'  # a unique filename
 # Datafile format:  comma sep
 #
-#  1)  Task code (2=Baum Welch)
-#  2)  Ratio  (codeword mean spacing / sigma)
-#  3)  di     (codeword spacing)
+#  0)  Task code (2=Baum Welch)
+#  1)  Ratio  (codeword mean spacing / sigma)
+#  2)  di     (codeword spacing)
+#  3)  HMM_delta    amt HMM params changed
 #  4)  Sigma
 #  5)  run#
-#  6)  # of runs
-#  7)  e2 (RMS error)
-#  8)  emax (max error)
+#  6)  e2 (RMS error)
+#  7)  emax (max error)
 
 sequence_name =  seqdir+'seq_'+urunid+'.txt'   # name of sim sequence file
 #
@@ -292,7 +292,7 @@ for run in range(Nruns):
             anoms = 'None'
         #print >> of, 'Erasures : ', erasures
 
-        print >>fdata, '{:2d}, {:.3f}, {:3d}, {:.3f}, {:2d}, {:2d}, {:.3f}, {:.3f}'.format(task, Ratio, int(di), float(sig),run+1,Nruns,e2,em)
+        print >>fdata, '{:2d}, {:.3f}, {:3d}, {:.3f}, {:.3f}, {:2d}, {:2d}, {:.3f}, {:.3f}'.format(task, Ratio, int(di), HMM_delta, float(sig), run+1, e2,em)
 
     nsims += 1
     emT += em
