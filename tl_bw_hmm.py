@@ -37,7 +37,6 @@ warnings.filterwarnings('ignore', category=DeprecationWarning)
 NEWDATA = True  # flag to generate data once
 
 task = BaumWelch   # Viterbi / Forward
- 
 
 script_name = 'bw_hmm'
 
@@ -54,6 +53,13 @@ if len(sys.argv) != 3:
     
 HMM_delta = float(sys.argv[1])
 comment = str(sys.argv[2])
+
+#     Normally 0.0 < HMM_delta < 0.500
+###   As a flag, if HMM_delta > 5.0 it is a signal that HMM initial A matrix is RANDOM
+HMM_RANDOM_INIT = False
+if HMM_delta > 4.95:
+    HMM_RANDOM_INIT = True
+
 
 #
 ############################################
@@ -228,18 +234,35 @@ for run in range(Nruns):
     #outputAmat(M.transmat_,'Model A matrix',names,sys.stdout)
 
     A_row_test(M.transmat_, sys.stdout)
+    
+    testeps = 0.00001
+    if(HMM_delta > testeps):
+        #HMM_ABT_to_random(M)   # randomize probabilites
+        #print 'Applied Random Matrix Perturbation'
+        HMM_perturb(M, HMM_delta)
+        #print 'Applied Matrix Perturbation: ' + str(HMM_delta)
+        
 
-    #HMM_ABT_to_random(M)   # randomize probabilites
-    #print 'Applied Random Matrix Perturbation'
-    HMM_perturb(M, HMM_delta)
-    print 'Applied Matrix Perturbation: ' + str(HMM_delta)
+    if (HMM_RANDOM_INIT):
+        A_rand = A.copy() 
+        [rn,cn] = A_rand.shape
+        for r in range(rn):      # normalize the rows
+            rsum = 0.0
+            for c in range(cn):
+                A_rand[r][c] = random.random()
+                rsum += A_rand[r][c]
+            for c in range(cn):
+                A_rand[r][c] /= rsum
+        M.transmat_ = A_rand
+        print 'Applied FULLY RANDOM Matrix Perturbation: '
+        outputAmat(M.transmat_, 'RANDOM a-mat', names)
+        
+    # test that all rows sum to 1.0
     A_row_test(M.transmat_, sys.stdout)
-
     # special test code
     #  compare the two A matrices
     #     (compute error metrics)
-    testeps = 0.00001
-    if HMM_delta > testeps: 
+    if HMM_delta > testeps and not HMM_RANDOM_INIT: 
         [e,e2,em,N2,im,jm,anoms,erasures] = Adiff(Ar,M.transmat_, names)
 
         

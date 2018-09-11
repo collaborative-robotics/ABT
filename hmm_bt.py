@@ -99,6 +99,10 @@ def HMM_ABT_to_random(M):
     
 # apply a delta (random +-) to the elements of A
 #   subject to sum of row = 1.]
+#
+#    NEW: if d > 5  initialize A matrix to RANDOM values
+#
+
 def HMM_perturb(M, d):
       # A matrix
     A = M.transmat_
