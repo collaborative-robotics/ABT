@@ -3,13 +3,14 @@
 ## hmm model params for SIMPLE 4-state BT
 import numpy as np
 from abt_constants import *
+from abtclass import *
  
 #
 
 names = ['l1','l2','l3','l4', 'OutS', 'OutF']
 
-N = len(names)
- 
+N = len(names) 
+
 # PS = prob of success for each node
 # note dummy value for PS[0] for math consistency
 PS = [0, 0.65, 0.75, .8, 0.9, 1.0,1.0]
@@ -42,6 +43,8 @@ Pi[0] = 1.0      # always start at state 1
 #  This is probably not nesc:   names.index('l3') == 2
 statenos = {'l1':1, 'l2': 2, 'l3':3, 'l4':4,  'OutS':5, 'OutF':6}
 
+di = 2  # placeholder
+
 ###  Regenerate output means:
 i = FIRSTSYMBOL
 #di = Ratio*sig  # = nxsigma !!  now in abt_constants
@@ -49,5 +52,12 @@ for n in outputs.keys():
     outputs[n] = i
     i += di
     
-    
-    
+
+modelo00 = model(len(names))
+modelo00.A = A
+modelo00.PS = PS
+modelo00.outputs = outputs
+modelo00.statenos = statenos
+modelo00.names = names
+
+

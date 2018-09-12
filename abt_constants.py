@@ -10,6 +10,8 @@ FIRSTSYMBOL = 20
 SMALL = 1   # flags to switch models 
 BIG   = 2
 
+RatioList = [0.25, 1.0, 2.5, 5.0]  # output spacing ratios (di/sigma)
+
 MODEL = SMALL  # can override
 
 T = True
@@ -21,8 +23,6 @@ BaumWelch = 2
 
 ######################
 sig = 2.0
-Ratio = 1.0    # spread of symbols relative to obs SD
-di = int(Ratio*sig)   # change in output obs mean per state
 
 K = 1000
 M = 1000*1000
