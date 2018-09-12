@@ -16,7 +16,19 @@ from abt_constants import *
 global NEpochs
 
 # BT and HMM parameters here
-from  model00 import *
+#from  model00 import *
+
+class model():
+    def __init__(self,Nstates):
+        self.n = Nstates
+        self.A = np.zeros([Nstates+2,Nstates+2])
+        self.PS = np.zeros(Nstates+2)     # prob of success
+        self.outouts = {}
+        self.names = []
+        self.Pi = np.zeros(Nstates+2)
+        self.Pi[0] = 1.0  # always start at first state
+        self.statenos = {}
+        self.outputs = np.zeros(Nstates+2)  # center (mean) of each output dist)
 
 def gaussian(x, mu, sig):
     sig = abs(sig)

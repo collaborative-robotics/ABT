@@ -21,11 +21,10 @@ from abtclass import *
 # BT and HMM parameters here
 from abt_constants import *
 
-from model02 import *
-
+ 
 leafs = []
 
-def ABTtree():
+def ABTtree(mod):
 ####################################################################################
 ##
 #                    ABT for a little 4-leaf BT
@@ -37,11 +36,7 @@ def ABTtree():
 
     LeafDebug   = False
     SolverDebug = False
-
-    if not os.path.isdir(logdir):  # if this doesn't exist, create it.
-        os.mkdir(logdir)
-
-
+ 
     #print outputs
     #quit()
 
@@ -109,9 +104,9 @@ def ABTtree():
     # set up leaf probabilities
     for l in leafs:
         # output observeation mu, sigma
-        l.set_Obs_Density(outputs[l.Name],sig)
+        l.set_Obs_Density(mod.outputs[l.Name],sig)
         # set up the Ps
-        l.set_Ps(PS[statenos[l.Name]])
+        l.set_Ps(mod.PS[mod.statenos[l.Name]])
         #print ''
 
     return [demo_bt, bb]
