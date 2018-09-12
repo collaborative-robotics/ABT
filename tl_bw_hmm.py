@@ -162,7 +162,7 @@ for Ratio in RatioList:
         model.outputs[n] = i
         i += di
     
-
+    NEWDATA = True   
     for run in range(Nruns):
 
         print '\n-------------------------------------------\n   Starting Run ',run+1, 'of', Nruns, '\n\n'
