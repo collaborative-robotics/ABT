@@ -2,10 +2,10 @@
 #
 ## hmm model params
 
-## hmm model params
 import numpy as np
 from abt_constants import *
-
+from abtclass import *
+ 
 names = ['l1','l2a1','l2b1','l2a2','l2b2', 'l345', 'l6a1', 'l6b1', 'l6a2', 'l6b2', 'l789', 'l10a1', 'l10b1', 'l10c1', 'OutS', 'OutF']
 
 N = len(names)
@@ -54,6 +54,7 @@ outputs = {'l1':2, 'l2a1': 5, 'l2b1':8, 'l2a2': 8,  'l2b2':11, 'l345':14, 'l6a1'
 
 statenos = {'l1':1, 'l2a1': 2, 'l2b1':3, 'l2a2':4,  'l2b2':5, 'l345':6, 'l6a1':7, 'l6b1':8, 'l6a2':9, 'l6b2':10, 'l789':11, 'l10a1':12, 'l10b1':13, 'l10c1':14, 'OutS':15, 'OutF':16}
 
+di = 2  # placeholder
 #################################################################
 ##  Regenerate output means:  (easier to change below)
 i = FIRSTSYMBOL
@@ -68,3 +69,14 @@ for n in names:
 
 Pi = np.zeros(16)
 Pi[0] = 1.0      # always start at state 1
+
+
+##  populate a model object for this model
+modelo01 = model(len(names))
+modelo01.A = A
+modelo01.PS = PS
+modelo01.outputs = outputs
+modelo01.statenos = statenos
+modelo01.names = names
+
+

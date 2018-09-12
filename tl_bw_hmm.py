@@ -19,6 +19,7 @@ from hmm_bt import *
 from abt_constants import *
 
 from model00 import *
+from model01 import *
 
 #MODEL = SMALL 
 #MODEL = BIG
@@ -66,7 +67,7 @@ comment = str(sys.argv[2])
 
 if MODEL== BIG:
     from peg2_ABT import * # big  14+2 state  # uses model01.py
-    #model = model00
+    model = modelo01
 if MODEL==SMALL:
     from simp_ABT import *  # small 4+2 state # uses model02.py
     model = modelo00
@@ -191,7 +192,7 @@ for Ratio in RatioList:
         #    Build the ABT and its blackboard
         #
 
-        [ABT, bb] = ABTtree(modelo00)  # defined in xxxxxxABT.py file
+        [ABT, bb] = ABTtree(model)  # defined in xxxxxxABT.py file
 
         #############################################
         #
@@ -267,6 +268,8 @@ for Ratio in RatioList:
             #   (if they aren't there's not point in doing the sim)
             assert em > 0.0 , 'Perturbation caused no difference in A matrices'
             assert e2 > 0.0 , 'Perturbation caused no difference in A matrices'
+            print 'em: {:.2f}'.format(em)
+            print 'e2: {:.2f}'.format(e2)
             if model.n < 8:
                 outS_index = 4
             else:

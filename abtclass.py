@@ -61,7 +61,8 @@ class aug_leaf(b3.Action):
 
     def set_Obs_Density(self, mu, sig):
         if (mu+sig) > NSYMBOLS or ((mu-sig) < 0):
-            print 'aug_leaf: Warning may gen negative observations'
+            print 'aug_leaf: Warning may gen negative/overrange observations'
+            print self.Name, mu, sig
             #quit()
         psum = 0.0
         pmin = 0.0001 # smallest allowed probability
