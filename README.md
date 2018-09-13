@@ -13,13 +13,13 @@ a python Behavior Tree library.  The new leaf class, `aug_leaf(b3.Action)` inher
 b3 Action class and adds transition and emission probabilities.  
 
 Emmisions (observations) from each state are modeled by `NSYMBOLS`  discrete symbols. 
-There is a Gaussian probability density applied to each state with mean `mu` and standard deviation `sigma`.
+There is a Gaussian probability density applied to each state with mean `mu` and standard deviation `sigma`.  The observations are integer valued.  Default sigma = 2.00
 
 ## Setup:
 
 To build a model you have to create three files (bad!)
 
- 1. `modelxx.py`.   This file contains/initializes
+1. `modelxx.py`.   This file contains/initializes
  
     a. The names of your ABT leafs,
     
@@ -27,15 +27,46 @@ To build a model you have to create three files (bad!)
     
     c. The mean and variance for the emission symbol distribution for each state
 
- 2. `[ProjName].py`.   This file sets up the ABT with 
+    d. an object of class model (defined in abtclass.py)
+
+2. `[ProjName].py`.   This file sets up the ABT with 
  
     a. the new leaf class `aug_leaf()` (from abtclass.py)
     
     b. the (current ProjName = `peg2.py`) e.g. peg in hole task. 
     
-    c. or- a simple test project:   `simp_ABT.py`
+    c. or- a simple test project:   `simp_ABT.py` with 4+2 states
 
- 3. `toplevelxx.py`.   This file seqences the computational steps, typically:
+    d. Coming soon: automatic generation of HMM from BT file
+
+2. Output Files
+
+  a.  hmm_bw_metadata.txt -- one line for each run of tl_xxxxxxx.py. 
+    Unique filenames are generated using URI's.  Each line contains 
+  0) date and time stamp
+  1) name of data file
+  2) ownname  (name of the top level file)
+  3) git hash (1st 10 chars of current git hash)
+  4) number of HMM / BT states
+  5) text field (comment)
+
+  b. sequences/   contains the simulated state transition/observation sequences
+
+  c. bw_output/   containts datafiles (item 1 of metadata).   Data file line:
+   0)  Task code (2=Baum Welch)
+   1)  Ratio  (codeword mean spacing / sigma)
+   2)  di     (codeword spacing)
+   3)  HMM_delta    amt HMM params changed
+   4)  Sigma
+   5)  run#
+   6)  e2 (RMS error)
+   7)  emax (max error)
+
+
+
+   
+
+3. `tl_bw_hmm.py`.   This file seqences the computational steps, typically:
  
     a. model setup
     
@@ -46,6 +77,8 @@ To build a model you have to create three files (bad!)
     d. HMM model fitting
     
     e. reporting
+
+    f. It has two command line arguments:   the HMM perturbation magnitude (0.0<p<0.5) and a text comment for the data meta file. 
     
 ## Other Files
 
