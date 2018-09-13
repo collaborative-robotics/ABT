@@ -16,7 +16,19 @@ from abt_constants import *
 global NEpochs
 
 # BT and HMM parameters here
-from  model00 import *
+#from  model00 import *
+
+class model():
+    def __init__(self,Nstates):
+        self.n = Nstates
+        self.A = np.zeros([Nstates+2,Nstates+2])
+        self.PS = np.zeros(Nstates+2)     # prob of success
+        self.outouts = {}
+        self.names = []
+        self.Pi = np.zeros(Nstates+2)
+        self.Pi[0] = 1.0  # always start at first state
+        self.statenos = {}
+        self.outputs = np.zeros(Nstates+2)  # center (mean) of each output dist)
 
 def gaussian(x, mu, sig):
     sig = abs(sig)
@@ -49,7 +61,8 @@ class aug_leaf(b3.Action):
 
     def set_Obs_Density(self, mu, sig):
         if (mu+sig) > NSYMBOLS or ((mu-sig) < 0):
-            print 'aug_leaf: Warning may gen negative observations'
+            print 'aug_leaf: Warning may gen negative/overrange observations'
+            print self.Name, mu, sig
             #quit()
         psum = 0.0
         pmin = 0.0001 # smallest allowed probability
