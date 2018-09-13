@@ -47,7 +47,11 @@ logdir = ''
 nargs = len(sys.argv)
 
 if nargs == 1:
-    GENDATA = False  # use standard data
+    print 'Please use a filename on command line'
+    print 'Args: ', sys.argv
+    print 'Usage: '
+    print '> test_seq_stats   [GENDATA|filename]'
+    quit()
 elif nargs == 2:
     if(sys.argv[1] == "GENDATA"):
         GENDATA = True
