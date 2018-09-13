@@ -19,7 +19,7 @@ from hmm_bt import *
 from abt_constants import *
 
 #MODEL = SMALL 
-MODEL = BIG
+#MODEL = BIG
 
 ##
 #    Supress Deprecation Warnings from hmm_lean / scikit
