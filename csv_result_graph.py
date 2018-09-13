@@ -95,33 +95,37 @@ rect.set_facecolor('white')
 ax1.xaxis.grid(True,linestyle='-', which='major', color='lightgrey',alpha=0.5)
 
 
-ymax = 0.4   #error plotting range 0.0--ymax
+ymax = 1.0  #error plotting range 0.0--ymax
 
+#####################################################
+#
 ##   Collect error values for each "X" value
+#
 data = []
 rs = set(Ratio)
 print 'Ratios: ', sorted(rs)
 epsilon = 0.0001
-for r in rs:
+for r in sorted(rs):
     l = []
     for [j, v] in enumerate(Eavg):
-        if abs(r-Ratio[j])<epsilon:
+        if abs(r-Ratio[j])<epsilon: # cheezy grep
             l.append(v)
     data.append(l)   # get a list of lists: [ ... [Eavg samples for given ratio ] ....]
 
 dperts= []
 perts = set(pert)
 print 'Perturbations (HMM_deltas):', sorted(perts)
-for p in perts:
+for p in sorted(perts):
     l = []
     for [j,v] in enumerate(Eavg):
-        if abs(p-pert[j])<epsilon:
+        if abs(p-pert[j])<epsilon:   # cheezy grep
             l.append(v)
     dperts.append(l)  # get a list of lists: [ ... [Eavg samples for given perturbation ] ....]
 
-#print data
 
 # make boxplots for Eavg
+
+
 
 ##########
 #
@@ -145,7 +149,7 @@ plt.show()
 
 ##########
 #
-#  Plot 2: Error vs. Ratio
+#  Plot 2: Error vs. Perturbation
 #
 
 bp2 = plt.boxplot(dperts, notch=True,vert=True ,patch_artist=True)
