@@ -41,7 +41,7 @@ To build a model you have to create three files (bad!)
 
 2. Output Files
 
-  a.  hmm_bw_metadata.txt -- one line for each run of tl_xxxxxxx.py. 
+    a.  hmm_bw_metadata.txt -- one line for each run of tl_xxxxxxx.py. 
     Unique filenames are generated using URI's.  Each line contains 
   0) date and time stamp
   1) name of data file
@@ -50,9 +50,9 @@ To build a model you have to create three files (bad!)
   4) number of HMM / BT states
   5) text field (comment)
 
-  b. sequences/   contains the simulated state transition/observation sequences
+    b. sequences/   contains the simulated state transition/observation sequences
 
-  c. bw_output/   containts datafiles (item 1 of metadata).   Data file line:
+    c. bw_output/   containts datafiles (item 1 of metadata).   Data file line:
    0)  Task code (2=Baum Welch)
    1)  Ratio  (codeword mean spacing / sigma)
    2)  di     (codeword spacing)
