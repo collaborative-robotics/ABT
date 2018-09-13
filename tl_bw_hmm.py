@@ -160,6 +160,9 @@ print >> fmeta , line
 #
 #   Outer Loop
 #
+if(NEWDATA==False and HMM_delta < testeps):   # no point in repeating the same computation!
+    Nruns = 1
+    
 for Ratio in RatioList:
     di = int(Ratio*sig)   # change in output obs mean per state
         
