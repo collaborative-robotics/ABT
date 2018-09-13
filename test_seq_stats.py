@@ -7,17 +7,14 @@ import sys
 
 import numpy as np
 import matplotlib.pyplot as plt
-from hmm_bt import *
+from   hmm_bt import *
+from   abt_constants import *  
 
-from abt_constants import *  
+MODEL = SMALL
 
-MODEL = BIG
-
-testeps = 1.96 / np.sqrt(float(NEpochs))  # will convert to confidence interval
-testsigeps = 0.10   # 1% of standard value 2.0
-
-print 'Test epsilon: ', testeps
-print 'Test sig epsilon: ', testsigeps
+max_avg_abs_non_zero = 0.01
+max_max_abs_non_zero = 0.03
+ 
 
 ##
 #    Supress Deprecation Warnings from hmm_lean / scikit
@@ -29,16 +26,19 @@ warnings.filterwarnings('ignore', category=DeprecationWarning)
 ############################################
 
 ##  The ABT file for the task (CHOOSE ONE)
+ 
 
-if MODEL== BIG:
+if MODEL==BIG:
     from peg2_ABT import * # big  14+2 state  # uses model01.py
     from model01 import *
     model = modelo01
+ 
     
 if MODEL==SMALL:
     from simp_ABT import *  # small 4+2 state # uses model02.py
     from model00 import *
     model = modelo00
+ 
 
 GENDATA = False  #  (determined by # args below)
 
@@ -61,17 +61,25 @@ print 'Starting observation stats test on ', lfname
 if GENDATA:
     print ' Generating NEW data'
 
-NEpochs = 100000
+    NEpochs = 100000
 
 num_states = model.n
     
+print 'Initial num states: ', num_states
+
 logf = open(lfname,'r')
+
+
+
+#
+#   Check that we have the right model for the data (for comparison)
+#
 
 
 print '\n\n\n                       Sequence Test Report '
 print '                                     checking state transition stats from ground truth \n\n'
 
-state_selection = 'l2'
+#state_selection = 'l2'
 
 X = []   # state names 
 Y = []   # observations
@@ -91,7 +99,8 @@ for line in logf:
        # store freq of state transitions
        for i in range(len(seq)):
            if(i>0):  # no transition INTO first state
-               j = names.index(seq[i])
+               assert seq[i] in model.names, 'Unknown state visited.  Probably wrong MODEL (BIG/SMALL) selection.'
+               j = model.names.index(seq[i])
                k = model.names.index(seq[i-1])
                Ahat[k,j] += 1
        Ls.append(len(os)) 
@@ -138,11 +147,31 @@ print 'A-matrix estimation errors: '
 
 Adiff_Report(A,Ahat,model.names) 
 
+[e,e2,em,N2,imax,jmax,anoms,erasures] = Adiff(A,Ahat,model.names)
+    
+####################################################################
+#
+#     State Transition Stats assertions
+#
+
+
+max_avg_abs_non_zero = 0.01
+max_max_abs_non_zero = 0.03
+
+assert abs(e2) < max_avg_abs_non_zero, 'Too much avg RMS error in non-zero elements'
+assert abs(em) < max_max_abs_non_zero, 'Too much MAX RMS error in non-zero elements'
+
+print 'Erasures: ', erasures
+
+assert erasures != 'None', 'Erasure(s) found'
+assert anoms    != 'None', 'Anomaly(s) found'
+
+    
 print 'Studied ',len(X), 'observations,', model.n, 'state model'
 
 #################################################################
 #
-#   Generate state visit frequencies
+#   Generate state visit frequencies report
 #
 #
 nv = np.zeros(model.n)
@@ -153,10 +182,7 @@ for i in range(len(X)):    # go through data once
 print '\n\nState Visit Frequency Report'
 for n in names:
     v = nv[names.index(n)]
-    print n, ' visited ', v ,'times out of ', nsims, ' = ', float(v)/float(nsims)
+    #print n, ' visited ', v ,'times out of ', nsims, ' = ', float(v)/float(nsims)
+    print '{:>10s}: visited {:6d} times out of {:6d} simulations ({:5.1f}%)'.format(n,int(v),nsims,100.0*float(v)/float(nsims))
         
-    
-    
-print 'WARNING: No Assertions Yet for this test'
-
-
+print 'Sequence test PASSED'
