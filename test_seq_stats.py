@@ -9,46 +9,61 @@ import numpy as np
 import matplotlib.pyplot as plt
 from hmm_bt import *
 
-from abt_constants import * 
-
-
-from abt_constants import *
+from abt_constants import *  
 
 MODEL = BIG
 
-testeps = 400 / float(NEpochs)   # should be sqrt()^-1 I guess
-print 'Test epsilon: ', testeps
+testeps = 1.96 / np.sqrt(float(NEpochs))  # will convert to confidence interval
+testsigeps = 0.10   # 1% of standard value 2.0
 
-# Select the ABT file here
+print 'Test epsilon: ', testeps
+print 'Test sig epsilon: ', testsigeps
+
+##
+#    Supress Deprecation Warnings from hmm_lean / scikit
+import warnings
+warnings.filterwarnings('ignore', category=DeprecationWarning)
+
+##   Set up research parameters mostly in abt_constants.py
+
+############################################
+
+##  The ABT file for the task (CHOOSE ONE)
+
+if MODEL== BIG:
+    from peg2_ABT import * # big  14+2 state  # uses model01.py
+    from model01 import *
+    model = modelo01
+    
 if MODEL==SMALL:
-    from simp_ABT import *    # basic 4-state HMM 
-elif MODEL==BIG:
-    from peg2_ABT import *         # elaborate 16-state HMM
-#
+    from simp_ABT import *  # small 4+2 state # uses model02.py
+    from model00 import *
+    model = modelo00
 
 GENDATA = False  #  (determined by # args below)
 
-logdir = 'logs/'
-
-# use this filename to know exact observation count.
-lfname = logdir + 'REF_test_statelog.txt'
-refdataname = lfname
+logdir = ''
 
 nargs = len(sys.argv)
 
 if nargs == 1:
-    GENDATA = False  # use standard data 
+    GENDATA = False  # use standard data
 elif nargs == 2:
     if(sys.argv[1] == "GENDATA"):
         GENDATA = True
+        Ratio = 3.0        #  set this for the generated data
         lfname = logdir+'TSTstatelog.txt'
     else:
         lfname = str(sys.argv[1])
+        Ratio = float(di)/sig
 
-print 'Starting state sequence stats test on ', lfname
+print 'Starting observation stats test on ', lfname
 if GENDATA:
     print ' Generating NEW data'
 
+NEpochs = 100000
+
+num_states = model.n
     
 logf = open(lfname,'r')
 
@@ -65,7 +80,7 @@ Ls =[]   # length of the epochs/runouts
 seq = [] # current state seq
 os  = [] # current obs seq
 
-Ahat = np.zeros((N,N))  # N def in model0x
+Ahat = np.zeros((model.n,model.n))  # N def in model0x
 
 nsims = 0
 for line in logf:
@@ -77,7 +92,7 @@ for line in logf:
        for i in range(len(seq)):
            if(i>0):  # no transition INTO first state
                j = names.index(seq[i])
-               k = names.index(seq[i-1])
+               k = model.names.index(seq[i-1])
                Ahat[k,j] += 1
        Ls.append(len(os)) 
        os  = []
@@ -98,9 +113,9 @@ for i in range(N-2):  # rows (but NOT OutS and OutF cause they don't transition 
     for j in range(N): # cols
         Ahat[i,j] /= rsum
         
-#state = names[13]
+#state = model.names[13]
 
-N = len(names) - 2   # don't expect OutF and OutS
+N = model.n - 2   # don't expect OutF and OutS
 
 # set up sums for each state
 s1 = np.zeros(N)
@@ -109,28 +124,28 @@ n  = np.zeros(N)  # counts for each state
 
 for i in range(len(X)): 
     for j in range(N):     # accumulate stats for each state
-        #print X[j],names[j]
-        if X[i] == names[j]:
+        #print X[j],model.names[j]
+        if X[i] == model.names[j]:
             s1[j] +=  Y[i][0]
             s2[j] += (Y[i][0])**2
             n[j]  += 1
             #print X[j], s1[j], s2[j]
 
-outputAmat(A,   "Model A Matrix",    names, sys.stdout)    
-outputAmat(Ahat,"Empirical A Matrix",names, sys.stdout)
+outputAmat(A,   "Model A Matrix",    model.names, sys.stdout)    
+outputAmat(Ahat,"Empirical A Matrix",model.names, sys.stdout)
 
 print 'A-matrix estimation errors: '
 
-Adiff_Report(A,Ahat,names) 
+Adiff_Report(A,Ahat,model.names) 
 
-print 'Studied ',len(X), 'observations,', len(names), 'state model'
+print 'Studied ',len(X), 'observations,', model.n, 'state model'
 
 #################################################################
 #
 #   Generate state visit frequencies
 #
 #
-nv = np.zeros(len(names))
+nv = np.zeros(model.n)
 for i in range(len(X)):    # go through data once
     s = X[i]  # current true state    
     nv[names.index(s)] += 1 # count the visit 
