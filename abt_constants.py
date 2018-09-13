@@ -11,9 +11,7 @@ SMALL = 1   # flags to switch models
 BIG   = 2
 
 RatioList = [5.0, 0.25, 1.0, 2.5]  # output spacing ratios (di/sigma)
-
-MODEL = SMALL  # can override
-
+ 
 T = True
 F = False
 

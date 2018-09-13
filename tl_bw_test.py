@@ -118,7 +118,7 @@ for ndir in [datadir, seqdir]:
         os.mkdir(ndir)
 
 
-metadata_name = 'test_metadata.txt'
+metadata_name = 'tmeta_test_data.txt'
 # Metadata file format:  each line: (comma sep)
 #
 #  0) date and time stamp
