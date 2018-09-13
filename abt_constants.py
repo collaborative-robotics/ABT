@@ -12,7 +12,7 @@ BIG   = 2
 
 RatioList = [5.0, 0.25, 1.0, 2.5]  # output spacing ratios (di/sigma)
 
-MODEL = BIG  # can override
+MODEL = SMALL  # can override
 
 T = True
 F = False
@@ -27,7 +27,7 @@ sig = 2.0
 K = 1000
 M = 1000*1000
 
-NEpochs = 5*K
+NEpochs = 20*K
 
 ####  How many analysis runs to do
-Nruns = 5
+Nruns = 15

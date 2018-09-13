@@ -12,11 +12,8 @@ import b3 as b3          # behavior trees
 import random as random
 import math as m
 import numpy as np
-import abt_constants
-
-
-global NEpochs
-
+#import abt_constants
+ 
 from abtclass import *
 # BT and HMM parameters here
 from  model01 import *

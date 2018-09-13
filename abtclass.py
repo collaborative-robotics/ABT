@@ -12,11 +12,7 @@ import b3 as b3          # behavior trees
 import math as m
 import numpy as np
 from abt_constants import *
-
-global NEpochs
-
-# BT and HMM parameters here
-#from  model00 import *
+ 
 
 class model():
     def __init__(self,Nstates):

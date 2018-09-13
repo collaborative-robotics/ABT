@@ -3,7 +3,7 @@
 ## hmm model params
 
 import numpy as np
-from abt_constants import *
+#from abt_constants import *
 from abtclass import *
  
 names = ['l1','l2a1','l2b1','l2a2','l2b2', 'l345', 'l6a1', 'l6b1', 'l6a2', 'l6b2', 'l789', 'l10a1', 'l10b1', 'l10c1', 'OutS', 'OutF']

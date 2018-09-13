@@ -65,11 +65,18 @@ if len(sys.argv) != 1:
     
 comment = 'xxxxxx TESTING xxxxx'
 
+
+##################################################################
+#
+#              Major Run Parameters
+#
 Nruns = 3  #testing
-sig = 2.000
+sig = 2.001
 Ratio = 3.00  #testing
 HMM_delta = 0.244  #testing
-NEpochs = 5000    # testing
+NEpochs = 20000    # testing
+##################################################################
+
 
 #################################################
 #     Normally 0.0 < HMM_delta < 0.500
@@ -111,7 +118,7 @@ for ndir in [datadir, seqdir]:
         os.mkdir(ndir)
 
 
-metadata_name = 'hmm_bw_metadata.txt'
+metadata_name = 'test_metadata.txt'
 # Metadata file format:  each line: (comma sep)
 #
 #  0) date and time stamp
@@ -158,6 +165,13 @@ print 'Model Size: ', model.n
 line = '{:s} | {:s} | {:s} | {:s} | {:d} | {:s}'.format(datetime.datetime.now().strftime("%y-%m-%d-%H:%M"), datafile_name, ownname, git_hash, model.n,  comment)
 print >> fmeta , line
 
+###
+###  Generate output means:
+i = FIRSTSYMBOL
+di = Ratio*sig  # = nxsigma !!  now in abt_constants
+for n in model.outputs.keys():
+    model.outputs[n] = i
+    i += di
 #################################################
 #
 #   Outer Loop
@@ -284,8 +298,8 @@ for run in range(Nruns):
         #   (if they aren't there's not point in doing the sim)
         assert em > 0.0 , 'Perturbation caused no difference in A matrices'
         assert e2 > 0.0 , 'Perturbation caused no difference in A matrices'
-        print 'em: {:.2f}'.format(em)
-        print 'e2: {:.2f}'.format(e2)
+        #print 'em: {:.2f}'.format(em)
+        #print 'e2: {:.2f}'.format(e2)
         if model.n < 8:
             outS_index = 4
         else:
