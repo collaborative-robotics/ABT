@@ -167,11 +167,9 @@ print >> fmeta , line
 
 ###
 ###  Generate output means:
-i = FIRSTSYMBOL
-di = Ratio*sig  # = nxsigma !!  now in abt_constants
-for n in model.outputs.keys():
-    model.outputs[n] = i
-    i += di
+
+model.setup_means(FIRSTSYMBOL,Ratio, sig)
+
 #################################################
 #
 #   Outer Loop
@@ -192,7 +190,6 @@ for run in range(Nruns):
     rep.append('sigma: {:.2f}    Symbol delta: {:d}   Ratio:  {:.2f}'.format(sig, int(di), float(di)/float(sig)))
     rep.append('----------------------------------------------------------------------------------')
     rep.append(' ')
-
 
     #############################################
     #
@@ -260,6 +257,7 @@ for run in range(Nruns):
 
     A_row_test(M.transmat_, sys.stdout)   # Make sure A-Matrix Valid
 
+    outputAmat(M.transmat_, 'Original Model A-mat', model.names)
     
     testeps = 0.00001
     if(not HMM_RANDOM_INIT and HMM_delta > testeps):
@@ -310,6 +308,9 @@ for run in range(Nruns):
     print 'Passed A-matrix Assertions'
     #end of special test code
 
+    outputAmat(M.transmat_, 'Perturbed Model A-mat', model.names)
+
+    quit()
     if(task == BaumWelch):
         #############################################
         #

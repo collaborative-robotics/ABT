@@ -19,12 +19,20 @@ class model():
         self.n = Nstates
         self.A = np.zeros([Nstates+2,Nstates+2])
         self.PS = np.zeros(Nstates+2)     # prob of success
-        self.outouts = {}
+        self.outputs = {}                 # mean value for each state name (dict)
         self.names = []
         self.Pi = np.zeros(Nstates+2)
         self.Pi[0] = 1.0  # always start at first state
         self.statenos = {}
-        self.outputs = np.zeros(Nstates+2)  # center (mean) of each output dist)
+        
+    def setup_means(self,first, Ratio, sig):
+        assert len(self.names) > 0, 'Names have to be set up first'
+        assert len(self.names) == self.n, 'Wrong number of states'
+        i = first
+        di = Ratio*sig  # 
+        for n in self.outputs.keys():
+            self.outputs[n] = i
+            i += di
 
 def gaussian(x, mu, sig):
     sig = abs(sig)
