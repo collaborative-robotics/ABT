@@ -207,6 +207,7 @@ def Adiff(A1,A2,names):    # from 8/28
     em = -99999.9
     e2 = 0   # avg error of NON ZERO elements
     N = A1.shape[0]
+    assert A1.shape == A2.shape, 'Adiff: A-matrix size mismatch!'
     #print 'Adiff: A shape: ', A1.shape
     N2 = 0   # count the non-zero Aij entries
             #  should be 2(l+2) of course

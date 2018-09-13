@@ -18,9 +18,6 @@ import datetime
 from hmm_bt import *
 from abt_constants import *
 
-from model00 import *
-from model01 import *
-
 #MODEL = SMALL 
 #MODEL = BIG
 
@@ -75,9 +72,12 @@ if HMM_delta > 4.95:
 
 if MODEL== BIG:
     from peg2_ABT import * # big  14+2 state  # uses model01.py
+    from model01 import *
     model = modelo01
+    
 if MODEL==SMALL:
     from simp_ABT import *  # small 4+2 state # uses model02.py
+    from model00 import *
     model = modelo00
     
 #############################################
@@ -184,7 +184,7 @@ for Ratio in RatioList:
         rep.append('-------------------------- BT to HMM ---------------------------------------------')
         stringtime = datetime.datetime.now().strftime("%y-%m-%d-%H-%M")
         rep.append(stringtime)
-        rep.append('NSYMBOLS: {:d}   NEpochs: {:d} N-States: {:d} '.format(NSYMBOLS,NEpochs,len(names)))
+        rep.append('NSYMBOLS: {:d}   NEpochs: {:d} N-States: {:d} '.format(NSYMBOLS,NEpochs,len(model.names)))
         rep.append('sigma: {:.2f}    Symbol delta: {:d}   Ratio:  {:.2f}'.format(sig, int(di), float(di)/float(sig)))
         rep.append('----------------------------------------------------------------------------------')
         rep.append(' ')
@@ -258,11 +258,11 @@ for Ratio in RatioList:
 
         
         testeps = 0.00001
-        if(HMM_delta > testeps):
+        if(not HMM_RANDOM_INIT and HMM_delta > testeps):
             #HMM_ABT_to_random(M)   # randomize probabilites
             #print 'Applied Random Matrix Perturbation'
             HMM_perturb(M, HMM_delta)
-            #print 'Applied Matrix Perturbation: ' + str(HMM_delta)
+            print 'Applied Matrix Perturbation: ' + str(HMM_delta)
             
 
         if (HMM_RANDOM_INIT):
@@ -277,7 +277,7 @@ for Ratio in RatioList:
                     A_rand[r][c] /= rsum
             M.transmat_ = A_rand
             print 'Applied FULLY RANDOM Matrix Perturbation: '
-            outputAmat(M.transmat_, 'RANDOM a-mat', names)
+            outputAmat(M.transmat_, 'RANDOM a-mat', model.names)
       
       
         A_row_test(M.transmat_, sys.stdout)   # Make sure A-Matrix Valid
