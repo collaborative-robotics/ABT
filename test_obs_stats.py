@@ -8,19 +8,37 @@ from abt_constants import *
 
 MODEL = BIG
 
-testeps = 800 / float(NEpochs)   # should be sqrt()^-1 I guess
-print 'Test epsilon: ', testeps
+testeps = 1.96 / np.sqrt(float(NEpochs))  # will convert to confidence interval
+testsigeps = 0.10   # 1% of standard value 2.0
 
-# Select the ABT file here
+print 'Test epsilon: ', testeps
+print 'Test sig epsilon: ', testsigeps
+
+##
+#    Supress Deprecation Warnings from hmm_lean / scikit
+import warnings
+warnings.filterwarnings('ignore', category=DeprecationWarning)
+
+##   Set up research parameters mostly in abt_constants.py
+
+############################################
+
+##  The ABT file for the task (CHOOSE ONE)
+
+if MODEL== BIG:
+    from peg2_ABT import * # big  14+2 state  # uses model01.py
+    from model01 import *
+    model = modelo01
+    
 if MODEL==SMALL:
-    from simp_ABT import *    # basic 4-state HMM
-elif MODEL==BIG:
-    from peg2_ABT import *         # elaborate 16-state HMM
-#
+    from simp_ABT import *  # small 4+2 state # uses model02.py
+    from model00 import *
+    model = modelo00
+
 
 GENDATA = False  #  (determined by # args below)
 
-logdir = 'logs/'
+logdir = ''
 
 # use this filename to know exact observation count.
 lfname = logdir + 'REF_test_statelog.txt'
@@ -30,13 +48,19 @@ nargs = len(sys.argv)
 
 
 if nargs == 1:
-    GENDATA = False  # use standard data
+    print 'Please use a filename on command line'
+    print 'Args: ', sys.argv
+    print 'Usage: '
+    print '> test_obs_stats   [GENDATA|filename]'
+    quit()
 elif nargs == 2:
     if(sys.argv[1] == "GENDATA"):
         GENDATA = True
+        Ratio = 3.0        #  set this for the generated data
         lfname = logdir+'TSTstatelog.txt'
     else:
         lfname = str(sys.argv[1])
+        Ratio = float(di)/sig
 
 print 'Starting observation stats test on ', lfname
 if GENDATA:
@@ -44,7 +68,7 @@ if GENDATA:
 
 NEpochs = 100000
 
-num_states = len(names)
+num_states = model.n
 #NEpochs = 1000
 
 #####    make a string report describing the setup
@@ -65,7 +89,9 @@ rep.append(' ')
 #    Build the ABT and its blackboard
 #
 
-[ABT, bb] = ABTtree()  # see file xxxx_ABT (e.g. Peg2_ABT, simp_ABT)
+model.setup_means(FIRSTSYMBOL, Ratio, sig)
+
+[ABT, bb] = ABTtree(model)  # see file xxxx_ABT (e.g. Peg2_ABT, simp_ABT)
 
 if(GENDATA):
     print 'Data will appear in '+lfname
@@ -135,7 +161,7 @@ for line in logf:
 
 if lfname == refdataname:
     print '\n\nUsing reference data set: checking accurate length count: ', nsims , ' Observations:',nobs
-    assert nsims== 100000, 'Failed to get accurate number of simulations'
+    assert nsims== NEpochs, 'Failed to get accurate number of simulations'
     print 'Passed: correct simulation count assertion'
     # assertion below not really meaningful - doesn't test anything outside this file
     #assert nobs==1089131, 'Failed to get accurate number of observations'
@@ -151,20 +177,24 @@ for rl in rep:
 ##   Test initialization of stat observation means
 print 'Testing observation means and SD:'
 
+print 'States:'
+print model.names
+print 'Intended Obs Means:'
+print model.outputs
+
 print '    name        N            sum           sum^2     mu         S.D.'
 for [i,n] in enumerate(names):
     smu[n] = dSum[n] / float(dN[n])
     ssig[n] = np.sqrt(dN[n]*dS2[n] - dSum[n]*dSum[n]) / float(dN[n])
     print '%10s  %8d  %12.1f %12.1f %12.1f %12.1f' % ( n, dN[n], dSum[n], dS2[n], smu[n], ssig[n])
 
-    if i < num_states-2:
+    if i < num_states-2: # ignore last two states OutS OutF
         #print 'Sigma estimation error: ', abs(ssig[n]-sig)
-        if abs(ssig[n] - sig) >= testeps:
-            print 'Invalid sigma, computed/true:',ssig[n],'/',sig
-        assert(abs(ssig[n] - sig) < testeps), 'x'
+    
+        assert(abs(ssig[n] - sig) < testsigeps), 'Excessive error in SD'
 
-        mu_err = abs(smu[n]-(FIRSTSYMBOL+i*di))
-        assert mu_err < testeps, 'Error in mean'
+        mu_err = abs(smu[n]-model.outputs[n])  # check inside 95% confidence interval
+        assert mu_err < testeps*ssig[n] , 'Excessive error in mean'
 
 print 'Passed: state mean and SD assertions'
 

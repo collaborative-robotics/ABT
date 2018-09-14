@@ -4,6 +4,7 @@
 #
 
 import numpy as np
+from random import *
 import matplotlib.pyplot as plt
 import editdistance as ed
 from tqdm import tqdm
@@ -96,9 +97,28 @@ def HMM_ABT_to_random(M):
     M.transmat_ = A  # maybe unnecessary??
     
 
+#
+# initialize A-matrix to all NxN elements random 
+#  (subject to Sum(row) == 1)
+#
+def HMM_fully_random(A):
+    A_rand = A.copy() 
+    [rn,cn] = A_rand.shape
+    for r in range(rn):    
+        rsum = 0.0
+        for c in range(cn):
+            A_rand[r][c] = random.random()
+            rsum += A_rand[r][c]
+        for c in range(cn):  # normalize the rows
+            A_rand[r][c] /= rsum
+    return A_rand
     
 # apply a delta (random +-) to the elements of A
 #   subject to sum of row = 1.]
+#
+#    NEW: if d > 5  initialize A matrix to RANDOM values
+#
+
 def HMM_perturb(M, d):
       # A matrix
     A = M.transmat_
@@ -195,7 +215,7 @@ def Adiff_Report(A1,A2,names,of=sys.stdout):
         anoms = 'None'
     print >> of, 'Anomalies: ', anoms
     if len(erasures) == 0:
-        anoms = 'None'
+        erasures = 'None'
     print >> of, 'Erasures : ', erasures
 
 def Adiff(A1,A2,names):    # from 8/28
@@ -203,6 +223,7 @@ def Adiff(A1,A2,names):    # from 8/28
     em = -99999.9
     e2 = 0   # avg error of NON ZERO elements
     N = A1.shape[0]
+    assert A1.shape == A2.shape, 'Adiff: A-matrix size mismatch!'
     #print 'Adiff: A shape: ', A1.shape
     N2 = 0   # count the non-zero Aij entries
             #  should be 2(l+2) of course

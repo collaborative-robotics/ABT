@@ -2,7 +2,7 @@
 # 
 ## hmm model params for SIMPLE 4-state BT
 import numpy as np
-from abt_constants import *
+#from abt_constants import *
 from abtclass import *
  
 #

@@ -18,9 +18,6 @@ import datetime
 from hmm_bt import *
 from abt_constants import *
 
-from model00 import *
-from model01 import *
-
 #MODEL = SMALL 
 #MODEL = BIG
 
@@ -40,7 +37,6 @@ warnings.filterwarnings('ignore', category=DeprecationWarning)
 NEWDATA = True  # flag to generate data once
 
 task = BaumWelch   # Viterbi / Forward
- 
 
 script_name = 'bw_hmm'
 
@@ -60,6 +56,15 @@ if len(sys.argv) != 3:
 HMM_delta = float(sys.argv[1])
 comment = str(sys.argv[2])
 
+#################################################
+#     Normally 0.0 < HMM_delta < 0.500
+###   As a flag, if HMM_delta > 5.0 it is a signal 
+#        that HMM initial A matrix should be set to RANDOM
+HMM_RANDOM_INIT = False
+if HMM_delta > 4.95:
+    HMM_RANDOM_INIT = True
+
+
 #
 ############################################
 
@@ -67,9 +72,12 @@ comment = str(sys.argv[2])
 
 if MODEL== BIG:
     from peg2_ABT import * # big  14+2 state  # uses model01.py
+    from model01 import *
     model = modelo01
+    
 if MODEL==SMALL:
     from simp_ABT import *  # small 4+2 state # uses model02.py
+    from model00 import *
     model = modelo00
     
 #############################################
@@ -152,6 +160,9 @@ print >> fmeta , line
 #
 #   Outer Loop
 #
+if(NEWDATA==False and HMM_delta < testeps):   # no point in repeating the same computation!
+    Nruns = 1
+    
 for Ratio in RatioList:
     di = int(Ratio*sig)   # change in output obs mean per state
         
@@ -162,7 +173,7 @@ for Ratio in RatioList:
         model.outputs[n] = i
         i += di
     
-
+    NEWDATA = True   
     for run in range(Nruns):
 
         print '\n-------------------------------------------\n   Starting Run ',run+1, 'of', Nruns, '\n\n'
@@ -176,7 +187,7 @@ for Ratio in RatioList:
         rep.append('-------------------------- BT to HMM ---------------------------------------------')
         stringtime = datetime.datetime.now().strftime("%y-%m-%d-%H-%M")
         rep.append(stringtime)
-        rep.append('NSYMBOLS: {:d}   NEpochs: {:d} N-States: {:d} '.format(NSYMBOLS,NEpochs,len(names)))
+        rep.append('NSYMBOLS: {:d}   NEpochs: {:d} N-States: {:d} '.format(NSYMBOLS,NEpochs,len(model.names)))
         rep.append('sigma: {:.2f}    Symbol delta: {:d}   Ratio:  {:.2f}'.format(sig, int(di), float(di)/float(sig)))
         rep.append('----------------------------------------------------------------------------------')
         rep.append(' ')
@@ -230,9 +241,7 @@ for Ratio in RatioList:
         seq_data_f.close()
 
         assert len(Y) > 0, 'Empty observation sequence data'
-
-        # remove the old log file
-        #os.system('rm '+lfname)
+ 
 
         #############################################
         #
@@ -248,13 +257,33 @@ for Ratio in RatioList:
         #
         #outputAmat(M.transmat_,'Model A matrix',model.names,sys.stdout)
 
-        A_row_test(M.transmat_, sys.stdout)
+        A_row_test(M.transmat_, sys.stdout)   # Make sure A-Matrix Valid
 
-        #HMM_ABT_to_random(M)   # randomize probabilites
-        #print 'Applied Random Matrix Perturbation'
-        HMM_perturb(M, HMM_delta)
-        print 'Applied Matrix Perturbation: ' + str(HMM_delta)
-        A_row_test(M.transmat_, sys.stdout)
+        
+        testeps = 0.00001
+        if(not HMM_RANDOM_INIT and HMM_delta > testeps):
+            #HMM_ABT_to_random(M)   # randomize probabilites
+            #print 'Applied Random Matrix Perturbation'
+            HMM_perturb(M, HMM_delta)
+            print 'Applied Matrix Perturbation: ' + str(HMM_delta)
+            
+
+        if (HMM_RANDOM_INIT):
+            A_rand = A.copy() 
+            [rn,cn] = A_rand.shape
+            for r in range(rn):      # normalize the rows
+                rsum = 0.0
+                for c in range(cn):
+                    A_rand[r][c] = random.random()
+                    rsum += A_rand[r][c]
+                for c in range(cn):
+                    A_rand[r][c] /= rsum
+            M.transmat_ = A_rand
+            print 'Applied FULLY RANDOM Matrix Perturbation: '
+            outputAmat(M.transmat_, 'RANDOM a-mat', model.names)
+      
+      
+        A_row_test(M.transmat_, sys.stdout)   # Make sure A-Matrix Valid
 
         # special test code
         #  compare the two A matrices

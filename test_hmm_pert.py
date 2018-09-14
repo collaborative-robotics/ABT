@@ -18,10 +18,7 @@ from abt_constants import *
 
 testeps = 0.000001  # epsilon for comparing floats
 
-MODEL = BIG    #  values SMALL BIG
-
-logdir = 'logs/'
-
+MODEL = SMALL    #  values SMALL BIG
 
 ######################
 sig = 2.0 
@@ -269,6 +266,21 @@ B = A1.copy()
 print 'Perturbing by 0.25'
 HMM_perturb(M1, 0.25)  
 #outputAmat(M.transmat_, "Perturbed A Matrix", names, of)
+ 
+A_row_test(M1.transmat_, of)
+          
+
+print '\n\n'
+print '-------------------------- Testing Totally Random A-matrix (all elements random)  -------------------'
+print '                            (note: still need to run test_hmm_rand_pert.py)'
+
+M1 = HMM_setup(Pi, A1, sig, names)
+B = A1.copy()
+#outputAmat(A,"Initial A Matrix",names,of)
+print 'Perturbing by 0.25'
+M1.transmat_ = HMM_fully_random(B)
+print 'Applied FULLY RANDOM Matrix Perturbation: '
+#outputAmat(M1.transmat_, 'RANDOM a-mat', names) 
  
 A_row_test(M1.transmat_, of)
           

@@ -18,6 +18,7 @@ from matplotlib.ticker import MaxNLocator
 
 
 metadata_name = 'hmm_bw_metadata.txt'
+metadata_name = 'metadata.txt'
 # Metadata file format:  each line: (comma sep)
 #
 # 1) date and time stamp
@@ -35,13 +36,15 @@ for line in fmeta:
     runs.append(runfacts)
 
 MenuSize = 30
+print '-------------------------------------------------'
 print 'Select one or more files to plot:'
 menu = runs[-MenuSize:]
 for [i,r] in enumerate(menu):  # last 10 runs for ref 
     date = r[0]
     nstates = r[4]
     comment = r[5]
-    print '{:d}  {:15s} {:s}'.format(i,date,nstates,comment)
+    print '{:3d} | {:15s} |{:3d}| {:s}'.format(i,date,int(nstates), comment.strip())
+print '-------------------------------------------------'
 
 
 st = raw_input('Select start: ')
@@ -51,9 +54,14 @@ sti = int(st)
 eni = int(en)
 
 files = []
+modelsize = menu[sti][4]  # user must stay with same model size
+print 'Setting prev mod size:', modelsize
 for i in range(sti,eni+1):
-    print 'I found ', menu[i][0] # date
     files.append(menu[i][1].strip())   #filename
+    if menu[i][4] != modelsize:
+        print 'you have selected multiple model sizes - not a fair comparison'
+        quit()
+        
      
 #
 
@@ -64,7 +72,7 @@ Emax  = []
 
 nrow = 0
 
-
+# Read in data from all the files
 for file in files:
     with open(file,'rb') as f:
         d1 = csv.reader(f,delimiter=',',quotechar='"')
@@ -95,33 +103,38 @@ rect.set_facecolor('white')
 ax1.xaxis.grid(True,linestyle='-', which='major', color='lightgrey',alpha=0.5)
 
 
-ymax = 0.4   #error plotting range 0.0--ymax
+ymax = 1.0  #error plotting range 0.0--ymax
 
+#####################################################
+#
 ##   Collect error values for each "X" value
+#
 data = []
 rs = set(Ratio)
 print 'Ratios: ', sorted(rs)
 epsilon = 0.0001
-for r in rs:
+for r in sorted(rs):
     l = []
     for [j, v] in enumerate(Eavg):
-        if abs(r-Ratio[j])<epsilon:
+        if abs(r-Ratio[j])<epsilon: # cheezy grep
             l.append(v)
     data.append(l)   # get a list of lists: [ ... [Eavg samples for given ratio ] ....]
 
 dperts= []
 perts = set(pert)
 print 'Perturbations (HMM_deltas):', sorted(perts)
-for p in perts:
+for p in sorted(perts):
     l = []
     for [j,v] in enumerate(Eavg):
-        if abs(p-pert[j])<epsilon:
+        if abs(p-pert[j])<epsilon:   # cheezy grep
             l.append(v)
     dperts.append(l)  # get a list of lists: [ ... [Eavg samples for given perturbation ] ....]
 
-#print data
 
 # make boxplots for Eavg
+
+
+modelstring = str(modelsize) + '-state Model'
 
 ##########
 #
@@ -134,7 +147,7 @@ for b in bp['boxes']:
 plt.xlabel('Ratio (di/sig)')
 plt.ylabel('RMS Error')
 plt.ylim(0.0, ymax)
-plt.title('Avg Error vs. Ratio')
+plt.title('Avg Error vs. Ratio, '+modelstring)
 
 tstrs = [0.00]
 for r in sorted(rs):
@@ -145,7 +158,7 @@ plt.show()
 
 ##########
 #
-#  Plot 2: Error vs. Ratio
+#  Plot 2: Error vs. Perturbation
 #
 
 bp2 = plt.boxplot(dperts, notch=True,vert=True ,patch_artist=True)
@@ -155,7 +168,7 @@ for b in bp['boxes']:
 plt.xlabel('HMM A-matrix Perturbation')
 plt.ylabel('RMS Error')
 plt.ylim(0.0, ymax)
-plt.title('Avg Error vs. Perturbation')
+plt.title('Avg Error vs. Perturbation, '+modelstring)
 
 tstrs = ['0.0']
 for p in sorted(perts):
