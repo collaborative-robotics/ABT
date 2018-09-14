@@ -2,6 +2,7 @@
 import numpy as np       # operations on numerical arrays
 import csv               # file I/O
 import math as m
+import sys               # for command line args
 import operator          # for sorting list of class instances
 import numpy as np
 from scipy import stats
@@ -14,8 +15,11 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import BoundaryNorm
 from matplotlib.ticker import MaxNLocator
 
-# first open up the metadata.
+cmd_line_Ratio = -1     # flag value
+if len(sys.argv) == 2:  # we have an arg
+    cmd_line_Ratio = float(sys.argv[1])
 
+# first open up the metadata.
 
 metadata_name = 'hmm_bw_metadata.txt'
 metadata_name = 'metadata.txt'
@@ -65,7 +69,7 @@ for i in range(sti,eni+1):
      
 #
 
-Ratio = []
+RatioL = []
 pert  = []
 Eavg  = []
 Emax  = []
@@ -80,7 +84,7 @@ for file in files:
             print row
             nrow += 1
             sttask  = row[0]
-            stRatio = row[1]
+            stRatioL = row[1]
             stdi    = row[2]   
             stpert  = row[3]    # same as HMM_delta
             stsig   = row[4]
@@ -88,7 +92,7 @@ for file in files:
             stEavg  = row[6]
             stEmax  = row[7]
 
-            Ratio.append(float(stRatio))
+            RatioL.append(float(stRatioL))
             pert.append(float(stpert))
             Eavg.append(float(stEavg))
             Emax.append(float(stEmax))
@@ -110,13 +114,19 @@ ymax = 1.0  #error plotting range 0.0--ymax
 ##   Collect error values for each "X" value
 #
 data = []
-rs = set(Ratio)
+rs = set(RatioL)
 print 'Ratios: ', sorted(rs)
+ratiostring = 'all ratios'
+if cmd_line_Ratio >= 0.0:   # this means we are going to select
+    rs = set([cmd_line_Ratio])
+    print 'Selecting Ratios: ', sorted(rs)  # might be multiple rs later
+    ratiostring = 'Ratio = {:5.2f}'.format(cmd_line_Ratio)
+    
 epsilon = 0.0001
 for r in sorted(rs):
     l = []
     for [j, v] in enumerate(Eavg):
-        if abs(r-Ratio[j])<epsilon: # cheezy grep
+        if abs(r-RatioL[j])<epsilon: # cheezy grep
             l.append(v)
     data.append(l)   # get a list of lists: [ ... [Eavg samples for given ratio ] ....]
 
@@ -127,7 +137,8 @@ for p in sorted(perts):
     l = []
     for [j,v] in enumerate(Eavg):
         if abs(p-pert[j])<epsilon:   # cheezy grep
-            l.append(v)
+            if RatioL[j] in rs:      # selected ratio(s)
+                l.append(v)
     dperts.append(l)  # get a list of lists: [ ... [Eavg samples for given perturbation ] ....]
 
 
@@ -136,25 +147,27 @@ for p in sorted(perts):
 
 modelstring = str(modelsize) + '-state Model'
 
-##########
-#
-#  Plot 1: Error vs. Ratio
-bp = plt.boxplot(data, notch=True,vert=True ,patch_artist=True)
-for b in bp['boxes']:
-    b.set_facecolor('lightblue')
+if(cmd_line_Ratio < 0.0):
+    ##########
+    #
+    #  Plot 1: Error vs. Ratio
+    bp = plt.boxplot(data, notch=True,vert=True ,patch_artist=True)
+    for b in bp['boxes']:
+        b.set_facecolor('lightblue')
 
 
-plt.xlabel('Ratio (di/sig)')
-plt.ylabel('RMS Error')
-plt.ylim(0.0, ymax)
-plt.title('Avg Error vs. Ratio, '+modelstring)
+    plt.xlabel('Ratio (di/sig)')
+    plt.ylabel('RMS Error')
+    plt.ylim(0.0, ymax)
+    plt.title('Avg Error vs. Ratio, '+modelstring)
 
-tstrs = [0.00]
-for r in sorted(rs):
-    tstrs.append(str(r))
-plt.xticks(range(len(rs)+1), tstrs)
+    tstrs = [0.00]
+    for r in sorted(rs):
+        tstrs.append(str(r))
+    plt.xticks(range(len(rs)+1), tstrs)
 
-plt.show()
+    plt.show()
+
 
 ##########
 #
@@ -162,13 +175,13 @@ plt.show()
 #
 
 bp2 = plt.boxplot(dperts, notch=True,vert=True ,patch_artist=True)
-for b in bp['boxes']:
+for b in bp2['boxes']:
     b.set_facecolor('lightblue')
 
 plt.xlabel('HMM A-matrix Perturbation')
 plt.ylabel('RMS Error')
 plt.ylim(0.0, ymax)
-plt.title('Avg Error vs. Perturbation, '+modelstring)
+plt.title('Avg Error vs. Perturbation, '+modelstring+', '+ratiostring)
 
 tstrs = ['0.0']
 for p in sorted(perts):
