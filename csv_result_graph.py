@@ -113,6 +113,7 @@ ymax = 1.0  #error plotting range 0.0--ymax
 #
 ##   Collect error values for each "X" value
 #
+nprows = 0
 data = []
 rs = set(RatioL)
 print 'Ratios: ', sorted(rs)
@@ -128,6 +129,7 @@ for r in sorted(rs):
     for [j, v] in enumerate(Eavg):
         if abs(r-RatioL[j])<epsilon: # cheezy grep
             l.append(v)
+            nprows += 1
     data.append(l)   # get a list of lists: [ ... [Eavg samples for given ratio ] ....]
 
 dperts= []
@@ -142,16 +144,31 @@ for p in sorted(perts):
     dperts.append(l)  # get a list of lists: [ ... [Eavg samples for given perturbation ] ....]
 
 
+print 'plotting ', nprows,' rows' 
+print ''
+
+
+
 # make boxplots for Eavg
 
+plotH = 800
+plotV = 900
 
 modelstring = str(modelsize) + '-state Model'
 
-if(cmd_line_Ratio < 0.0):
+if(cmd_line_Ratio < 0.0):  # only plot this if no Command line param (Ratio)
     ##########
     #
     #  Plot 1: Error vs. Ratio
+    fig1 = plt.figure(1)
     bp = plt.boxplot(data, notch=True,vert=True ,patch_artist=True)
+    
+    #standardize graph size
+    #figptr = plt.gcf()
+    figptr = fig1
+    DPI = figptr.get_dpi()    
+    figptr.set_size_inches(plotH/float(DPI),plotV/float(DPI))
+    
     for b in bp['boxes']:
         b.set_facecolor('lightblue')
 
@@ -166,15 +183,26 @@ if(cmd_line_Ratio < 0.0):
         tstrs.append(str(r))
     plt.xticks(range(len(rs)+1), tstrs)
 
-    plt.show()
-
+    plt.show(block=False)
+        
+    print 'Enter a filename for this plot:'
+    pfname = raw_input('string:')
+    
+    plt.savefig(pfname)
 
 ##########
 #
 #  Plot 2: Error vs. Perturbation
 #
 
+fig2 = plt.figure(2)
 bp2 = plt.boxplot(dperts, notch=True,vert=True ,patch_artist=True)
+
+#standardize graph size
+figptr = fig2
+DPI = figptr.get_dpi()    
+figptr.set_size_inches(plotH/float(DPI),plotV/float(DPI))
+
 for b in bp2['boxes']:
     b.set_facecolor('lightblue')
 
@@ -187,5 +215,12 @@ tstrs = ['0.0']
 for p in sorted(perts):
     tstrs.append(str(p))
 plt.xticks(range(len(perts)+1), tstrs)
+
+plt.show(block=False)
+        
+print 'Enter a filename for this plot:'
+pfname = raw_input('string:')
+
+plt.savefig(pfname)
 
 plt.show()
