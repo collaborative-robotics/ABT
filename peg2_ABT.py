@@ -161,7 +161,7 @@ def ABTtree(mod):
         l.set_Ps(mod.PS[mod.statenos[l.Name]])
         #print ''
 
-    return [demo_bt, bb]
+    return [demo_bt, bb, leafs]
 # demo_bt,bb = ABTtree()
 # np.save("Original",A)
 # np.save("Generated",demo_bt.htm)

@@ -73,7 +73,7 @@ comment = 'xxxxxx TESTING xxxxx'
 Nruns = 3  #testing
 sig = 2.001
 Ratio = 3.00  #testing
-HMM_delta = 0.244  #testing
+HMM_delta = 0.455  #testing
 NEpochs = 20000    # testing
 ##################################################################
 
@@ -201,7 +201,14 @@ for run in range(Nruns):
     #    Build the ABT and its blackboard
     #
 
-    [ABT, bb] = ABTtree(model)  # defined in xxxxxxABT.py file
+    [ABT, bb, leaves] = ABTtree(model)  # defined in xxxxxxABT.py file
+    # make sure (damn sure!) ABT probs are same as HMM stats
+    #     (HMM will be perturbed later, should be consistent NOW)
+    for l in leaves:
+        # output observeation mu, sigma
+        l.set_Obs_Density(model.outputs[l.Name],sig)
+        # set up the Ps
+        l.set_Ps(model.PS[model.statenos[l.Name]])
 
     #############################################
     #
@@ -257,7 +264,7 @@ for run in range(Nruns):
 
     A_row_test(M.transmat_, sys.stdout)   # Make sure A-Matrix Valid
 
-    outputAmat(M.transmat_, 'Original Model A-mat', model.names)
+    #outputAmat(M.transmat_, 'Original Model A-mat', model.names)
     
     testeps = 0.00001
     if(not HMM_RANDOM_INIT and HMM_delta > testeps):
@@ -308,9 +315,9 @@ for run in range(Nruns):
     print 'Passed A-matrix Assertions'
     #end of special test code
 
-    outputAmat(M.transmat_, 'Perturbed Model A-mat', model.names)
+    #outputAmat(M.transmat_, 'Perturbed Model A-mat', model.names)
 
-    quit()
+    #quit()
     if(task == BaumWelch):
         #############################################
         #

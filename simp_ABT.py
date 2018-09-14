@@ -108,5 +108,5 @@ def ABTtree(mod):
         l.set_Ps(mod.PS[mod.statenos[l.Name]])
         #print ''
 
-    return [demo_bt, bb]
+    return [demo_bt, bb, leafs]
 #ABTtree()

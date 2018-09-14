@@ -166,12 +166,8 @@ if(NEWDATA==False and HMM_delta < testeps):   # no point in repeating the same c
 for Ratio in RatioList:
     di = int(Ratio*sig)   # change in output obs mean per state
         
-    ###  Regenerate output means:
-    i = FIRSTSYMBOL
-    #di = Ratio*sig  # = nxsigma !!  now in abt_constants
-    for n in model.outputs.keys():
-        model.outputs[n] = i
-        i += di
+    ###  Regenerate output means:model.setup_means(FIRSTSYMBOL,Ratio, sig)
+    model.setup_means(FIRSTSYMBOL,Ratio, sig)
     
     NEWDATA = True   
     for run in range(Nruns):
@@ -203,8 +199,16 @@ for Ratio in RatioList:
         #    Build the ABT and its blackboard
         #
 
-        [ABT, bb] = ABTtree(model)  # defined in xxxxxxABT.py file
-
+        [ABT, bb, leaves] = ABTtree(model)  # defined in xxxxxxABT.py file
+        # make sure (damn sure!) ABT probs are same as HMM stats
+        #     (HMM will be perturbed later, should be consistent NOW)
+        for l in leaves:
+            # output observeation mu, sigma
+            l.set_Obs_Density(model.outputs[l.Name],sig)
+            # set up the Ps
+            l.set_Ps(model.PS[model.statenos[l.Name]])
+            
+            
         #############################################
         #
         #    Generate Simulated Data only on first round
