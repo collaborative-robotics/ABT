@@ -156,11 +156,13 @@ plotV = 900
 
 modelstring = str(modelsize) + '-state Model'
 
+figno = 1
 if(cmd_line_Ratio < 0.0):  # only plot this if no Command line param (Ratio)
     ##########
     #
     #  Plot 1: Error vs. Ratio
-    fig1 = plt.figure(1)
+    fig1 = plt.figure(figno)
+    figno += 1
     bp = plt.boxplot(data, notch=True,vert=True ,patch_artist=True)
     
     #standardize graph size
@@ -195,7 +197,7 @@ if(cmd_line_Ratio < 0.0):  # only plot this if no Command line param (Ratio)
 #  Plot 2: Error vs. Perturbation
 #
 
-fig2 = plt.figure(2)
+fig2 = plt.figure(figno)
 bp2 = plt.boxplot(dperts, notch=True,vert=True ,patch_artist=True)
 
 #standardize graph size
@@ -223,4 +225,4 @@ pfname = raw_input('string:')
 
 plt.savefig(pfname)
 
-plt.show()
+#plt.show()   ##uncomment if you want figs to remain after file save.
