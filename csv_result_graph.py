@@ -218,9 +218,9 @@ plt.xticks(range(len(perts)+1), tstrs)
 
 plt.show(block=False)
         
-print 'Enter a filename for this plot:'
+print 'Enter a filename for this plot: (.png will be added)'
 pfname = raw_input('string:')
 
-plt.savefig(pfname)
+plt.savefig(pfname+'.png')
 
 plt.show()
