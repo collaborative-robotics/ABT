@@ -75,13 +75,15 @@ Eavg  = []
 Emax  = []
 
 nrow = 0
+allrows = []
 
 # Read in data from all the files
 for file in files:
     with open(file,'rb') as f:
         d1 = csv.reader(f,delimiter=',',quotechar='"')
         for row in d1:
-            print row
+            allrows.append(row)
+            #print row
             nrow += 1
             sttask  = row[0]
             stRatioL = row[1]
@@ -123,11 +125,13 @@ if cmd_line_Ratio >= 0.0:   # this means we are going to select
     print 'Selecting Ratios: ', sorted(rs)  # might be multiple rs later
     ratiostring = 'Ratio = {:5.2f}'.format(cmd_line_Ratio)
     
+usedrows = []
 epsilon = 0.0001
 for r in sorted(rs):
     l = []
     for [j, v] in enumerate(Eavg):
         if abs(r-RatioL[j])<epsilon: # cheezy grep
+            usedrows.append(allrows[j])
             l.append(v)
             nprows += 1
     data.append(l)   # get a list of lists: [ ... [Eavg samples for given ratio ] ....]
@@ -144,9 +148,11 @@ for p in sorted(perts):
     dperts.append(l)  # get a list of lists: [ ... [Eavg samples for given perturbation ] ....]
 
 
-print 'plotting ', nprows,' rows' 
+print 'plotting ', nprows,' rows ' , len(usedrows)
 print ''
 
+for r in usedrows:
+    print r
 
 
 # make boxplots for Eavg
@@ -185,9 +191,8 @@ if(cmd_line_Ratio < 0.0):  # only plot this if no Command line param (Ratio)
 
     plt.show(block=False)
         
-    print 'Enter a filename for this plot:'
-    pfname = raw_input('string:')
-    
+    print 'Enter a filename for this plot: (.png will be added)'
+    pfname = raw_input('string:')    
     plt.savefig(pfname)
 
 ##########
@@ -223,4 +228,4 @@ pfname = raw_input('string:')
 
 plt.savefig(pfname+'.png')
 
-plt.show()
+#plt.show()

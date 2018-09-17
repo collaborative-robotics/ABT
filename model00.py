@@ -13,7 +13,7 @@ N = len(names)
 
 # PS = prob of success for each node
 # note dummy value for PS[0] for math consistency
-PS = [0, 0.65, 0.75, .8, 0.9, 1.0,1.0]
+PS = [0, 0.5, 0.5, .5, 0.5, 1.0,1.0]
 if len(PS) != N+1:
     print 'Incorrect PS length'
     quit()
@@ -37,8 +37,9 @@ A = A[1:N+1,1:N+1]  # get zero offset index
 #  these values are place-holders, replaced later
 outputs = {'l1':2, 'l2': 5, 'l3':8, 'l4': 8,  'OutS':10, 'OutF':20}
 
-Pi = np.zeros(N)
-Pi[0] = 1.0      # always start at state 1
+## Model class takes care of this now
+#Pi = np.zeros(N)
+#Pi[0] = 1.0      # always start at state 1
  
 #  This is probably not nesc:   names.index('l3') == 2
 statenos = {'l1':1, 'l2': 2, 'l3':3, 'l4':4,  'OutS':5, 'OutF':6}
@@ -52,8 +53,7 @@ for n in outputs.keys():
     outputs[n] = i
     i += di
     
-
-modelo00 = model(len(names))
+modelo00 = model(len(names))  # make a new model
 modelo00.A = A
 modelo00.PS = PS
 modelo00.outputs = outputs
