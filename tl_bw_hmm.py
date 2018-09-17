@@ -253,7 +253,7 @@ for Ratio in RatioList:
         #
         Ac = A.copy()  # isolate orig A matrix from HMM
         Ar = A.copy()  # reference original copy
-        M = HMM_setup(Pi,Ac,sig,model.names)
+        M = HMM_setup(model.Pi, Ac,sig,model.names)
 
         #############################################
         #
@@ -358,6 +358,9 @@ for Ratio in RatioList:
 #print >>fdata, '{:3d} {:s} {:.3f}, {:.3f}'.format(task, 'Average e2, em: ',e2T/nsims,emT/nsims)
 fdata.close()
 fmeta.close()
+
+print '\n\n                         Model Run Completed   \n\n'
+
 
 
 
