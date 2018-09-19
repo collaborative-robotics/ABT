@@ -20,6 +20,7 @@ if len(PS) != N+1:
 #  make A one bigger to make index human
 A = np.zeros((17,17))
 A[1,2] = PS[1]
+A[1,16] = 1.0-PS[1]
 A[2,3] = PS[2]
 A[2,4] = 1.0-PS[2]
 A[3,4] = 1.0-PS[3]
@@ -58,21 +59,12 @@ di = 2  # placeholder
 #################################################################
 ##  Regenerate output means:  (easier to change below)
 i = FIRSTSYMBOL
-#di = Ratio*sig  #  now set up in abt_constants
-for n in names:
+#di = Ratio*sig  # = nxsigma !!  now in abt_constants
+for n in outputs.keys():
     outputs[n] = i
     i += di
-
-#print 'Outputs: (mean of each states observations)'
-#print outputs
-
-
-Pi = np.zeros(16)
-Pi[0] = 1.0      # always start at state 1
-
-
-##  populate a model object for this model
-modelo01 = model(len(names))
+    
+modelo01 = model(len(names))  # make a new model
 modelo01.A = A
 modelo01.PS = PS
 modelo01.outputs = outputs

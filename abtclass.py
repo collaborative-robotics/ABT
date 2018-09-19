@@ -15,13 +15,13 @@ from abt_constants import *
  
 
 class model():
-    def __init__(self,Nstates):
+    def __init__(self, Nstates):
         self.n = Nstates
-        self.A = np.zeros([Nstates+2,Nstates+2])
-        self.PS = np.zeros(Nstates+2)     # prob of success
+        self.A = np.zeros([Nstates,Nstates])
+        self.PS = np.zeros(Nstates)     # prob of success
         self.outputs = {}                 # mean value for each state name (dict)
         self.names = []
-        self.Pi = np.zeros(Nstates+2)
+        self.Pi = np.zeros(Nstates)
         self.Pi[0] = 1.0  # always start at first state
         self.statenos = {}
         

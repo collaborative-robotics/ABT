@@ -32,4 +32,5 @@ M = 1000*1000
 NEpochs = 20*K
 
 ####  How many analysis runs to do
-Nruns = 7
+Nruns = 15
+

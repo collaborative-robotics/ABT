@@ -28,12 +28,14 @@ To build a model you have to create three files (bad!)
     c. The mean and variance for the emission symbol distribution for each state
 
     d. an object of class model (defined in abtclass.py)
+    
+    e. all of this is folded into an object of class model() (def in abtclass.py)
 
-2. `[ProjName].py`.   This file sets up the ABT with 
+2. `[ProjName]_ABT.py`.   This file sets up the ABT with 
  
     a. the new leaf class `aug_leaf()` (from abtclass.py)
     
-    b. the (current ProjName = `peg2.py`) e.g. peg in hole task. 
+    b. the 16-state file peg_ABT.py  e.g. peg in hole task. 
     
     c. or- a simple test project:   `simp_ABT.py` with 4+2 states
 
@@ -41,7 +43,7 @@ To build a model you have to create three files (bad!)
 
 2. Output Files
 
-    a.  hmm_bw_metadata.txt -- one line for each run of tl_xxxxxxx.py. 
+    a. metadata.txt -- one line for each run of tl_xxxxxxx.py. 
     Unique filenames are generated using URI's.  Each line contains 
   0) date and time stamp
   1) name of data file
