@@ -15,6 +15,10 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import BoundaryNorm
 from matplotlib.ticker import MaxNLocator
 
+Forward   = 0  # define task codes
+Viterbi   = 1
+BaumWelch = 2
+
 cmd_line_Ratio = -1     # flag value
 if len(sys.argv) == 2:  # we have an arg
     cmd_line_Ratio = float(sys.argv[1])
@@ -66,9 +70,9 @@ for i in range(sti,eni+1):
         print 'you have selected multiple model sizes - not a fair comparison'
         quit()
         
-     
 #
 
+Task = []
 RatioL = []
 pert  = []
 Eavg  = []
@@ -78,6 +82,7 @@ nrow = 0
 allrows = []
 
 # Read in data from all the files
+firsttask = -999
 for file in files:
     with open(file,'rb') as f:
         d1 = csv.reader(f,delimiter=',',quotechar='"')
@@ -91,9 +96,16 @@ for file in files:
             stpert  = row[3]    # same as HMM_delta
             stsig   = row[4]
             strn    = row[5]
-            stEavg  = row[6]
-            stEmax  = row[7]
+            stEavg  = row[6]    #  these may depend on task
+            stEmax  = row[7]    #  make sure two entries every task
 
+            if firsttask < 0.0:
+                firsttask = int(sttask)
+            elif int(sttask) != firsttask:
+                print 'You are mixing multiple tasks for plotting.'
+                print '   reselect data rows with same task'
+                quit()
+            Task.append(int(sttask))
             RatioL.append(float(stRatioL))
             pert.append(float(stpert))
             Eavg.append(float(stEavg))
@@ -102,11 +114,6 @@ for file in files:
 
 print 'Read in ', nrow,' rows' 
 print ''
-fig, ax1 = plt.subplots(figsize=(14,6))
-#plt.subplots_adjust(left=.25)
-rect = fig.patch
-rect.set_facecolor('white')
-ax1.xaxis.grid(True,linestyle='-', which='major', color='lightgrey',alpha=0.5)
 
 
 ymax = 1.0  #error plotting range 0.0--ymax
@@ -116,11 +123,12 @@ ymax = 1.0  #error plotting range 0.0--ymax
 ##   Collect error values for each "X" value
 #
 nprows = 0
+taskID = 0
 data = []
-rs = set(RatioL)
+rs = set(RatioL)   # default is set of all ratios found
 print 'Ratios: ', sorted(rs)
 ratiostring = 'all ratios'
-if cmd_line_Ratio >= 0.0:   # this means we are going to select
+if cmd_line_Ratio >= 0.0:   # this means we are going to select a specific ratio
     rs = set([cmd_line_Ratio])
     print 'Selecting Ratios: ', sorted(rs)  # might be multiple rs later
     ratiostring = 'Ratio = {:5.2f}'.format(cmd_line_Ratio)
@@ -162,68 +170,97 @@ plotV = 900
 
 modelstring = str(modelsize) + '-state Model'
 
-figno = 1
-if(cmd_line_Ratio < 0.0):  # only plot this if no Command line param (Ratio)
+
+
+#####################################################################################
+#
+#        Baum Welch Model Identifcation Results plots
+#
+if(firsttask == Forward):
+    print ' Forward data plots not yet implemented'
+    quit()
+
+
+#####################################################################################
+#
+#        Baum Welch Model Identifcation Results plots
+#
+if(firsttask == Viterbi):
+    print ' Viterbi data plots not yet implemented'
+    quit()
+    
+    
+    #figno = 1
+    #if(cmd_line_Ratio < 0.0):  # only plot this if no Command line param (Ratio)
+
+
+#####################################################################################
+#
+#        Baum Welch Model Identifcation Results plots
+#
+if(firsttask == BaumWelch):
+    figno = 1
+    if(cmd_line_Ratio < 0.0):  # only plot this if no Command line param (Ratio)
+        ##########
+        #
+        #  Plot 1: Error vs. Ratio
+        fig1 = plt.figure(figno)
+        figno += 1
+        bp = plt.boxplot(data, notch=True,vert=True ,patch_artist=True)
+        
+        #standardize graph size
+        #figptr = plt.gcf()
+        figptr = fig1
+        DPI = figptr.get_dpi()    
+        figptr.set_size_inches(plotH/float(DPI),plotV/float(DPI))
+        
+        for b in bp['boxes']:
+            b.set_facecolor('lightblue')
+
+
+        plt.xlabel('Ratio (di/sig)')
+        plt.ylabel('RMS Error')
+        plt.ylim(0.0, ymax)
+        plt.title('Avg Error vs. Ratio, '+modelstring)
+
+        tstrs = [0.00]
+        for r in sorted(rs):
+            tstrs.append(str(r))
+        plt.xticks(range(len(rs)+1), tstrs)
+
+        plt.show(block=False)
+            
+        print 'Enter a filename for this plot: (.png will be added)'
+        pfname = raw_input('string:')    
+        plt.savefig(pfname)
+
     ##########
     #
-    #  Plot 1: Error vs. Ratio
-    fig1 = plt.figure(figno)
-    figno += 1
-    bp = plt.boxplot(data, notch=True,vert=True ,patch_artist=True)
-    
+    #  Plot 2: Error vs. Perturbation
+    #
+
+    fig2 = plt.figure(figno)
+    bp2 = plt.boxplot(dperts, notch=True,vert=True ,patch_artist=True)
+
     #standardize graph size
-    #figptr = plt.gcf()
-    figptr = fig1
+    figptr = fig2
     DPI = figptr.get_dpi()    
     figptr.set_size_inches(plotH/float(DPI),plotV/float(DPI))
-    
-    for b in bp['boxes']:
+
+    for b in bp2['boxes']:
         b.set_facecolor('lightblue')
 
-
-    plt.xlabel('Ratio (di/sig)')
+    plt.xlabel('HMM A-matrix Perturbation')
     plt.ylabel('RMS Error')
     plt.ylim(0.0, ymax)
-    plt.title('Avg Error vs. Ratio, '+modelstring)
+    plt.title('Avg Error vs. Perturbation, '+modelstring+', '+ratiostring)
 
-    tstrs = [0.00]
-    for r in sorted(rs):
-        tstrs.append(str(r))
-    plt.xticks(range(len(rs)+1), tstrs)
+    tstrs = ['0.0']
+    for p in sorted(perts):
+        tstrs.append(str(p))
+    plt.xticks(range(len(perts)+1), tstrs)
 
     plt.show(block=False)
-        
-    print 'Enter a filename for this plot: (.png will be added)'
-    pfname = raw_input('string:')    
-    plt.savefig(pfname)
-
-##########
-#
-#  Plot 2: Error vs. Perturbation
-#
-
-fig2 = plt.figure(figno)
-bp2 = plt.boxplot(dperts, notch=True,vert=True ,patch_artist=True)
-
-#standardize graph size
-figptr = fig2
-DPI = figptr.get_dpi()    
-figptr.set_size_inches(plotH/float(DPI),plotV/float(DPI))
-
-for b in bp2['boxes']:
-    b.set_facecolor('lightblue')
-
-plt.xlabel('HMM A-matrix Perturbation')
-plt.ylabel('RMS Error')
-plt.ylim(0.0, ymax)
-plt.title('Avg Error vs. Perturbation, '+modelstring+', '+ratiostring)
-
-tstrs = ['0.0']
-for p in sorted(perts):
-    tstrs.append(str(p))
-plt.xticks(range(len(perts)+1), tstrs)
-
-plt.show(block=False)
         
 print 'Enter a filename for this plot: (.png will be added)'
 pfname = raw_input('string:')
