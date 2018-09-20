@@ -332,6 +332,7 @@ for Ratio in RatioList:
         if(task == Viterbi):
             print "Identifying State Sequence of the generated data with ", len(Y)," observations"
             log_test,state_seq_result= M.decode(Y,Ls,"viterbi")
+            print 'Sequence Size:', state_seq_result.size
             totald, cost, count = Veterbi_Eval(state_seq_result,X,model.names,Ls, model.statenos)
             print >>fdata, '{:2d}, {:.3f}, {:3d}, {:.3f}, {:.3f}, {:2d}, {:.3f}, {:.3f}'.format(task, Ratio, int(di), HMM_delta, float(sig), run+1, float(totald), count)
 

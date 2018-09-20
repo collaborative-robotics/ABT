@@ -295,45 +295,45 @@ def Adiff(A1,A2,names):    # from 8/28
     
 
 ###############################################################
-# Evaluation of Veterbi
+# Evaluation of Viterbi
+#
+#   Blake's new start
+#
 def Veterbi_Eval(p,x,names,l,statenos):
     '''
-    p = state sequence estimates (concatenated state seqs, np.array())
-    x = true state sequences (list)
+    p = state sequence estimates (concatenated state seqs, np.array() of numbers)
+    x = true state sequences (list of numbers)
     names = list of state names (Nx1)
-    l = lengths of each state sequence
+    l = lengths of each state sequence in 'x'
     statenos = 
     '''
-    print 'V Eval: ', p.shape
+    nseqs = len(l)
+    maxd = -999999
+    count = 0
+    totald = 0
     states_visited = set(x)
     assert len(names) == len(states_visited), 'Viterbi Evaluation: wrong states/state-names'
-    x = np.array(x)
-    counter = 0
-    b = np.zeros((len(l),len(names)))
-    predict = np.empty((len(l),len(names)), dtype = object)
-    x_sorted = np.empty((len(l),len(names)), dtype = object)
-    e = np.empty((p.shape[0],1), dtype = object)
+    p1 = list(p)
+    offset = 0
     for i in range(len(l)):  # iterate over sequences
+        st1 = ''
+        st2 = ''
         for j in range(l[i]):  # iterate over symbols in seq i
-            print 'test: ', i,j,counter
-            print p[counter]
-            b[i][j] = p[counter] # sorted prediction according to the state number (Number of itertions * number of states)
-            predict[i][j] = names[p[counter]] # sorted predicted data with names
-            x_sorted[i][j] = x[counter] # Orignal Sorted Simulation
-            e[counter] = names[p[counter]] # Predicted Names list
-            counter+=1
-    for i in range(len(e)):
-        e[i] = statenos[np.ndarray.item(e[i])]
-        x[i] = statenos[x[i]]
-    totald = ed.eval(np.array2string(e),np.array2string(x))
-    cost = np.empty(len(l))
-    count = 0
-    for i in tqdm(range(len(l))):
-        cost[i] = ed.eval(np.array2string(predict[i]),np.array2string(x_sorted[i])) # Cost per data string
-        if cost[i]==0:
-            count+=1
-    return [totald, cost, count]
-
+            st1 += str(p[offset+j])
+            st2 += str(x[offset+j]) 
+        d1 = ed.eval(st1,st2)
+        d =  d1 / float(len(st2))  # Str edit distance / length of true seq.
+        if d > maxd:
+            maxd = d
+        totald += d
+        count += d1
+        offset+=j+1
+    avgd = totald / float(nseqs)
+    return [avgd, maxd, count]
+    # avgd:  average sed per symbol
+    # maxd:  max sed for any seq
+    # count:  total sed for all seqs
+    
 
 ##############################################
 #Forward Pass
