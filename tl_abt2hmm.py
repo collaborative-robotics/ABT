@@ -38,7 +38,8 @@ warnings.filterwarnings('ignore', category=DeprecationWarning)
 
 NEWDATA = True  # flag to generate data once
 
-task = BaumWelch   # Viterbi / Forward
+#task = BaumWelch   # Viterbi / Forward
+task = Viterbi
 
 script_name = 'bw_hmm'
 
@@ -310,9 +311,16 @@ for Ratio in RatioList:
         A_row_test(M.transmat_, sys.stdout)
 
 
+            
+        ##################################################
+        #
+        #       Veterbi Algorithm
+        #
         if(task == Forward):
             print 'Not ready to run forward/backward ... quitting'
             quit()
+            
+            
         ##################################################
         #
         #       Veterbi Algorithm
@@ -321,7 +329,7 @@ for Ratio in RatioList:
             print "Identifying State Sequence of the generated data with ", len(Y)," observations"
             log_test,state_test= M.decode(Y,Ls,"viterbi")
             totald, cost, count = Veterbi_Eval(state_test,X,names,Ls,statenos)
-            print >>fdata, '{:2d}, {:.3f}, {:3d}, {:.3f}, {:.3f}, {:2d}, {:.3f}, {:.3f}'.format(task, Ratio, int(di), HMM_delta, float(sig), run+1, e2,em)
+            print >>fdata, '{:2d}, {:.3f}, {:3d}, {:.3f}, {:.3f}, {:2d}, {:.3f}, {:.3f}'.format(task, Ratio, int(di), HMM_delta, float(sig), run+1, totald, cost)
 
 
         if(task == BaumWelch):

@@ -292,6 +292,8 @@ def Adiff(A1,A2,names):    # from 8/28
     #e2 = (e2/N2)  # RMS error of NON zero Aij
     ##print 'imax, jmax; ', imax, jmax
     #return [e,e2,em,N2,imax,jmax,anoms,erasures]
+    
+
 ###############################################################
 # Evaluation of Veterbi
 def Veterbi_Eval(p,x,names,l,statenos):
@@ -319,6 +321,7 @@ def Veterbi_Eval(p,x,names,l,statenos):
         if cost[i]==0:
             count+=1
     return [totald, cost, count]
+
 
 ##############################################
 #Forward Pass
