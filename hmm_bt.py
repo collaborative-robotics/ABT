@@ -298,12 +298,13 @@ def Adiff(A1,A2,names):    # from 8/28
 # Evaluation of Veterbi
 def Veterbi_Eval(p,x,names,l,statenos):
     '''
-    p = state sequence estimates (concatenated state seqs)
-    x = true state sequences
+    p = state sequence estimates (concatenated state seqs, np.array())
+    x = true state sequences (list)
     names = list of state names (Nx1)
     l = lengths of each state sequence
     statenos = 
     '''
+    print 'V Eval: ', p.shape
     states_visited = set(x)
     assert len(names) == len(states_visited), 'Viterbi Evaluation: wrong states/state-names'
     x = np.array(x)
@@ -312,8 +313,10 @@ def Veterbi_Eval(p,x,names,l,statenos):
     predict = np.empty((len(l),len(names)), dtype = object)
     x_sorted = np.empty((len(l),len(names)), dtype = object)
     e = np.empty((p.shape[0],1), dtype = object)
-    for i in range(len(l)):
-        for j in range(l[i]):
+    for i in range(len(l)):  # iterate over sequences
+        for j in range(l[i]):  # iterate over symbols in seq i
+            print 'test: ', i,j,counter
+            print p[counter]
             b[i][j] = p[counter] # sorted prediction according to the state number (Number of itertions * number of states)
             predict[i][j] = names[p[counter]] # sorted predicted data with names
             x_sorted[i][j] = x[counter] # Orignal Sorted Simulation

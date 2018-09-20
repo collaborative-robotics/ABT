@@ -318,7 +318,7 @@ for Ratio in RatioList:
             
         ##################################################
         #
-        #       Veterbi Algorithm
+        #       Forward Algorithm
         #
         if(task == Forward):
             print 'Not ready to run forward/backward ... quitting'
