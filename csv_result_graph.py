@@ -174,7 +174,7 @@ modelstring = str(modelsize) + '-state Model'
 
 #####################################################################################
 #
-#        Baum Welch Model Identifcation Results plots
+#        Forward/backward Results plots
 #
 if(firsttask == Forward):
     print ' Forward data plots not yet implemented'
@@ -183,7 +183,7 @@ if(firsttask == Forward):
 
 #####################################################################################
 #
-#        Baum Welch Model Identifcation Results plots
+#        Viterbi decoder Results plots
 #
 if(firsttask == Viterbi):
     ##########
@@ -198,6 +198,7 @@ if(firsttask == Viterbi):
     fig1 = plt.figure(figno)
     figno += 1
     bp = plt.boxplot(data, notch=True,vert=True ,patch_artist=True)
+    #bp = plt.boxplot(dperts, notch=True,vert=True ,patch_artist=True)
     
     #standardize graph size
     #figptr = plt.gcf()
@@ -215,10 +216,11 @@ if(firsttask == Viterbi):
     plt.xticks(range(len(rs)+1), tstrs)
 
     plt.xlabel('Ratio (di/sig)')
-    plt.ylabel('String Matching Error')
-    ymax  = 30.00
+    #plt.xlabel('HMM perturbation (dimensionless)')
+    plt.ylabel('String Edit Distance per symbol')
+    ymax  = 5
     plt.ylim(0.0, ymax)
-    plt.title('Viterbi Tracking Error vs. Ratio, '+modelstring)
+    plt.title('Viterbi Tracking Error, '+modelstring)
 
     
     plt.show(block=False)
@@ -227,7 +229,7 @@ if(firsttask == Viterbi):
 
 #####################################################################################
 #
-#        Baum Welch Model Identifcation Results plots
+#        Baum Welch Model Identification Results plots
 #
 if(firsttask == BaumWelch):
     figno = 1
