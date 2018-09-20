@@ -140,16 +140,7 @@ sequence_name =  seqdir+'seq_'+urunid+'.txt'   # name of sim sequence file
 #  
 
 fmeta = open(metadata_name, 'a')  #  append metadata to a big log
-fdata = open(datafile_name, 'w')  #  unique filename for csv output 
-# open sequence_name   in NEWDATA section below 
-
-em = 9999
-
-nsims = 0
-e2T = 0.0
-emT = 0.0
-
-#print >> fmeta, '-------',datetime.datetime.now().strftime("%y-%m-%d-%H-%M"), 'Nruns: ', Nruns, 'x', NEpochs, ' #states: ',len(model.names), ' HMM_delta: ',HMM_delta 
+fdata = open(datafile_name, 'w')  #  unique filename for csv output   
 
 print '-----'
 print 'Model Size: ', model.n
@@ -239,9 +230,9 @@ for Ratio in RatioList:
         #    Read simulated sequence data
         #
 
-        Y = []
-        X = []
-        Ls = []
+        Y = []    # Observations
+        X = []    # True state 
+        Ls = []   # Length of each sequence
         seq_data_f = open(sequence_name,'r')
         [X,Y,Ls] = read_obs_seqs(seq_data_f)
         seq_data_f.close()
@@ -327,21 +318,10 @@ for Ratio in RatioList:
         #       Veterbi Algorithm
         #
         if(task == Viterbi):
-            print "Identifying State Sequence of the generated data at different peturbations with ", len(Y)," observations"
+            print "Identifying State Sequence of the generated data with ", len(Y)," observations"
             log_test,state_test= M.decode(Y,Ls,"viterbi")
-            # np.save("Tester",state_test)
-            # np.save("Original_Data",Y)
-            # np.save("State_Names",X)
-            # np.save("Lengths",Ls)
             totald, cost, count = Veterbi_Eval(state_test,X,names,Ls,statenos)
-            for rline in rep:
-                print >>ov, rline
-            print >>ov, "The total Edit distance:", totald
-            print >>ov, "Summed cost of individual records: ", np.sum(cost)
-            print >>ov, "Number of exact state matches are: ", count
-            master[Viterbi][run][c][0] = np.sum(cost)/len(Ls)
-            master[Viterbi][run][c][1] = totald
-            master[Viterbi][run][c][2] = count
+            print >>fdata, '{:2d}, {:.3f}, {:3d}, {:.3f}, {:.3f}, {:2d}, {:.3f}, {:.3f}'.format(task, Ratio, int(di), HMM_delta, float(sig), run+1, e2,em)
 
 
         if(task == BaumWelch):
@@ -376,14 +356,10 @@ for Ratio in RatioList:
             #print >> of, 'Erasures : ', erasures
 
             print >>fdata, '{:2d}, {:.3f}, {:3d}, {:.3f}, {:.3f}, {:2d}, {:.3f}, {:.3f}'.format(task, Ratio, int(di), HMM_delta, float(sig), run+1, e2,em)
-
-        nsims += 1
-        emT += em
-        e2T += e2
+ 
 
     #  End of loop of runs
 
-#print >>fdata, '{:3d} {:s} {:.3f}, {:.3f}'.format(task, 'Average e2, em: ',e2T/nsims,emT/nsims)
 fdata.close()
 fmeta.close()
 
