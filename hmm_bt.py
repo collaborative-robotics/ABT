@@ -297,6 +297,15 @@ def Adiff(A1,A2,names):    # from 8/28
 ###############################################################
 # Evaluation of Veterbi
 def Veterbi_Eval(p,x,names,l,statenos):
+    '''
+    p = state sequence estimates (concatenated state seqs)
+    x = true state sequences
+    names = list of state names (Nx1)
+    l = lengths of each state sequence
+    statenos = 
+    '''
+    states_visited = set(x)
+    assert len(names) == len(states_visited), 'Viterbi Evaluation: wrong states/state-names'
     x = np.array(x)
     counter = 0
     b = np.zeros((len(l),len(names)))

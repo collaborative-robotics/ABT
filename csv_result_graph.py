@@ -135,7 +135,7 @@ if cmd_line_Ratio >= 0.0:   # this means we are going to select a specific ratio
     
 usedrows = []
 epsilon = 0.0001
-for r in sorted(rs):
+for r in sorted(rs): #iterate over the Ratios
     l = []
     for [j, v] in enumerate(Eavg):
         if abs(r-RatioL[j])<epsilon: # cheezy grep
@@ -159,8 +159,8 @@ for p in sorted(perts):
 print 'plotting ', nprows,' rows ' , len(usedrows)
 print ''
 
-for r in usedrows:
-    print r
+#for r in usedrows:
+    #print r
 
 
 # make boxplots for Eavg
@@ -186,12 +186,43 @@ if(firsttask == Forward):
 #        Baum Welch Model Identifcation Results plots
 #
 if(firsttask == Viterbi):
-    print ' Viterbi data plots not yet implemented'
-    quit()
+    ##########
+    #
     
+    #print 'Viterbi Plot: size of data: '
+    #for i, line in enumerate(data):
+        #print sorted(list(rs))[i], line
     
-    #figno = 1
-    #if(cmd_line_Ratio < 0.0):  # only plot this if no Command line param (Ratio)
+    #  Plot 1: Error vs. Ratio
+    figno = 1
+    fig1 = plt.figure(figno)
+    figno += 1
+    bp = plt.boxplot(data, notch=True,vert=True ,patch_artist=True)
+    
+    #standardize graph size
+    #figptr = plt.gcf()
+    figptr = fig1
+    DPI = figptr.get_dpi()    
+    figptr.set_size_inches(plotH/float(DPI),plotV/float(DPI))
+    
+    for b in bp['boxes']:
+        b.set_facecolor('Moccasin')
+
+    # set up some labels for the X-axis (Ratios)
+    tstrs = [0.00]
+    for r in sorted(rs):
+        tstrs.append(str(r))
+    plt.xticks(range(len(rs)+1), tstrs)
+
+    plt.xlabel('Ratio (di/sig)')
+    plt.ylabel('String Matching Error')
+    ymax  = 30.00
+    plt.ylim(0.0, ymax)
+    plt.title('Viterbi Tracking Error vs. Ratio, '+modelstring)
+
+    
+    plt.show(block=False)
+        
 
 
 #####################################################################################

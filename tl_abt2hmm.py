@@ -123,14 +123,18 @@ metadata_name = 'metadata.txt'
 datafile_name = datadir+'data_'+urunid+'.csv'  # a unique filename
 # Datafile format:  comma sep
 #
-#  0)  Task code (2=Baum Welch)
+#  0)  Task code (1=Viterbi, 2=Baum Welch)
 #  1)  Ratio  (codeword mean spacing / sigma)
 #  2)  di     (codeword spacing)
 #  3)  HMM_delta    amt HMM params changed
 #  4)  Sigma
 #  5)  run#
-#  6)  e2 (RMS error)
-#  7)  emax (max error)
+#------------------------------------------------------------------------
+#       Baum-Welch              Viterbi                Forward
+#------------------------------------------------------------------------
+#  6)  e2 (RMS error)     |                    |
+#  7)  emax (max error)   |                    |
+#------------------------------------------------------------------------
 
 sequence_name =  seqdir+'seq_'+urunid+'.txt'   # name of sim sequence file
 #
@@ -327,9 +331,9 @@ for Ratio in RatioList:
         #
         if(task == Viterbi):
             print "Identifying State Sequence of the generated data with ", len(Y)," observations"
-            log_test,state_test= M.decode(Y,Ls,"viterbi")
-            totald, cost, count = Veterbi_Eval(state_test,X,names,Ls,statenos)
-            print >>fdata, '{:2d}, {:.3f}, {:3d}, {:.3f}, {:.3f}, {:2d}, {:.3f}, {:.3f}'.format(task, Ratio, int(di), HMM_delta, float(sig), run+1, totald, cost)
+            log_test,state_seq_result= M.decode(Y,Ls,"viterbi")
+            totald, cost, count = Veterbi_Eval(state_seq_result,X,model.names,Ls, model.statenos)
+            print >>fdata, '{:2d}, {:.3f}, {:3d}, {:.3f}, {:.3f}, {:2d}, {:.3f}, {:.3f}'.format(task, Ratio, int(di), HMM_delta, float(sig), run+1, float(totald), count)
 
 
         if(task == BaumWelch):
