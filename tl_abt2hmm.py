@@ -40,7 +40,7 @@ NEWDATA = True  # flag to generate data once
 
 #task = BaumWelch   # Viterbi / Forward
 task = Viterbi
-
+ 
 script_name = 'bw_hmm'
 
 
@@ -64,7 +64,7 @@ comment = str(sys.argv[2])
 ###   As a flag, if HMM_delta > 5.0 it is a signal 
 #        that HMM initial A matrix should be set to RANDOM
 HMM_RANDOM_INIT = False
-if HMM_delta > 4.95:
+if HMM_delta > 5.05:
     HMM_RANDOM_INIT = True
 
 
@@ -144,6 +144,9 @@ sequence_name =  seqdir+'seq_'+urunid+'.txt'   # name of sim sequence file
 #  2) observation codeword value
 #  
 
+testname = 'vit_test'+urunid+'.csv'
+
+ftest = open(testname, 'w') # testing
 fmeta = open(metadata_name, 'a')  #  append metadata to a big log
 fdata = open(datafile_name, 'w')  #  unique filename for csv output   
 
@@ -160,6 +163,9 @@ print >> fmeta , line
 #
 if(NEWDATA==False and HMM_delta < testeps):   # no point in repeating the same computation!
     Nruns = 1
+
+if(task==Viterbi):
+    Nruns = 1
     
 for Ratio in RatioList:
     di = int(Ratio*sig)   # change in output obs mean per state
@@ -170,7 +176,7 @@ for Ratio in RatioList:
     NEWDATA = True   
     for run in range(Nruns):
 
-        print '\n-------------------------------------------\n   Starting Run ',run+1, 'of', Nruns, '\n\n'
+        print '\n-------------------------------------------\n Ratio = ',Ratio, ':  Starting Run ',run+1, 'of', Nruns, '\n\n'
         # open the log file
         id = str(int(100*(Ratio)))+'iter'+str(run)  # encode the ratio (delta mu/sigma) into filename
     
@@ -335,11 +341,27 @@ for Ratio in RatioList:
             print 'Sequence Size:', state_seq_result.size
             true_state_nums = []
             for name in X:
-                true_state_nums.append(model.statenos[name])
+                true_state_nums.append(model.statenos[name]-1)  # correct 0 offset in M.decode()
             #print '--------   data looks like: -------'
             #for i in range(20):
                 #print true_state_nums[i], state_seq_result[i]
             #quit()
+            i = 0
+            cnt = 0
+            for l in Ls:
+                cnt += 1
+                if (cnt > 100):
+                    break
+                a = ''
+                b = ''
+                for j in range(l):
+                    print >>ftest, true_state_nums[i+j], ', ', state_seq_result[i+j]
+                    a = a + str(true_state_nums[i+j])
+                    b = b + str(state_seq_result[i+j])
+                    d1 = ed.eval(a,b)
+                print >>ftest,'     ', d1
+                i += j+1
+                
             print 'Sequence Size:', state_seq_result.size
             totald, cost, count = Veterbi_Eval(state_seq_result,true_state_nums,model.names,Ls, model.statenos)
             print >>fdata, '{:2d}, {:.3f}, {:3d}, {:.3f}, {:.3f}, {:2d}, {:.3f}, {:.3f}'.format(task, Ratio, int(di), HMM_delta, float(sig), run+1, float(totald), count)
@@ -381,6 +403,7 @@ for Ratio in RatioList:
 
     #  End of loop of runs
 
+ftest.close()
 fdata.close()
 fmeta.close()
 

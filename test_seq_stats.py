@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 from   hmm_bt import *
 from   abt_constants import *  
 
-MODEL = SMALL
+MODEL = BIG
 
 max_avg_abs_non_zero = 0.01
 max_max_abs_non_zero = 0.03

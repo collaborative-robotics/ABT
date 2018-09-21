@@ -9,10 +9,9 @@ from abt_constants import *
 MODEL = BIG
 
 testeps = 1.96 / np.sqrt(float(NEpochs))  # will convert to confidence interval
-testsigeps = 0.10   # 1% of standard value 2.0
+testsigeps = 0.10   # mean must be within this many SDs of actual mean.
 
-print 'Test epsilon: ', testeps
-print 'Test sig epsilon: ', testsigeps
+print 'Test sig epsilon: ', testsigeps, ' standard deviations'
 
 ##
 #    Supress Deprecation Warnings from hmm_lean / scikit
@@ -45,7 +44,6 @@ lfname = logdir + 'REF_test_statelog.txt'
 refdataname = lfname
 
 nargs = len(sys.argv)
-
 
 if nargs == 1:
     print 'Please use a filename on command line'
@@ -91,7 +89,7 @@ rep.append(' ')
 
 model.setup_means(FIRSTSYMBOL, Ratio, sig)
 
-[ABT, bb] = ABTtree(model)  # see file xxxx_ABT (e.g. Peg2_ABT, simp_ABT)
+[ABT, bb, leaves] = ABTtree(model)  # see file xxxx_ABT (e.g. Peg2_ABT, simp_ABT)
 
 if(GENDATA):
     print 'Data will appear in '+lfname
@@ -114,6 +112,7 @@ if(GENDATA):
 
     for i in range(NEpochs):
         result = ABT.tick("ABT Simulation", bb)
+        # Generate the output observation corresponding to tree exit value
         if (result == b3.SUCCESS):
             logf.write('{:s}, {:.0f}\n'.format(osu,outputs[osu]))  # not random obs!
         else:
@@ -132,13 +131,13 @@ if(GENDATA):
 
 logf = open(lfname,'r')
 
-dN = {}
-dSum = {}
-dS2 = {}
+dN = {}    # number of observations seen for each state  
+dSum = {}  # sum of observations in each state
+dS2 = {}   # sum of observation^2 in each state
+smu = {}   # mean of each state's observations
+ssig = {}  # standard dev of each state's observations
 
-smu = {}
-ssig = {}
-
+# initial values
 for n in names:
     #print 'looking for state: ', n
     dN[n] = 0
@@ -150,7 +149,7 @@ nobs = 0
 for line in logf:
     if line == '---\n':
         nsims += 1
-    else:
+    else:  # accumulate observation data for each true state
         [st, sy] = line.split(',')
         #print 'state, symbol: ',st, '|',sy
         dN[st] += 1
@@ -182,7 +181,7 @@ print model.names
 print 'Intended Obs Means:'
 print model.outputs
 
-print '    name        N            sum           sum^2     mu         S.D.'
+print '    name        N            sum        sum^2           mu          S.D.'
 for [i,n] in enumerate(names):
     smu[n] = dSum[n] / float(dN[n])
     ssig[n] = np.sqrt(dN[n]*dS2[n] - dSum[n]*dSum[n]) / float(dN[n])
@@ -194,7 +193,7 @@ for [i,n] in enumerate(names):
         assert(abs(ssig[n] - sig) < testsigeps), 'Excessive error in SD'
 
         mu_err = abs(smu[n]-model.outputs[n])  # check inside 95% confidence interval
-        assert mu_err < testeps*ssig[n] , 'Excessive error in mean'
+        assert mu_err < testsigeps*ssig[n] , 'Excessive error in mean'
 
 print 'Passed: state mean and SD assertions'
 
