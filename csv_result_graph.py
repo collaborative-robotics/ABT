@@ -15,9 +15,14 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import BoundaryNorm
 from matplotlib.ticker import MaxNLocator
 
-Forward   = 0  # define task codes
-Viterbi   = 1
-BaumWelch = 2
+from abt_constants import *
+
+#Forward   = 0  # define task codes
+#Viterbi   = 1
+#BaumWelch = 2
+
+
+
 
 cmd_line_Ratio = -1     # flag value
 if len(sys.argv) == 2:  # we have an arg
@@ -192,40 +197,76 @@ if(firsttask == Viterbi):
     #print 'Viterbi Plot: size of data: '
     #for i, line in enumerate(data):
         #print sorted(list(rs))[i], line
-    
-    #  Plot 1: Error vs. Ratio
-    figno = 1
-    fig1 = plt.figure(figno)
-    figno += 1
-    bp = plt.boxplot(data, notch=True,vert=True ,patch_artist=True)
-    #bp = plt.boxplot(dperts, notch=True,vert=True ,patch_artist=True)
-    
+
+    if cmd_line_Ratio < 0.0:   # i.e. we want to study all ratios    
+        #  Plot 1: Error vs. Ratio
+        figno = 1
+        fig1 = plt.figure(figno)
+        figno += 1
+        bp = plt.boxplot(data, notch=True,vert=True ,patch_artist=True)
+        #bp = plt.boxplot(dperts, notch=True,vert=True ,patch_artist=True)
+        
+        #standardize graph size
+        #figptr = plt.gcf()
+        figptr = fig1
+        DPI = figptr.get_dpi()    
+        figptr.set_size_inches(plotH/float(DPI),plotV/float(DPI))
+        
+        for b in bp['boxes']:
+            b.set_facecolor('Moccasin')
+
+        # set up some labels for the X-axis (Ratios)
+        tstrs = [0.00]
+        for r in sorted(rs):
+            tstrs.append(str(r))
+        plt.xticks(range(len(rs)+1), tstrs)
+
+        plt.xlabel('Ratio (di/sig)')
+        #plt.xlabel('HMM perturbation (dimensionless)')
+        plt.ylabel('String Edit Distance per symbol')
+        ymax  = 1.1  # every state wrong = 1.0
+        plt.ylim(0.0, ymax)
+        plt.title('Viterbi Tracking Error vs. Ratio, '+modelstring)
+
+        
+        plt.show(block=False)
+        
+        print 'Enter a filename for this plot: (.png will be added)'
+        pfname = raw_input('string:')    
+        plt.savefig(pfname)
+        
+        
+   ##########
+    #
+    #  Plot 2: decoder SED vs. Perturbation
+    #
+    figno = 2
+    fig2 = plt.figure(figno)
+    bp2 = plt.boxplot(dperts, notch=True,vert=True ,patch_artist=True)
+
     #standardize graph size
-    #figptr = plt.gcf()
-    figptr = fig1
+    figptr = fig2
     DPI = figptr.get_dpi()    
     figptr.set_size_inches(plotH/float(DPI),plotV/float(DPI))
-    
-    for b in bp['boxes']:
+
+    for b in bp2['boxes']:
         b.set_facecolor('Moccasin')
 
-    # set up some labels for the X-axis (Ratios)
-    tstrs = [0.00]
-    for r in sorted(rs):
-        tstrs.append(str(r))
-    plt.xticks(range(len(rs)+1), tstrs)
-
-    plt.xlabel('Ratio (di/sig)')
-    #plt.xlabel('HMM perturbation (dimensionless)')
+    plt.xlabel('HMM A-matrix Perturbation')
     plt.ylabel('String Edit Distance per symbol')
-    ymax  = 5
+    ymax = 1.1
     plt.ylim(0.0, ymax)
-    plt.title('Viterbi Tracking Error, '+modelstring)
+    plt.title('Viterbi decoder Edit Distance vs Perturbation, '+modelstring+', '+ratiostring)
 
-    
+    tstrs = ['0.0']
+    for p in sorted(perts):
+        pstr = str(p)
+        if p > random_flag:
+            pstr = 'random' 
+        tstrs.append(pstr)
+    plt.xticks(range(len(perts)+1), tstrs)
+
     plt.show(block=False)
-        
-
 
 #####################################################################################
 #

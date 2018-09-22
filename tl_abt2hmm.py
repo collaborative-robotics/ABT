@@ -61,10 +61,10 @@ comment = str(sys.argv[2])
 
 #################################################
 #     Normally 0.0 < HMM_delta < 0.500
-###   As a flag, if HMM_delta > 5.0 it is a signal 
+###   As a flag, if HMM_delta > random_flag it is a signal 
 #        that HMM initial A matrix should be set to RANDOM
 HMM_RANDOM_INIT = False
-if HMM_delta > 5.05:
+if HMM_delta > random_flag:
     HMM_RANDOM_INIT = True
 
 
@@ -132,7 +132,7 @@ datafile_name = datadir+'data_'+urunid+'.csv'  # a unique filename
 #------------------------------------------------------------------------
 #       Baum-Welch              Viterbi                Forward
 #------------------------------------------------------------------------
-#  6)  e2 (RMS error)     |                    |
+#  6)  e2 (RMS error)     | avg str edit dist  |
 #  7)  emax (max error)   |                    |
 #------------------------------------------------------------------------
 
@@ -355,11 +355,11 @@ for Ratio in RatioList:
                 a = ''
                 b = ''
                 for j in range(l):
-                    print >>ftest, true_state_nums[i+j], ', ', state_seq_result[i+j]
+                    print >>ftest, Ratio, '{:5.2f}'.format(HMM_delta), true_state_nums[i+j], ', ', state_seq_result[i+j]
                     a = a + str(true_state_nums[i+j])
                     b = b + str(state_seq_result[i+j])
                     d1 = ed.eval(a,b)
-                print >>ftest,'     ', d1
+                print >>ftest, Ratio, '{:5.2f}'.format(HMM_delta), '                ', d1/float(len(a))
                 i += j+1
                 
             print 'Sequence Size:', state_seq_result.size
