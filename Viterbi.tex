@@ -1,0 +1,44 @@
+\subsection{Viterbi decoder}
+
+Another simulation workflow evaluated the performance of the Viterbi decoder in identifying
+the sequence of true states when only observation sequences are known.  The Viterbi decoder is a
+ dynamic programming based algorithm which combines the observation probability densities / distributions
+with the state transition probabilities 
+to determine the most likely state sequencce.
+ 
+
+To measure the accuracy of state decoding, the sequences of states (both true and decoded) were encoded 
+as strings of one character per state and the string Levanstein string edit distance was computed.
+The string edit distance was divided by the number of characters (states) in each sequence.
+
+The Viterbi algorithm was evaluated using a set of HMMs which were perturned by different amounts from the 
+initial HMM which generated the sequences.  For a pertubation of 0, the Viterbi algorithm always returned 
+the same estimated sequence for each simluated observation sequence.  
+For perturbations greater than 0, the direction of the perturbation was randomized as described above so 
+15 repetations were performed to get an average performance in terms length-adjusted SED.
+As with baum wehlch system identification results above, 
+an additional set of computations was performed for randomly initialized HMM transiton parameters.
+
+Observations were generated with a set of 5 Ratios:
+\[
+R = \{0.0, 0.25, 1.0, 2.5, 5.0\}
+\]
+Ratio, $R$, encodes the ease of decoding the states from observation values alone without state-transition
+probabilities. 
+
+Figure \ref{res_SED_v_Ratio_16state.png} shows average SED for the 5 values of observation Ratio, $R$ in the 15-state model.
+All HMM perterbation values are included in this dataset.  Perhaps surprisingly there seems to be no effect of the obervation Ratio on 
+mean SED. 
+
+
+
+Figure \ref{res_SED_v_Pert_16state_all.png} shows average SED for 4 values of HMM perturbation,  plus the random HMM $A$ matrix for 
+all Ratios in the 16-state model.  This time there is a notable trend of worse state tracking results for higher model perturbations 
+and especially for the random HMM state-transition matrix. 
+
+
+
+
+
+
+

@@ -53,16 +53,16 @@ if nargs == 1:
     quit()
 elif nargs == 2:
     if(sys.argv[1] == "GENDATA"):
-        GENDATA = True
-        Ratio = 3.0        #  set this for the generated data
+        GENDATA = True 
         lfname = logdir+'TSTstatelog.txt'
     else:
-        lfname = str(sys.argv[1])
-        Ratio = float(di)/sig
+        lfname = str(sys.argv[1]) 
 
 print 'Starting observation stats test on ', lfname
 if GENDATA:
     print ' Generating NEW data'
+
+Ratio = float(raw_input('Enter the Ratio expected for the data:'))
 
 NEpochs = 100000
 
