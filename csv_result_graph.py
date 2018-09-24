@@ -329,11 +329,15 @@ if(firsttask == BaumWelch):
     plt.ylim(0.0, ymax)
     plt.title('Avg Error vs. Perturbation, '+modelstring+', '+ratiostring)
 
+ 
     tstrs = ['0.0']
     for p in sorted(perts):
-        tstrs.append(str(p))
+        pstr = str(p)
+        if p > random_flag:
+            pstr = 'random' 
+        tstrs.append(pstr)
     plt.xticks(range(len(perts)+1), tstrs)
-
+    
     plt.show(block=False)
         
 print 'Enter a filename for this plot: (.png will be added)'

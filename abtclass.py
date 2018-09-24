@@ -19,12 +19,13 @@ class model():
         self.n = Nstates
         self.A = np.zeros([Nstates,Nstates])
         self.PS = np.zeros(Nstates)     # prob of success
-        self.outputs = {}                 # mean value for each state name (dict)
         self.names = []
         self.Pi = np.zeros(Nstates)
         self.Pi[0] = 1.0  # always start at first state
-        self.statenos = {}
-        
+        self.statenos = {}   # indeces corresponding to state names
+        self.sigma = 2.0     # standard deviation of observation symbols
+        self.outputs = {}    # mean value for each state name (dict) 
+
     def setup_means(self,first, Ratio, sig):
         assert len(self.names) > 0, 'Names have to be set up first'
         assert len(self.names) == self.n, 'Wrong number of states'

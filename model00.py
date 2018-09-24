@@ -59,5 +59,7 @@ modelo00.PS = PS
 modelo00.outputs = outputs
 modelo00.statenos = statenos
 modelo00.names = names
+modelo00.sigma = sig
+
 
 

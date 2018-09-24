@@ -146,7 +146,7 @@ sequence_name =  seqdir+'seq_'+urunid+'.txt'   # name of sim sequence file
 
 testname = 'vit_test'+urunid+'.csv'
 
-#ftest = open(testname, 'w') # testing
+ftest = open(testname, 'w') # testing
 fmeta = open(metadata_name, 'a')  #  append metadata to a big log
 fdata = open(datafile_name, 'w')  #  unique filename for csv output   
 
@@ -164,8 +164,8 @@ print >> fmeta , line
 if(NEWDATA==False and HMM_delta < testeps):   # no point in repeating the same computation!
     Nruns = 1
 
-if(task==Viterbi):
-    Nruns = 1
+#if(task==Viterbi):
+    #Nruns = 1
     
 for Ratio in RatioList:
     di = int(Ratio*sig)   # change in output obs mean per state
@@ -257,7 +257,7 @@ for Ratio in RatioList:
         #
         Ac = A.copy()  # isolate orig A matrix from HMM
         Ar = A.copy()  # reference original copy
-        M = HMM_setup(model.Pi, Ac,sig,model.names)
+        M = HMM_setup(model)
 
         #############################################
         #
@@ -355,11 +355,11 @@ for Ratio in RatioList:
                 a = ''
                 b = ''
                 for j in range(l):
-                    #print >>ftest, Ratio, '{:5.2f}'.format(HMM_delta), true_state_nums[i+j], ', ', state_seq_result[i+j]
+                    print >>ftest, Ratio, '{:5.2f}'.format(HMM_delta), true_state_nums[i+j], ', ', state_seq_result[i+j]
                     a = a + str(true_state_nums[i+j])
                     b = b + str(state_seq_result[i+j])
                     d1 = ed.eval(a,b)
-                #print >>ftest, Ratio, '{:5.2f}'.format(HMM_delta), '                ', d1/float(len(a))
+                print >>ftest, Ratio, '{:5.2f}'.format(HMM_delta), '                ', d1/float(len(a))
                 i += j+1
                 
             print 'Sequence Size:', state_seq_result.size
@@ -403,7 +403,7 @@ for Ratio in RatioList:
 
     #  End of loop of runs
 
-#ftest.close()
+ftest.close()
 fdata.close()
 fmeta.close()
 

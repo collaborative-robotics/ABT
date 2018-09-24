@@ -70,5 +70,6 @@ modelo01.PS = PS
 modelo01.outputs = outputs
 modelo01.statenos = statenos
 modelo01.names = names
+modelo01.sigma = sig
 
 

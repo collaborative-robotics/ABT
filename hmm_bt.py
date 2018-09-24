@@ -49,21 +49,26 @@ def A_row_test(A,of):
         #print  'assertion:', i,r
         assert abs(r-1.0) < eps, 'Assert Problem: a row sum of A-matrix is != 1.0, sum = '+str(r)
         
-def HMM_setup(Pi, A, sig, names):
+def HMM_setup(model):                    ####    25-sept  MAJOR bug in intialization of Output means fixed!!!!
     #print 'Size: A: ', A.shape
-    l = A.shape[0]
+    l = model.A.shape[0]
     #print 'len(Pi): ', len(Pi), l
     M = hmm.GaussianHMM(n_components=l, covariance_type='diag', n_iter=10, init_params='')
     #M.n_features = 1
-    M.startprob_ = Pi
-    M.transmat_ = A
+    M.startprob_ = model.Pi
+    M.transmat_ = model.A
     #tmpmeans = []
     #for i in range(len(names)):
         #tmpmeans.append( [ outputs[names[i]] ] )
     #M.means_ = np.array(tmpmeans)
-    M.means_ = 0.5*np.ones(l).reshape([l,1])  # is this a bug??? what about \delta\mu * i???
+    #M.means_ = 0.5*np.ones(l).reshape([l,1])  # is this a bug??? what about \delta\mu * i???
+    m = np.zeros(model.n)
+    for i,n in enumerate(model.names):
+        m[i] = model.outputs[n]
+    m.shape = [l,1]
+    M.means_ = m
     #print 'means shape: ', M.means_.shape
-    tmpcovars = sig * np.ones((l))
+    tmpcovars = model.sigma * np.ones((l))
     tmpcovars.shape = [l,1]
     M.covars_ = np.array(tmpcovars)
     return M
