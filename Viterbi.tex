@@ -26,13 +26,22 @@ R = \{0.0, 0.25, 1.0, 2.5, 5.0\}
 Ratio, $R$, encodes the ease of decoding the states from observation values alone without state-transition
 probabilities. 
 
-Figure \ref{res_SED_v_Ratio_16state.png} shows average SED for the 5 values of observation Ratio, $R$ in the 15-state model.
+
+\begin{figure} \includgraphics[width=0.7textwidth]{￼res_SED_v_Ratio_16state.png}
+\caption{}\label{res_SED_v_Ratio_16state}
+\end{figure}
+
+Figure \ref{res_SED_v_Ratio_16state} shows average SED for the 5 values of observation Ratio, $R$ in the 15-state model.
 All HMM perterbation values are included in this dataset.  Perhaps surprisingly there seems to be no effect of the obervation Ratio on 
 mean SED. 
 
 
+\begin{figure} \includgraphics[width=0.7textwidth]{￼res_SED_v_Pert_16state_all.png}
+\caption{}\label{res_SED_v_Pert_16state_all}
+\end{figure}
 
-Figure \ref{res_SED_v_Pert_16state_all.png} shows average SED for 4 values of HMM perturbation,  plus the random HMM $A$ matrix for 
+
+Figure \ref{res_SED_v_Pert_16state_all} shows average SED for 4 values of HMM perturbation,  plus the random HMM $A$ matrix for 
 all Ratios in the 16-state model.  This time there is a notable trend of worse state tracking results for higher model perturbations 
 and especially for the random HMM state-transition matrix. 
 
