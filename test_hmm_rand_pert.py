@@ -13,6 +13,7 @@ from hmmlearn import hmm
 #####################################################
 
 #####################################################
+from abtclass import *
 from hmm_bt import *
  
  
@@ -92,14 +93,32 @@ for n in outputs.keys():
     outputs[n] = i
     i += di
     
-    
+# Build the test models
+modelT = model(len(names))  # make a new model
+modelT.A = A
+modelT.PS = PS
+modelT.outputs = outputs
+modelT.statenos = statenos
+modelT.names = names
+modelT.sigma = sig
+
+
+modelT1 = model(len(names))  # make a new model
+modelT1.A = A
+modelT1.PS = PS
+modelT1.outputs = outputs
+modelT1.statenos = statenos
+modelT1.names = names
+modelT1.sigma = sig
+
+
     
 #####################################################
 print '\n\nTesting A matrix with ABT row constraint'
 
 of = open('HMM_rp_test_rep.txt', 'w')
 
-M = HMM_setup(Pi, A, sig, names)
+M = HMM_setup(modelT)
 B = A.copy()
 
 outputAmat(B,"Initial A Matrix",names,of)
@@ -116,7 +135,7 @@ A_row_test(M.transmat_, of)
 ######################################################
 print '\n\nTesting A matrix with a 1.0 element'
 #outputAmat(A1,'Special A mat with 1.0 element', names, sys.stdout)
-M1 = HMM_setup(Pi, A1, sig, names)
+M1 = HMM_setup(modelT1)
 B = A1.copy()
 #outputAmat(A,"Initial A Matrix",names,of)
 print 'Applying random values to matrix with 1.0 element'

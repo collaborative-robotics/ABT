@@ -12,8 +12,11 @@ import matplotlib.pyplot as plt
 from hmmlearn import hmm
 #####################################################
 
+
 #####################################################
-from hmm_bt import *   # bring in the HMM_perturb() function 
+from abtclass import *
+from hmm_bt import *
+
 from abt_constants import *
 
 testeps = 0.000001  # epsilon for comparing floats
@@ -150,11 +153,33 @@ for n in outputs.keys():
     i += di
 
     
+# Build the test models
+modelT = model(len(names))  # make a new model
+modelT.A = A
+modelT.PS = PS
+modelT.outputs = outputs
+modelT.statenos = statenos
+modelT.names = names
+modelT.sigma = sig
+
+
+modelT1 = model(len(names))  # make a new model
+modelT1.A = A
+modelT1.PS = PS
+modelT1.outputs = outputs
+modelT1.statenos = statenos
+modelT1.names = names
+modelT1.sigma = sig
+
+
+    
 #####################################################
 of = open('HMM_test_rep.txt', 'w') # clobber old report
 
 B = A.copy()
-M = HMM_setup(Pi, B, sig, names)
+modelT.A = B
+
+M = HMM_setup(modelT)
 
 outputAmat(M.transmat_,"Initial A Matrix",names,of)
 print '\n\n ------------------------------  ',len(names),' state model perturbation tests -----------------------'
@@ -260,7 +285,7 @@ print 'Passed coin flip bias "test": (450 < sum < 550)'
 print '\n\n'
 print '-------------------------- Testing A-matrix 1.00 elements  -------------------'
 
-M1 = HMM_setup(Pi, A1, sig, names)
+M1 = HMM_setup(modelT1)
 B = A1.copy()
 #outputAmat(A,"Initial A Matrix",names,of)
 print 'Perturbing by 0.25'
@@ -274,7 +299,7 @@ print '\n\n'
 print '-------------------------- Testing Totally Random A-matrix (all elements random)  -------------------'
 print '                            (note: still need to run test_hmm_rand_pert.py)'
 
-M1 = HMM_setup(Pi, A1, sig, names)
+M1 = HMM_setup(modelT1)
 B = A1.copy()
 #outputAmat(A,"Initial A Matrix",names,of)
 print 'Perturbing by 0.25'
