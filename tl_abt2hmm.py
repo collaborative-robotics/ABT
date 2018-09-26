@@ -38,8 +38,8 @@ warnings.filterwarnings('ignore', category=DeprecationWarning)
 
 NEWDATA = True  # flag to generate data once
 
-#task = BaumWelch   # Viterbi / Forward
-task = Viterbi
+task = BaumWelch   # Viterbi / Forward
+#task = Viterbi
  
 script_name = 'bw_hmm'
 
@@ -146,7 +146,7 @@ sequence_name =  seqdir+'seq_'+urunid+'.txt'   # name of sim sequence file
 
 testname = 'vit_test'+urunid+'.csv'
 
-ftest = open(testname, 'w') # testing
+#ftest = open(testname, 'w') # testing
 fmeta = open(metadata_name, 'a')  #  append metadata to a big log
 fdata = open(datafile_name, 'w')  #  unique filename for csv output   
 
@@ -355,11 +355,11 @@ for Ratio in RatioList:
                 a = ''
                 b = ''
                 for j in range(l):
-                    print >>ftest, Ratio, '{:5.2f}'.format(HMM_delta), true_state_nums[i+j], ', ', state_seq_result[i+j]
+                    #print >>ftest, Ratio, '{:5.2f}'.format(HMM_delta), true_state_nums[i+j], ', ', state_seq_result[i+j]
                     a = a + str(true_state_nums[i+j])
                     b = b + str(state_seq_result[i+j])
                     d1 = ed.eval(a,b)
-                print >>ftest, Ratio, '{:5.2f}'.format(HMM_delta), '                ', d1/float(len(a))
+                #print >>ftest, Ratio, '{:5.2f}'.format(HMM_delta), '                ', d1/float(len(a))
                 i += j+1
                 
             print 'Sequence Size:', state_seq_result.size
@@ -403,7 +403,7 @@ for Ratio in RatioList:
 
     #  End of loop of runs
 
-ftest.close()
+#ftest.close()
 fdata.close()
 fmeta.close()
 

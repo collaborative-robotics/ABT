@@ -124,6 +124,13 @@ def HMM_fully_random(A):
 #    NEW: if d > 5  initialize A matrix to RANDOM values
 #
 
+
+#TODO
+#TODO
+#TODO   NEED TO ALSO PERTURB the Observation means!!
+#TODO
+#TODO
+
 def HMM_perturb(M, d):
       # A matrix
     A = M.transmat_
