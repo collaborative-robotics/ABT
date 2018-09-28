@@ -176,10 +176,13 @@ modelT1.sigma = sig
 #####################################################
 of = open('HMM_test_rep.txt', 'w') # clobber old report
 
-B = A.copy()
-modelT.A = B
+
+modelT.A = A.copy()
 
 M = HMM_setup(modelT)
+
+Aref = A.copy()  #original transition matrix.
+B = M.means_  # output observation means
 
 outputAmat(M.transmat_,"Initial A Matrix",names,of)
 print '\n\n ------------------------------  ',len(names),' state model perturbation tests -----------------------'
@@ -209,13 +212,14 @@ assert x[1] > 0.0 , 'Perturbation caused no difference in A matrices'
 
 
 print '------------------------------measure applied deltas-----------------------------------'
+Anew = M.transmat_
 # figure out if deltas are right amount
 [r1,c1] = A.shape
 for r in range(r1):
     print 'new row:', r
     for c in range(c1):
         a = A[r][c]  # perturbed value
-        b = B[r][c]  # original value
+        b = Anew[r][c]  # original value
         if r == 3:
             print 'r,c, a,b:', r,c,a,b
         if b > 0.000001:  # 0.9999 is magic number from HMM_perturb line 128
@@ -245,21 +249,21 @@ assert M.transmat_[outF_index,outF_index] - 1.0 < testeps, 'A 1.0 element was mo
 print '-------------------------- test distance metrics -------------------'
 print ' each element += 0.2  both errors should = 0.2'
 
-# reset the two matrices A and B to identical
-B = A.copy()
-[r1, c1] = B.shape
+
+# reset the two matrices A and Aref to identical
+[r1, c1] = Aref.shape
 #r1 -= 2    # don't perturb for Os and Of states
 for r in range(r1):
     for c in range(c1):
-        if B[r][c] > 0:  # apply NON RANDOM perturb
-            B[r][c] += 0.2  #  test for metrics
+        if Aref[r][c] > 0:  # apply NON RANDOM perturb
+            Aref[r][c] += 0.2  #  test for metrics
 
-x = Adiff(A, B ,names)
+x = Adiff(A, Aref ,names)
 #    return [e,e2,em,N2,imax,jmax,anoms,erasures]
 
 #outputAmat(A,'A', names, sys.stdout)
-#outputAmat(B,'B', names, sys.stdout)
-fs = 'Problem with distance metrics Adiff(A,B,names)'
+#outputAmat(Aref,'Aref', names, sys.stdout)
+fs = 'Problem with distance metrics Adiff(A,Aref,names)'
 print 'EAinfty = ',x[2]    # max difference
 print 'EAavg   = ',x[1]    # avg non-zero elements
 
@@ -267,6 +271,27 @@ assert abs(x[2] - 0.2) < testeps, fs+' (max diff)'
 assert abs(x[1] - 0.2) < testeps, fs+' (avg diff non-zero)'
 
 print 'Passed distance metric assertions'
+ 
+ 
+ 
+ 
+
+print '\n\n'
+print '-------------------------- Testing B-matrix perturbation (output means)  -------------------'
+
+testeps = 0.001
+
+print 'M.means_:', M.means_
+print 'size:    ', M.means_.size
+print 'M.means_[3]:', M.means_[3][0]
+
+for i in range(M.means_.size):
+    print '   ',i
+    d = abs(M.means_[i][0]-B[i])
+    print 'testing: ', i, m, B[i]
+    assert (d/B[i] - Pdelta) < testeps, 'Wrong B-matrix perturbed value'
+    
+print 'Passed B-matrix perturb tests'
  
 
 print '\n\n'
@@ -286,7 +311,7 @@ print '\n\n'
 print '-------------------------- Testing A-matrix 1.00 elements  -------------------'
 
 M1 = HMM_setup(modelT1)
-B = A1.copy()
+Aref = A1.copy()
 #outputAmat(A,"Initial A Matrix",names,of)
 print 'Perturbing by 0.25'
 HMM_perturb(M1, 0.25)  
@@ -300,10 +325,10 @@ print '-------------------------- Testing Totally Random A-matrix (all elements 
 print '                            (note: still need to run test_hmm_rand_pert.py)'
 
 M1 = HMM_setup(modelT1)
-B = A1.copy()
+Aref = A1.copy()
 #outputAmat(A,"Initial A Matrix",names,of)
 print 'Perturbing by 0.25'
-M1.transmat_ = HMM_fully_random(B)
+M1.transmat_ = HMM_fully_random(Aref)
 print 'Applied FULLY RANDOM Matrix Perturbation: '
 #outputAmat(M1.transmat_, 'RANDOM a-mat', names) 
  

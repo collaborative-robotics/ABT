@@ -71,6 +71,8 @@ def HMM_setup(model):                    ####    25-sept  MAJOR bug in intializa
     tmpcovars = model.sigma * np.ones((l))
     tmpcovars.shape = [l,1]
     M.covars_ = np.array(tmpcovars)
+    #print 'covars shape:', M.covars_.shape
+    #quit()
     return M
 
 
@@ -159,16 +161,14 @@ def HMM_perturb(M, d):
                 #print 'Actual Change: ', (paft-pbef)/pbef
                 if A[r][c] >  0.9999:
                     A[r][c] = 0.9999  # don't allow going to 1.0 or above
-                flag = A[r][c]      # store value (for use above)
-                
-    #M.transmat_ = A    # maybe unnecessary??
+                flag = A[r][c]      # store value (for use above) 
     
-    # B matrix means
-    #B = M.means_
-    #for i in range(len(B)):
-        #B[i] = B[i] * (1.0 +  randsign() * d)
-    #M.means_ = B
-
+    # Perturb B matrix means
+    B = M.means_
+    for i,b in enumerate(B):
+        B[i] = int(0.5 + b * (1.0 +  randsign() * d))
+    M.means_ = B
+    
 def randsign():
     a = random.random()
     if a > 0.500:
