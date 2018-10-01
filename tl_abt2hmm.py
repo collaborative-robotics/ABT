@@ -277,18 +277,21 @@ for Ratio in RatioList:
             
 
         if (HMM_RANDOM_INIT):
-            A_rand = A.copy() 
-            [rn,cn] = A_rand.shape
-            for r in range(rn):      # normalize the rows
-                rsum = 0.0
-                for c in range(cn):
-                    A_rand[r][c] = random.random()
-                    rsum += A_rand[r][c]
-                for c in range(cn):
-                    A_rand[r][c] /= rsum
-            M.transmat_ = A_rand
+            M.transmat_, M.means_ = HMM_fully_random(model)
+            
+            #A_rand = A.copy() 
+            #[rn,cn] = A_rand.shape
+            #for r in range(rn):      # normalize the rows
+                #rsum = 0.0
+                #for c in range(cn):
+                    #A_rand[r][c] = random.random()
+                    #rsum += A_rand[r][c]
+                #for c in range(cn):
+                    #A_rand[r][c] /= rsum
+            #M.transmat_ = A_rand
             print 'Applied FULLY RANDOM Matrix Perturbation: '
             outputAmat(M.transmat_, 'RANDOM a-mat', model.names)
+            print 'Applied FULLY RANDOM B-matrix Perturbation'
       
       
         A_row_test(M.transmat_, sys.stdout)   # Make sure A-Matrix Valid
@@ -331,6 +334,9 @@ for Ratio in RatioList:
             quit()
             
             
+        ###   make sure everything is cool with the HMM we will use below:
+        HMM_model_sizes_check(M)
+        
         ##################################################
         #
         #       Veterbi Algorithm

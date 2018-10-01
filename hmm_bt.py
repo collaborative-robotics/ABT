@@ -16,6 +16,8 @@ import sys
 from hmmlearn import hmm
 import random as random
 
+from abt_constants import *
+
 def outputAmat(A,title,names,of=sys.stdout):
     print >> of, title   # eg, "Original  A matrix:"
     for i in range(A.shape[0]):
@@ -76,7 +78,17 @@ def HMM_setup(model):                    ####    25-sept  MAJOR bug in intializa
     return M
 
 
-
+def HMM_model_sizes_check(M):
+    #print 'Model size check:'
+    #print 'Transmatrix: ',M.transmat_.shape
+    #print 'Outputs:     ',M.means_.shape
+    #print 'done...'
+    #quit()
+    l = M.transmat_.shape[0]
+    fs = 'Your HMM has inconsistent model sizes and will not run: quitting'
+    assert M.transmat_.shape == (l,l), fs
+    assert M.means_.shape == (l,1), fs
+    
 
 #  Replace ABT transition probabilities with 
 # random values (only the non-zero elements tho).
@@ -108,8 +120,8 @@ def HMM_ABT_to_random(M):
 # initialize A-matrix to all NxN elements random 
 #  (subject to Sum(row) == 1)
 #
-def HMM_fully_random(A):
-    A_rand = A.copy() 
+def HMM_fully_random(model):
+    A_rand = model.A.copy() 
     [rn,cn] = A_rand.shape
     for r in range(rn):    
         rsum = 0.0
@@ -118,7 +130,13 @@ def HMM_fully_random(A):
             rsum += A_rand[r][c]
         for c in range(cn):  # normalize the rows
             A_rand[r][c] /= rsum
-    return A_rand
+    
+    # randomize means of the output observations
+    B = np.zeros(model.n)
+    for i,n in enumerate(model.names):
+        B[i] = int( 0.5 + NSYMBOLS*random.random() )
+    B.shape = [rn,1]   
+    return A_rand, B
     
 # apply a delta (random +-) to the elements of A
 #   subject to sum of row = 1.]
@@ -126,12 +144,7 @@ def HMM_fully_random(A):
 #    NEW: if d > 5  initialize A matrix to RANDOM values
 #
 
-
-#TODO
-#TODO
-#TODO   NEED TO ALSO PERTURB the Observation means!!
-#TODO
-#TODO
+ 
 
 def HMM_perturb(M, d):
       # A matrix
