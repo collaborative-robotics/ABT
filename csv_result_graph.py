@@ -22,6 +22,13 @@ from abt_constants import *
 #BaumWelch = 2
 
 
+def data_vis(data, Ratios):
+    print 'Data to be plotted: '
+    for i,v in enumerate(data):
+        print Ratios[i], ' | ', v
+        print ''
+    print '\n\n'
+
 
 
 cmd_line_Ratio = -1     # flag value
@@ -30,8 +37,11 @@ if len(sys.argv) == 2:  # we have an arg
 
 # first open up the metadata.
 
-metadata_name = 'hmm_bw_metadata.txt'
-metadata_name = 'metadata.txt'
+data_prefix = ''  # normally
+#data_prefix = '/home/blake/Dropbox/UWEE/ABT/'   # testing
+
+metadata_name = data_prefix+'metadata.txt'
+#metadata_name = 'metadata.txt'
 # Metadata file format:  each line: (comma sep)
 #
 # 1) date and time stamp
@@ -41,7 +51,6 @@ metadata_name = 'metadata.txt'
 # 5) number of HMM / BT states
 # 6) text field (comment)
 
-
 fmeta = open(metadata_name, 'r')
 runs = []
 for line in fmeta:
@@ -50,7 +59,7 @@ for line in fmeta:
 
 MenuSize = 30
 print '-------------------------------------------------'
-print 'Select one or more files to plot:'
+print 'Select one or more files to plot:         ('+metadata_name+')'
 menu = runs[-MenuSize:]
 for [i,r] in enumerate(menu):  # last 10 runs for ref 
     date = r[0]
@@ -66,11 +75,14 @@ en = raw_input('Select   end: ')
 sti = int(st)
 eni = int(en)
 
+#print 'Menu:'
+#print menu
+#quit()
 files = []
 modelsize = menu[sti][4]  # user must stay with same model size
 print 'Setting prev mod size:', modelsize
 for i in range(sti,eni+1):
-    files.append(menu[i][1].strip())   #filename
+    files.append(data_prefix+menu[i][1].strip())   #filename
     if menu[i][4] != modelsize:
         print 'you have selected multiple model sizes - not a fair comparison'
         quit()
@@ -138,15 +150,20 @@ if cmd_line_Ratio >= 0.0:   # this means we are going to select a specific ratio
     print 'Selecting Ratios: ', sorted(rs)  # might be multiple rs later
     ratiostring = 'Ratio = {:5.2f}'.format(cmd_line_Ratio)
     
+nan_count = 0
 usedrows = []
 epsilon = 0.0001
 for r in sorted(rs): #iterate over the Ratios
     l = []
     for [j, v] in enumerate(Eavg):
-        if abs(r-RatioL[j])<epsilon: # cheezy grep
-            usedrows.append(allrows[j])
-            l.append(v)
-            nprows += 1
+        if not np.isnan(v): 
+            if abs(r-RatioL[j])<epsilon: # cheezy grep
+                usedrows.append(allrows[j])
+                l.append(v)
+                nprows += 1
+        else:
+            nan_count += 1
+    # l is a list of all Eavg values for a each Ratio
     data.append(l)   # get a list of lists: [ ... [Eavg samples for given ratio ] ....]
 
 dperts= []
@@ -155,13 +172,18 @@ print 'Perturbations (HMM_deltas):', sorted(perts)
 for p in sorted(perts):
     l = []
     for [j,v] in enumerate(Eavg):
-        if abs(p-pert[j])<epsilon:   # cheezy grep
-            if RatioL[j] in rs:      # selected ratio(s)
-                l.append(v)
+        if not np.isnan(v): 
+            if abs(p-pert[j])<epsilon:   # cheezy grep
+                if RatioL[j] in rs:      # selected ratio(s)
+                    l.append(v)
     dperts.append(l)  # get a list of lists: [ ... [Eavg samples for given perturbation ] ....]
 
-
+dct = 0
+for l in data:
+    dct += len(l)
+    
 print 'plotting ', nprows,' rows ' , len(usedrows)
+print nan_count, ' NaN values for Eavg, out of ', dct
 print ''
 
 #for r in usedrows:
@@ -198,7 +220,7 @@ if(firsttask == Viterbi):
     #for i, line in enumerate(data):
         #print sorted(list(rs))[i], line
 
-    if cmd_line_Ratio < 0.0:   # i.e. we want to study all ratios    
+    if cmd_line_Ratio < 0.0:   # i.e. we want to study all ratios  
         #  Plot 1: Error vs. Ratio
         figno = 1
         fig1 = plt.figure(figno)
@@ -273,7 +295,9 @@ if(firsttask == Viterbi):
 #        Baum Welch Model Identification Results plots
 #
 if(firsttask == BaumWelch):
-    figno = 1
+    figno = 1  
+    #data_vis(data,sorted(rs))
+    #quit()
     if(cmd_line_Ratio < 0.0):  # only plot this if no Command line param (Ratio)
         ##########
         #
@@ -295,7 +319,7 @@ if(firsttask == BaumWelch):
         plt.xlabel('Ratio (di/sig)')
         plt.ylabel('RMS Error')
         plt.ylim(0.0, ymax)
-        plt.title('Avg Error vs. Ratio, '+modelstring)
+        plt.title('BW Param Estimatino: Avg Error vs. Ratio, '+modelstring)
 
         tstrs = [0.00]
         for r in sorted(rs):
