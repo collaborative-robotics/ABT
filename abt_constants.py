@@ -36,3 +36,5 @@ NEpochs = 20*K
 ####  How many analysis runs to do
 Nruns = 15
 
+task = BaumWelch
+

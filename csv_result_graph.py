@@ -319,7 +319,7 @@ if(firsttask == BaumWelch):
         plt.xlabel('Ratio (di/sig)')
         plt.ylabel('RMS Error')
         plt.ylim(0.0, ymax)
-        plt.title('BW Param Estimatino: Avg Error vs. Ratio, '+modelstring)
+        plt.title('BW Parameter Estimation: Avg Error vs. Ratio, '+modelstring)
 
         tstrs = [0.00]
         for r in sorted(rs):
