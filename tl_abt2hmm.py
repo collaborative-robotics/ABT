@@ -99,7 +99,11 @@ ownname = sys.argv[0]
  
 git_hash = subprocess.check_output(['git', 'rev-parse', 'HEAD'])[:10]  # first 10 chars to ID software version
 
-datadir = 'bw_output/'
+if task == Viterbi:
+    datadir = 'vit_output/'
+if task == BaumWelch:
+    datadir = 'bw_output/'
+
 seqdir  = 'sequences/'
 
 urunid = str(uuid.uuid4())  # a unique hash code for this run 
@@ -108,7 +112,6 @@ urunid = str(uuid.uuid4())  # a unique hash code for this run
 for ndir in [datadir, seqdir]:
     if not (os.path.exists(os.path.dirname(ndir))):
         os.mkdir(ndir)
-
 
 metadata_name = 'metadata.txt'
 # Metadata file format:  each line: (comma sep)
