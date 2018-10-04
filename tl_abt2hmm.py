@@ -38,10 +38,9 @@ warnings.filterwarnings('ignore', category=DeprecationWarning)
 
 NEWDATA = True  # flag to generate data once
 
-task = BaumWelch   # Viterbi / Forward
-#task = Viterbi
- 
-script_name = 'bw_hmm'
+##  these now set in abt_constants
+#task = BaumWelch   # Viterbi / Forward
+##task = Viterbi 
 
 
 # amount HMM parameters should be ofset
