@@ -29,8 +29,6 @@ def data_vis(data, Ratios):
         print ''
     print '\n\n'
 
-
-
 cmd_line_Ratio = -1     # flag value
 if len(sys.argv) == 2:  # we have an arg
     cmd_line_Ratio = float(sys.argv[1])
@@ -254,8 +252,14 @@ if(firsttask == Viterbi):
         plt.show(block=False)
         
         print 'Enter a filename for this plot: (.png will be added)'
-        pfname = raw_input('string:')    
-        plt.savefig(pfname)
+        
+        fname = 'res_'+str(modelsize)+'vit'+modelstring+'.png'
+        fname.replace(' ','')
+        print 'proposed file name: (CR to accept)', fname
+        pfname = raw_input('new name:') 
+        if(pfname == ''):
+            pfname = fname
+        plt.savefig(pfname+'.png')
         
         
    ##########
@@ -328,8 +332,14 @@ if(firsttask == BaumWelch):
 
         plt.show(block=False)
             
+ 
         print 'Enter a filename for this plot: (.png will be added)'
-        pfname = raw_input('string:')    
+        fname = 'res_'+str(modelsize)+'vit'+modelstring+'.png'
+        fname.replace(' ','')
+        print 'proposed file name: (CR to accept)', fname
+        pfname = raw_input('new name:') 
+        if(pfname == ''):
+            pfname = fname  
         plt.savefig(pfname)
 
     ##########
@@ -365,7 +375,12 @@ if(firsttask == BaumWelch):
     plt.show(block=False)
         
 print 'Enter a filename for this plot: (.png will be added)'
-pfname = raw_input('string:')
+fname = 'res_'+str(modelsize)+'vit'+modelstring+'.png'
+fname.replace(' ','')
+print 'proposed file name: (CR to accept)', fname
+pfname = raw_input('new name:') 
+if(pfname == ''):
+    pfname = fname
 
 plt.savefig(pfname+'.png')
  
