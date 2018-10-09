@@ -22,6 +22,20 @@ from abt_constants import *
 #BaumWelch = 2
 
 
+
+def figure_output(plt, task, modelstring, ratiostring='all'):
+    print 'Enter a filename for this plot: (.png will be added)'
+    fname = 'res_'+task+'_'+modelstring.replace(' ','') +'R'+ratiostring.replace(' ','') + '.png'
+    #fname.replace(' ','')
+    print 'proposed file name: (CR to accept)', fname
+    pfname = raw_input('new name:') 
+    if(pfname == ''):
+        pfname = fname
+    plt.savefig(pfname+'.png')
+    return
+ 
+ 
+ 
 def data_vis(data, Ratios):
     print 'Data to be plotted: '
     for i,v in enumerate(data):
@@ -224,7 +238,6 @@ if(firsttask == Viterbi):
         fig1 = plt.figure(figno)
         figno += 1
         bp = plt.boxplot(data, notch=True,vert=True ,patch_artist=True)
-        #bp = plt.boxplot(dperts, notch=True,vert=True ,patch_artist=True)
         
         #standardize graph size
         #figptr = plt.gcf()
@@ -251,16 +264,8 @@ if(firsttask == Viterbi):
         
         plt.show(block=False)
         
-        print 'Enter a filename for this plot: (.png will be added)'
-        
-        fname = 'res_'+str(modelsize)+'vit'+modelstring+'.png'
-        fname.replace(' ','')
-        print 'proposed file name: (CR to accept)', fname
-        pfname = raw_input('new name:') 
-        if(pfname == ''):
-            pfname = fname
-        plt.savefig(pfname+'.png')
-        
+        figure_output(plt, 'Vit', modelstring, ratiostring)
+
         
    ##########
     #
@@ -293,6 +298,8 @@ if(firsttask == Viterbi):
     plt.xticks(range(len(perts)+1), tstrs)
 
     plt.show(block=False)
+    figure_output(plt, 'Vit', modelstring, ratiostring)
+
 
 #####################################################################################
 #
@@ -332,15 +339,7 @@ if(firsttask == BaumWelch):
 
         plt.show(block=False)
             
- 
-        print 'Enter a filename for this plot: (.png will be added)'
-        fname = 'res_'+str(modelsize)+'vit'+modelstring+'.png'
-        fname.replace(' ','')
-        print 'proposed file name: (CR to accept)', fname
-        pfname = raw_input('new name:') 
-        if(pfname == ''):
-            pfname = fname  
-        plt.savefig(pfname)
+        figure_output(plt, 'BW', modelstring, ratiostring)
 
     ##########
     #
@@ -361,7 +360,7 @@ if(firsttask == BaumWelch):
     plt.xlabel('HMM A-matrix Perturbation')
     plt.ylabel('RMS Error')
     plt.ylim(0.0, ymax)
-    plt.title('Avg Error vs. Perturbation, '+modelstring+', '+ratiostring)
+    plt.title('Avg BW Error vs. Perturbation, '+modelstring+', '+ratiostring)
 
  
     tstrs = ['0.0']
@@ -374,15 +373,8 @@ if(firsttask == BaumWelch):
     
     plt.show(block=False)
         
-print 'Enter a filename for this plot: (.png will be added)'
-fname = 'res_'+str(modelsize)+'vit'+modelstring+'.png'
-fname.replace(' ','')
-print 'proposed file name: (CR to accept)', fname
-pfname = raw_input('new name:') 
-if(pfname == ''):
-    pfname = fname
+    figure_output(plt, 'BW', modelstring, ratiostring)
+    
 
-plt.savefig(pfname+'.png')
- 
 #plt.show()   ##uncomment if you want figs to remain after file save. 
 
