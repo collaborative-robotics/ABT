@@ -134,8 +134,8 @@ def HMM_fully_random(model):
     # randomize means of the output observations
     B = np.zeros(model.n)
     for i,n in enumerate(model.names):
-        B[i] = int( 0.5 + NSYMBOLS*random.random() )
-    B.shape = [rn,1]   
+        B[i] = int( 0.5 + FIRSTSYMBOL + (NSYMBOLS-FIRSTSYMBOL)*random.random() )
+    B.shape = [rn,1]   # match req. of hmmlearn
     return A_rand, B
     
 # apply a delta (random +-) to the elements of A
@@ -143,8 +143,6 @@ def HMM_fully_random(model):
 #
 #    NEW: if d > 5  initialize A matrix to RANDOM values
 #
-
- 
 
 def HMM_perturb(M, d):
       # A matrix
@@ -189,7 +187,6 @@ def randsign():
     else:
         return -1
 
-
 # read in observation sequences data file
 def read_obs_seqs(logf):
     #logf = open(fn,'r')
@@ -213,16 +210,7 @@ def read_obs_seqs(logf):
     Y=np.array(Y).reshape(-1,1)  # make 2D
     Ls = np.array(Ls)
     logf.close()
-    return [X,Y,Ls]
-
-#print 'Shapes: '
-#print 'Y', Y.shape
-#print Y
-#print 'Ls', Ls.shape
-#print Ls
-
-#quit()
-
+    return [X,Y,Ls] 
 
 ######################################################
 #

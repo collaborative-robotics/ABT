@@ -166,8 +166,6 @@ print >> fmeta , line
 if(NEWDATA==False and HMM_delta < testeps):   # no point in repeating the same computation!
     Nruns = 1
 
-#if(task==Viterbi):
-    #Nruns = 1
     
 for Ratio in RatioList:
     di = int(Ratio*sig)   # change in output obs mean per state
@@ -209,9 +207,9 @@ for Ratio in RatioList:
         # make sure (damn sure!) ABT probs are same as HMM stats
         #     (HMM will be perturbed later, should be consistent NOW)
         for l in leaves:
-            # output observeation mu, sigma
+            # output observation mu, sigma
             l.set_Obs_Density(model.outputs[l.Name],sig)
-            # set up the Ps
+            # set up the Ps (prob of success)
             l.set_Ps(model.PS[model.statenos[l.Name]])
             
             
@@ -232,12 +230,10 @@ for Ratio in RatioList:
                 else:
                     seq_data_f.write('{:s}, {:.0f}\n'.format(ofa,model.outputs[ofa]))
                 seq_data_f.write('---\n')
-
             seq_data_f.close()
-
             print 'Finished simulating ',NEpochs,'  epochs'
-
-        NEWDATA = False
+            NEWDATA = False
+            
         #############################################
         #
         #    Read simulated sequence data
@@ -257,6 +253,7 @@ for Ratio in RatioList:
         #
         #    HMM setup
         #
+        A = model.A.copy()
         Ac = A.copy()  # isolate orig A matrix from HMM
         Ar = A.copy()  # reference original copy
         M = HMM_setup(model)
@@ -280,17 +277,6 @@ for Ratio in RatioList:
 
         if (HMM_RANDOM_INIT):
             M.transmat_, M.means_ = HMM_fully_random(model)
-            
-            #A_rand = A.copy() 
-            #[rn,cn] = A_rand.shape
-            #for r in range(rn):      # normalize the rows
-                #rsum = 0.0
-                #for c in range(cn):
-                    #A_rand[r][c] = random.random()
-                    #rsum += A_rand[r][c]
-                #for c in range(cn):
-                    #A_rand[r][c] /= rsum
-            #M.transmat_ = A_rand
             print 'Applied FULLY RANDOM Matrix Perturbation: '
             outputAmat(M.transmat_, 'RANDOM a-mat', model.names)
             print 'Applied FULLY RANDOM B-matrix Perturbation'
@@ -323,8 +309,10 @@ for Ratio in RatioList:
         #end of special test code
 
 
+            
+        ###   make sure everything is cool with the HMM we will use below:
         A_row_test(M.transmat_, sys.stdout)
-
+        HMM_model_sizes_check(M)        
 
             
         ##################################################
@@ -335,10 +323,6 @@ for Ratio in RatioList:
             print 'Not ready to run forward/backward ... quitting'
             quit()
             
-            
-        ###   make sure everything is cool with the HMM we will use below:
-        HMM_model_sizes_check(M)
-        
         ##################################################
         #
         #       Veterbi Algorithm
