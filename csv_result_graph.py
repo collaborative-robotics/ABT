@@ -27,7 +27,11 @@ def figure_output(plt, task, modelstring, ratiostring='all'):
     print 'Enter a filename for this plot: (.png will be added)'
     rs = ratiostring.replace(' ','')
     rs = rs.replace('=','-')
-    fname = 'res_'+task+'_'+modelstring.replace(' ','') +'_'+rs+'.png'
+    rs = rs.replace('.','p')
+    ms = modelstring.replace(' ','')
+    ms = ms.replace('Ratio','R_')
+    ms = ms.replace('-stateModel','')
+    fname = 'res_'+task+'_'+ ms +'_'+rs+'.png'
     #fname.replace(' ','')
     print 'proposed file name: (CR to accept)', fname
     pfname = raw_input('new name:') 
@@ -266,7 +270,7 @@ if(firsttask == Viterbi):
         
         plt.show(block=False)
         
-        figure_output(plt, 'Vit_vs_Ratio', modelstring, ratiostring)
+        figure_output(plt, 'Vit_vs_R', modelstring, ratiostring)
 
         
    ##########
@@ -300,7 +304,7 @@ if(firsttask == Viterbi):
     plt.xticks(range(len(perts)+1), tstrs)
 
     plt.show(block=False)
-    figure_output(plt, 'Vit_vs_Pert', modelstring, ratiostring)
+    figure_output(plt, 'Vit_vs_P', modelstring, ratiostring)
 
 
 #####################################################################################
@@ -341,7 +345,7 @@ if(firsttask == BaumWelch):
 
         plt.show(block=False)
             
-        figure_output(plt, 'BW_vs_Ratio', modelstring, ratiostring)
+        figure_output(plt, 'BW_vs_R', modelstring, ratiostring)
 
     ##########
     #
@@ -375,7 +379,7 @@ if(firsttask == BaumWelch):
     
     plt.show(block=False)
         
-    figure_output(plt, 'BW_vs_Pert', modelstring, ratiostring)
+    figure_output(plt, 'BW_vs_P', modelstring, ratiostring)
     
 
 #plt.show()   ##uncomment if you want figs to remain after file save. 
