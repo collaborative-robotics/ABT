@@ -174,10 +174,14 @@ def HMM_perturb(M, d):
                     A[r][c] = 0.9999  # don't allow going to 1.0 or above
                 flag = A[r][c]      # store value (for use above) 
     
-    # Perturb B matrix means
+    # Perturb B matrix means.  Each mean must be perturbed by same amount, not by a 1+delta as above
+    #    because then some states have bigger probabilty errors than others. 
+    sigma = 2.0    #  HACK
+    bdelta = 2 * d * sigma    # factor of 2 just feels better(!)  
     B = M.means_
     for i,b in enumerate(B):
-        B[i] = int(0.5 + b * (1.0 +  randsign() * d))
+        #B[i] = int(0.5 + b * (1.0 +  randsign() * d))
+        B[i] += randsign() * bdelta
     M.means_ = B
     
 def randsign():

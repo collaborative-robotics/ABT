@@ -289,7 +289,7 @@ if(firsttask == Viterbi):
     for b in bp2['boxes']:
         b.set_facecolor('Moccasin')
 
-    plt.xlabel('HMM A-matrix Perturbation')
+    plt.xlabel('HMM Perturbation')
     plt.ylabel('String Edit Distance per symbol')
     ymax = 1.1
     plt.ylim(0.0, ymax)
@@ -363,7 +363,7 @@ if(firsttask == BaumWelch):
     for b in bp2['boxes']:
         b.set_facecolor('lightblue')
 
-    plt.xlabel('HMM A-matrix Perturbation')
+    plt.xlabel('HMM Perturbation')
     plt.ylabel('RMS Error')
     plt.ylim(0.0, ymax)
     plt.title('Avg BW Error vs. Perturbation, '+modelstring+', '+ratiostring)
