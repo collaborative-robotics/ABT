@@ -18,6 +18,7 @@ MODEL = SMALL
 
 task = BaumWelch
 
+RatioList = [1.0 ]   #  a medium difficulty ratio for convervence testing
 
 ##
 #    Supress Deprecation Warnings from hmm_lean / scikit
@@ -162,12 +163,13 @@ print >> fmeta , line
 if(NEWDATA==False and HMM_delta < testeps):   # no point in repeating the same computation!
     Nruns = 1
 
+Ratio = RatioList[0]    
+#for Ratio in RatioList:
+for tol in [0.1, 0.01, 0.001, 0.0001, 0.00001]:
     
-for Ratio in RatioList:
     di = int(Ratio*sig)   # change in output obs mean per state
-        
     ###  Regenerate output means:model.setup_means(FIRSTSYMBOL,Ratio, sig)
-    model.setup_means(FIRSTSYMBOL,Ratio, sig)
+    model.setup_means(FIRSTSYMBOL, Ratio, sig)
     
     NEWDATA = True   
     for run in range(Nruns):
@@ -252,7 +254,7 @@ for Ratio in RatioList:
         A = model.A.copy()
         Ac = A.copy()  # isolate orig A matrix from HMM
         Ar = A.copy()  # reference original copy
-        M = HMM_setup(model)
+        M = HMM_setup(model, tol)
 
         #############################################
         #
@@ -268,7 +270,7 @@ for Ratio in RatioList:
             #HMM_ABT_to_random(M)   # randomize probabilites
             #print 'Applied Random Matrix Perturbation'
             HMM_perturb(M, HMM_delta)
-            print 'Applied Matrix Perturbation: ' + str(HMM_delta)
+            print 'Applied HMM Perturbation: ' + str(HMM_delta)
             
 
         if (HMM_RANDOM_INIT):
@@ -325,6 +327,8 @@ for Ratio in RatioList:
         #       Veterbi Algorithm
         #
         if(task == Viterbi):
+            print 'Task variable: ', task, '(1=Viterbi!)'
+            quit()
             print "Identifying State Sequence of the generated data with ", len(Y)," observations"
             log_test,state_seq_result= M.decode(Y,Ls,"viterbi")
             print 'Sequence Size:', state_seq_result.size
@@ -365,7 +369,8 @@ for Ratio in RatioList:
 
             M.fit(Y,Ls)
             print 'Completed HMM fit(): Converged: ', M.monitor_.converged
-            
+            print M.monitor_
+             
             # print the output file header
             #for rline in rep:
                 #print >>of, rline
@@ -389,7 +394,7 @@ for Ratio in RatioList:
                 anoms = 'None'
             #print >> of, 'Erasures : ', erasures
 
-            print >>fdata, '{:2d}, {:.3f}, {:3d}, {:.3f}, {:.3f}, {:2d}, {:.3f}, {:.3f}'.format(task, Ratio, int(di), HMM_delta, float(sig), run+1, e2,em)
+            print >>fdata, '{:2d}, {:.3f}, {:3d}, {:.3f}, {:.3f}, {:2d}, {:.3f}, {:.3f}'.format(task, tol, int(di), HMM_delta, float(sig), run+1, e2,em)
  
 
     #  End of loop of runs
