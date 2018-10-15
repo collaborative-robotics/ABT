@@ -55,7 +55,7 @@ def HMM_setup(model, toler=0.01):                    ####    25-sept  MAJOR bug 
     #print 'Size: A: ', A.shape
     l = model.A.shape[0]
     #print 'len(Pi): ', len(Pi), l
-    M = hmm.GaussianHMM(n_components=l, covariance_type='diag', n_iter=10, tol=toler, init_params='')
+    M = hmm.GaussianHMM(n_components=l, covariance_type='diag', n_iter=20, tol=toler, init_params='')
     #M.n_features = 1
     M.startprob_ = model.Pi
     M.transmat_ = model.A

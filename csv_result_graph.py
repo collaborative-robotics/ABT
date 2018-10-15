@@ -381,6 +381,43 @@ if(firsttask == BaumWelch):
         
     figure_output(plt, 'BW_vs_P', modelstring, ratiostring)
     
+#####################################################################################
+#
+#        Baum Welch ModelConvergence testing plots
+#
+if(firsttask == BWTest):
+    figno = 1  
+    #data_vis(data,sorted(rs))
+    #quit()
+    ##########
+    #
+    #  Plot 1: Error vs. Ratio
+    fig1 = plt.figure(figno)
+    figno += 1
+    bp = plt.boxplot(data, notch=True,vert=True ,patch_artist=True)
+    
+    #standardize graph size
+    #figptr = plt.gcf()
+    figptr = fig1
+    DPI = figptr.get_dpi()    
+    figptr.set_size_inches(plotH/float(DPI),plotV/float(DPI))
+    
+    for b in bp['boxes']:
+        b.set_facecolor('lightblue')
 
-#plt.show()   ##uncomment if you want figs to remain after file save. 
+
+    plt.xlabel('Convergence Tolerance')
+    plt.ylabel('RMS Error')
+    plt.ylim(0.0, ymax)
+    plt.title('BW Parameter Estimation: Avg Error vs. Tolerance, '+modelstring)
+    tols = rs.copy()    # just to keep naming right -- data file entry differes only in Ratio
+    tstrs = ['0.0']
+    for t in sorted(tols):
+        tstrs.append(str(t))
+    plt.xticks(range(len(tols)+1), tstrs)
+
+    plt.show(block=False)
+        
+    figure_output(plt, 'BW_vs_tol', modelstring, ratiostring)    
+
 

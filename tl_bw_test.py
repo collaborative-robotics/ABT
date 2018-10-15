@@ -16,7 +16,7 @@ from abt_constants import *
 MODEL = SMALL 
 #MODEL = BIG
 
-task = BaumWelch
+task = BWTest
 
 RatioList = [1.0 ]   #  a medium difficulty ratio for convervence testing
 
@@ -97,7 +97,7 @@ git_hash = subprocess.check_output(['git', 'rev-parse', 'HEAD'])[:10]  # first 1
 
 if task == Viterbi:
     datadir = 'vit_output/'
-if task == BaumWelch:
+if task == BaumWelch or task == BWTest:
     datadir = 'bw_output/'
 
 seqdir  = 'sequences/'
@@ -360,7 +360,7 @@ for tol in [0.1, 0.01, 0.001, 0.0001, 0.00001]:
             print >>fdata, '{:2d}, {:.3f}, {:3d}, {:.3f}, {:.3f}, {:2d}, {:.3f}, {:.3f}'.format(task, Ratio, int(di), HMM_delta, float(sig), run+1, float(totald), count)
 
 
-        if(task == BaumWelch):
+        if(task == BaumWelch or task == BWTest):
             #############################################
             #
             #   Identify HMM params with Baum-Welch
@@ -368,8 +368,9 @@ for tol in [0.1, 0.01, 0.001, 0.0001, 0.00001]:
             print "starting HMM fit with ", len(Y), ' observations.'
 
             M.fit(Y,Ls)
-            print 'Completed HMM fit(): Converged: ', M.monitor_.converged
-            print M.monitor_
+            if(BWTest):
+                print 'Completed HMM fit(): Converged: ', M.monitor_.converged
+                print M.monitor_
              
             # print the output file header
             #for rline in rep:
@@ -393,8 +394,10 @@ for tol in [0.1, 0.01, 0.001, 0.0001, 0.00001]:
             if len(erasures) == 0:
                 anoms = 'None'
             #print >> of, 'Erasures : ', erasures
-
-            print >>fdata, '{:2d}, {:.3f}, {:3d}, {:.3f}, {:.3f}, {:2d}, {:.3f}, {:.3f}'.format(task, tol, int(di), HMM_delta, float(sig), run+1, e2,em)
+            if task == BWTest:                 
+                print >>fdata, '{:2d}, {:.3f}, {:3d}, {:.3f}, {:.3f}, {:2d}, {:.3f}, {:.3f}'.format(task, tol, int(di), HMM_delta, float(sig), run+1, e2,em)
+            else: 
+                print >>fdata, '{:2d}, {:.3f}, {:3d}, {:.3f}, {:.3f}, {:2d}, {:.3f}, {:.3f}'.format(task, Ratio, int(di), HMM_delta, float(sig), run+1, e2,em)
  
 
     #  End of loop of runs
