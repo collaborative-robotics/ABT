@@ -13,12 +13,14 @@ import datetime
 from hmm_bt import *
 from abt_constants import *
 
-MODEL = SMALL 
-#MODEL = BIG
 
-task = BWTest
+###############################################
+#
+##    Setup BW convergence Tests
+#
+#   (all config in abt_constants.py <---  task_BWConv.py
 
-RatioList = [1.0 ]   #  a medium difficulty ratio for convervence testing
+
 
 ##
 #    Supress Deprecation Warnings from hmm_lean / scikit
@@ -395,7 +397,7 @@ for tol in [0.1, 0.01, 0.001, 0.0001, 0.00001]:
                 anoms = 'None'
             #print >> of, 'Erasures : ', erasures
             if task == BWTest:                 
-                print >>fdata, '{:2d}, {:.3f}, {:3d}, {:.3f}, {:.3f}, {:2d}, {:.3f}, {:.3f}'.format(task, tol, int(di), HMM_delta, float(sig), run+1, e2,em)
+                print >>fdata, '{:2d}, {:.6f}, {:3d}, {:.3f}, {:.3f}, {:2d}, {:.3f}, {:.3f}'.format(task, tol, int(di), HMM_delta, float(sig), run+1, e2,em)
             else: 
                 print >>fdata, '{:2d}, {:.3f}, {:3d}, {:.3f}, {:.3f}, {:2d}, {:.3f}, {:.3f}'.format(task, Ratio, int(di), HMM_delta, float(sig), run+1, e2,em)
  
