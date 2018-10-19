@@ -112,7 +112,7 @@ RatioL = []
 pert  = []
 Eavg  = []
 Emax  = []
-
+IterCount = []
 nrow = 0
 allrows = []
 
@@ -127,7 +127,7 @@ for file in files:
             nrow += 1
             sttask  = row[0]
             stRatioL = row[1]
-            stdi    = row[2]   
+            stdi    = row[2] 
             stpert  = row[3]    # same as HMM_delta
             stsig   = row[4]
             strn    = row[5]
@@ -142,10 +142,13 @@ for file in files:
                 quit()
             Task.append(int(sttask))
             RatioL.append(float(stRatioL))
+            IterCount.append(int(stdi))
             pert.append(float(stpert))
             Eavg.append(float(stEavg))
             Emax.append(float(stEmax))
 
+# New names for convergence tol and iteration count
+ConvTol = RatioL
 
 print 'Read in ', nrow,' rows' 
 print ''
@@ -185,20 +188,29 @@ for r in sorted(rs): #iterate over the Ratios
     data.append(l)   # get a list of lists: [ ... [Eavg samples for given ratio ] ....]
 
 dperts= []
+ic_v_perts = []
 perts = set(pert)
 print 'Perturbations (HMM_deltas):', sorted(perts)
 for p in sorted(perts):
     l = []
-    for [j,v] in enumerate(Eavg):
+    ic = []
+    for [j,v] in enumerate(Eavg):   #Y axis values
         if not np.isnan(v): 
             if abs(p-pert[j])<epsilon:   # cheezy grep
                 if RatioL[j] in rs:      # selected ratio(s)
                     l.append(v)
+                    ic.append(IterCount[j])
+                    
     dperts.append(l)  # get a list of lists: [ ... [Eavg samples for given perturbation ] ....]
-
+    ic_v_perts.append(ic)   # iteration counts for each run for each pert. and selected Ratios
+    
 dct = 0
 for l in data:
     dct += len(l)
+    
+#
+# collect convergence iteration count for each test (if BW_testing)
+#
     
 print 'plotting ', nprows,' rows ' , len(usedrows)
 print nan_count, ' NaN values for Eavg, out of ', dct
@@ -393,7 +405,7 @@ if(firsttask == BWTest):
     #
     #  Plot 1: Error vs. Ratio
     fig1 = plt.figure(figno)
-    figno += 1
+    #figno += 1
     bp = plt.boxplot(data, notch=True,vert=True ,patch_artist=True)
     
     #standardize graph size
@@ -420,4 +432,40 @@ if(firsttask == BWTest):
         
     figure_output(plt, 'BW_vs_tol', modelstring, ratiostring)    
 
+    ############################################
+     
+    #data_vis(data,sorted(rs))
+    #quit()
+    ##########
+    #
+    ##  Plot  Iter Count vs Perturbation
+    #fig1 = plt.figure(figno)
+    #figno += 1
+    figno = 2
+    fig2 = plt.figure(figno)
+    bp = plt.boxplot(ic_v_perts, notch=True,vert=True ,patch_artist=True)
+    
+    #standardize graph size
+    #figptr = plt.gcf()
+    figptr = fig2
+    DPI = figptr.get_dpi()    
+    figptr.set_size_inches(plotH/float(DPI),plotV/float(DPI))
+    
+    for b in bp['boxes']:
+        b.set_facecolor('lightblue')
+
+    plt.xlabel('HMM Perturbation')
+    plt.ylabel('Number of iterations to converge')
+    ymax = 15  # iteration count
+    plt.ylim(0.0, ymax)
+    plt.title('BW Parameter Estimation: Iterations vs. perturbation, '+modelstring)
+    tols = rs.copy()    # just to keep naming right -- data file entry differes only in Ratio
+    tstrs = ['0.0']
+    for t in sorted(perts):
+        tstrs.append(str(t))
+    plt.xticks(range(len(perts)+1), tstrs)
+
+    plt.show(block=False)
+        
+    figure_output(plt, 'Iter_vs_tol', modelstring, ratiostring)    
 
