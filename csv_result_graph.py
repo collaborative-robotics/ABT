@@ -34,14 +34,14 @@ def figure_output(plt, task, modelstring, ratiostring='all'):
     fname = 'res_'+task+'_'+ ms +'_'+rs+'.png'
     #fname.replace(' ','')
     print 'proposed file name: (CR to accept)', fname
-    pfname = raw_input('new name:') 
+    pfname = raw_input('new name:')
     if(pfname == ''):
         pfname = fname
     plt.savefig(pfname)
     return
- 
- 
- 
+
+
+
 def data_vis(data, Ratios):
     print 'Data to be plotted: '
     for i,v in enumerate(data):
@@ -79,7 +79,7 @@ MenuSize = 30
 print '-------------------------------------------------'
 print 'Select one or more files to plot:         ('+metadata_name+')'
 menu = runs[-MenuSize:]
-for [i,r] in enumerate(menu):  # last 10 runs for ref 
+for [i,r] in enumerate(menu):  # last 10 runs for ref
     date = r[0]
     nstates = r[4]
     comment = r[5]
@@ -104,7 +104,7 @@ for i in range(sti,eni+1):
     if menu[i][4] != modelsize:
         print 'you have selected multiple model sizes - not a fair comparison'
         quit()
-        
+
 #
 
 Task = []
@@ -127,7 +127,7 @@ for file in files:
             nrow += 1
             sttask  = row[0]
             stRatioL = row[1]
-            stdi    = row[2]   
+            stdi    = row[2]
             stpert  = row[3]    # same as HMM_delta
             stsig   = row[4]
             strn    = row[5]
@@ -147,7 +147,7 @@ for file in files:
             Emax.append(float(stEmax))
 
 
-print 'Read in ', nrow,' rows' 
+print 'Read in ', nrow,' rows'
 print ''
 
 
@@ -167,14 +167,14 @@ if cmd_line_Ratio >= 0.0:   # this means we are going to select a specific ratio
     rs = set([cmd_line_Ratio])
     print 'Selecting Ratios: ', sorted(rs)  # might be multiple rs later
     ratiostring = 'Ratio = {:5.2f}'.format(cmd_line_Ratio)
-    
+
 nan_count = 0
 usedrows = []
 epsilon = 0.0001
 for r in sorted(rs): #iterate over the Ratios
     l = []
     for [j, v] in enumerate(Eavg):
-        if not np.isnan(v): 
+        if not np.isnan(v):
             if abs(r-RatioL[j])<epsilon: # cheezy grep
                 usedrows.append(allrows[j])
                 l.append(v)
@@ -190,7 +190,7 @@ print 'Perturbations (HMM_deltas):', sorted(perts)
 for p in sorted(perts):
     l = []
     for [j,v] in enumerate(Eavg):
-        if not np.isnan(v): 
+        if not np.isnan(v):
             if abs(p-pert[j])<epsilon:   # cheezy grep
                 if RatioL[j] in rs:      # selected ratio(s)
                     l.append(v)
@@ -199,7 +199,7 @@ for p in sorted(perts):
 dct = 0
 for l in data:
     dct += len(l)
-    
+
 print 'plotting ', nprows,' rows ' , len(usedrows)
 print nan_count, ' NaN values for Eavg, out of ', dct
 print ''
@@ -222,8 +222,72 @@ modelstring = str(modelsize) + '-state Model'
 #        Forward/backward Results plots
 #
 if(firsttask == Forward):
-    print ' Forward data plots not yet implemented'
-    quit()
+    figno = 1
+    #data_vis(data,sorted(rs))
+    #quit()
+    if(cmd_line_Ratio < 0.0):  # only plot this if no Command line param (Ratio)
+        ##########
+        #
+        #  Plot 1: Error vs. Ratio
+        fig1 = plt.figure(figno)
+        figno += 1
+        bp = plt.boxplot(data, notch=True,vert=True ,patch_artist=True)
+        #standardize graph size
+        #figptr = plt.gcf()
+        figptr = fig1
+        DPI = figptr.get_dpi()
+        figptr.set_size_inches(plotH/float(DPI),plotV/float(DPI))
+        for b in bp['boxes']:
+            b.set_facecolor('lightblue')
+
+
+        plt.xlabel('Ratio (di/sig)')
+        plt.ylabel('Log Probability')
+        #plt.ylim(0.0, ymax)
+        plt.title('Log Probability  vs. Ratio, '+modelstring)
+
+        tstrs = [0.00]
+        for r in sorted(rs):
+            tstrs.append(str(r))
+        plt.xticks(range(len(rs)+1), tstrs)
+
+        plt.show(block=False)
+
+        figure_output(plt, 'Probability_vs_R', modelstring, ratiostring)
+
+    ##########
+    #
+    #  Plot 2: Error vs. Perturbation
+    #
+
+    fig2 = plt.figure(figno)
+    bp2 = plt.boxplot(dperts, notch=True,vert=True ,patch_artist=True)
+
+    #standardize graph size
+    figptr = fig2
+    DPI = figptr.get_dpi()
+    figptr.set_size_inches(plotH/float(DPI),plotV/float(DPI))
+
+    for b in bp2['boxes']:
+        b.set_facecolor('lightblue')
+
+    plt.xlabel('HMM Perturbation')
+    plt.ylabel('Log Probability')
+    #plt.ylim(0.0, ymax)
+    plt.title('Log Probability vs. Perturbation, '+modelstring+', '+ratiostring)
+
+
+    tstrs = ['0.0']
+    for p in sorted(perts):
+        pstr = str(p)
+        if p > random_flag:
+            pstr = 'random'
+        tstrs.append(pstr)
+    plt.xticks(range(len(perts)+1), tstrs)
+
+    plt.show(block=False)
+
+    figure_output(plt, 'Probability_vs_P', modelstring, ratiostring)
 
 
 #####################################################################################
@@ -233,24 +297,26 @@ if(firsttask == Forward):
 if(firsttask == Viterbi):
     ##########
     #
-    
+
     #print 'Viterbi Plot: size of data: '
     #for i, line in enumerate(data):
         #print sorted(list(rs))[i], line
 
-    if cmd_line_Ratio < 0.0:   # i.e. we want to study all ratios  
+    if cmd_line_Ratio < 0.0:   # i.e. we want to study all ratios
         #  Plot 1: Error vs. Ratio
         figno = 1
         fig1 = plt.figure(figno)
         figno += 1
+        print len(data)
+        exit()
         bp = plt.boxplot(data, notch=True,vert=True ,patch_artist=True)
-        
+
         #standardize graph size
         #figptr = plt.gcf()
         figptr = fig1
-        DPI = figptr.get_dpi()    
+        DPI = figptr.get_dpi()
         figptr.set_size_inches(plotH/float(DPI),plotV/float(DPI))
-        
+
         for b in bp['boxes']:
             b.set_facecolor('Moccasin')
 
@@ -267,12 +333,12 @@ if(firsttask == Viterbi):
         plt.ylim(0.0, ymax)
         plt.title('Viterbi Tracking Error vs. Ratio, '+modelstring)
 
-        
+
         plt.show(block=False)
-        
+
         figure_output(plt, 'Vit_vs_R', modelstring, ratiostring)
 
-        
+
    ##########
     #
     #  Plot 2: decoder SED vs. Perturbation
@@ -283,7 +349,7 @@ if(firsttask == Viterbi):
 
     #standardize graph size
     figptr = fig2
-    DPI = figptr.get_dpi()    
+    DPI = figptr.get_dpi()
     figptr.set_size_inches(plotH/float(DPI),plotV/float(DPI))
 
     for b in bp2['boxes']:
@@ -299,7 +365,7 @@ if(firsttask == Viterbi):
     for p in sorted(perts):
         pstr = str(p)
         if p > random_flag:
-            pstr = 'random' 
+            pstr = 'random'
         tstrs.append(pstr)
     plt.xticks(range(len(perts)+1), tstrs)
 
@@ -312,7 +378,7 @@ if(firsttask == Viterbi):
 #        Baum Welch Model Identification Results plots
 #
 if(firsttask == BaumWelch):
-    figno = 1  
+    figno = 1
     #data_vis(data,sorted(rs))
     #quit()
     if(cmd_line_Ratio < 0.0):  # only plot this if no Command line param (Ratio)
@@ -322,15 +388,15 @@ if(firsttask == BaumWelch):
         fig1 = plt.figure(figno)
         figno += 1
         bp = plt.boxplot(data, notch=True,vert=True ,patch_artist=True)
-        
+
         #standardize graph size
         #figptr = plt.gcf()
         figptr = fig1
-        DPI = figptr.get_dpi()    
+        DPI = figptr.get_dpi()
         figptr.set_size_inches(plotH/float(DPI),plotV/float(DPI))
-        
+
         for b in bp['boxes']:
-            b.set_facecolor('lightblue')
+            b.set_facecolor('mediumspringgreen')
 
 
         plt.xlabel('Ratio (di/sig)')
@@ -344,7 +410,7 @@ if(firsttask == BaumWelch):
         plt.xticks(range(len(rs)+1), tstrs)
 
         plt.show(block=False)
-            
+
         figure_output(plt, 'BW_vs_R', modelstring, ratiostring)
 
     ##########
@@ -357,7 +423,7 @@ if(firsttask == BaumWelch):
 
     #standardize graph size
     figptr = fig2
-    DPI = figptr.get_dpi()    
+    DPI = figptr.get_dpi()
     figptr.set_size_inches(plotH/float(DPI),plotV/float(DPI))
 
     for b in bp2['boxes']:
@@ -368,25 +434,25 @@ if(firsttask == BaumWelch):
     plt.ylim(0.0, ymax)
     plt.title('Avg BW Error vs. Perturbation, '+modelstring+', '+ratiostring)
 
- 
+
     tstrs = ['0.0']
     for p in sorted(perts):
         pstr = str(p)
         if p > random_flag:
-            pstr = 'random' 
+            pstr = 'random'
         tstrs.append(pstr)
     plt.xticks(range(len(perts)+1), tstrs)
-    
+
     plt.show(block=False)
-        
+
     figure_output(plt, 'BW_vs_P', modelstring, ratiostring)
-    
+
 #####################################################################################
 #
 #        Baum Welch ModelConvergence testing plots
 #
 if(firsttask == BWTest):
-    figno = 1  
+    figno = 1
     #data_vis(data,sorted(rs))
     #quit()
     ##########
@@ -395,13 +461,13 @@ if(firsttask == BWTest):
     fig1 = plt.figure(figno)
     figno += 1
     bp = plt.boxplot(data, notch=True,vert=True ,patch_artist=True)
-    
+
     #standardize graph size
     #figptr = plt.gcf()
     figptr = fig1
-    DPI = figptr.get_dpi()    
+    DPI = figptr.get_dpi()
     figptr.set_size_inches(plotH/float(DPI),plotV/float(DPI))
-    
+
     for b in bp['boxes']:
         b.set_facecolor('lightblue')
 
@@ -417,7 +483,5 @@ if(firsttask == BWTest):
     plt.xticks(range(len(tols)+1), tstrs)
 
     plt.show(block=False)
-        
-    figure_output(plt, 'BW_vs_tol', modelstring, ratiostring)    
 
-
+    figure_output(plt, 'BW_vs_tol', modelstring, ratiostring)

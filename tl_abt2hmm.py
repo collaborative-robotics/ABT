@@ -20,7 +20,7 @@ import datetime
 from hmm_bt import *
 from abt_constants import *
 
-#MODEL = SMALL 
+#MODEL = SMALL
 #MODEL = BIG
 
 ##
@@ -30,7 +30,7 @@ warnings.filterwarnings('ignore', category=DeprecationWarning)
 
 ##   Set up research parameters mostly in abt_constants.py
 
- 
+
 ############################################
 #
 #        Basic Job Config
@@ -40,7 +40,7 @@ NEWDATA = True  # flag to generate data once
 
 ##  these now set in abt_constants
 #task = BaumWelch   # Viterbi / Forward
-##task = Viterbi 
+##task = Viterbi
 
 
 # amount HMM parameters should be ofset
@@ -54,13 +54,13 @@ if len(sys.argv) != 3:
     print 'You entered: '
     print sys.argv
     quit()
-    
+
 HMM_delta = float(sys.argv[1])
 comment = str(sys.argv[2])
 
 #################################################
 #     Normally 0.0 < HMM_delta < 0.500
-###   As a flag, if HMM_delta > random_flag it is a signal 
+###   As a flag, if HMM_delta > random_flag it is a signal
 #        that HMM initial A matrix should be set to RANDOM
 HMM_RANDOM_INIT = False
 if HMM_delta > random_flag:
@@ -76,12 +76,12 @@ if MODEL== BIG:
     from peg2_ABT import * # big  14+2 state  # uses model01.py
     from model01 import *
     model = modelo01
-    
+
 if MODEL==SMALL:
     from simp_ABT import *  # small 4+2 state # uses model02.py
     from model00 import *
     model = modelo00
-    
+
 #############################################
 #
 #      Manage outer loop (a set of runs)
@@ -95,19 +95,21 @@ if MODEL==SMALL:
 #
 
 ownname = sys.argv[0]
- 
+
 git_hash = subprocess.check_output(['git', 'rev-parse', 'HEAD'])[:10]  # first 10 chars to ID software version
 
 if task == Viterbi:
     datadir = 'vit_output/'
 if task == BaumWelch:
     datadir = 'bw_output/'
+if task ==  Forward:
+    datadir = "fow_output/"
 
 seqdir  = 'sequences/'
 
-urunid = str(uuid.uuid4())  # a unique hash code for this run 
+urunid = str(uuid.uuid4())  # a unique hash code for this run
 
-#if these don't exist, create them 
+#if these don't exist, create them
 for ndir in [datadir, seqdir]:
     if not (os.path.exists(os.path.dirname(ndir))):
         os.mkdir(ndir)
@@ -144,13 +146,13 @@ sequence_name =  seqdir+'seq_'+urunid+'.txt'   # name of sim sequence file
 #
 #  1) true state name
 #  2) observation codeword value
-#  
+#
 
 testname = 'vit_test'+urunid+'.csv'
 
 #ftest = open(testname, 'w') # testing
 fmeta = open(metadata_name, 'a')  #  append metadata to a big log
-fdata = open(datafile_name, 'w')  #  unique filename for csv output   
+fdata = open(datafile_name, 'w')  #  unique filename for csv output
 
 print '-----'
 print 'Model Size: ', model.n
@@ -166,20 +168,20 @@ print >> fmeta , line
 if(NEWDATA==False and HMM_delta < testeps):   # no point in repeating the same computation!
     Nruns = 1
 
-    
+
 for Ratio in RatioList:
     di = int(Ratio*sig)   # change in output obs mean per state
-        
+
     ###  Regenerate output means:model.setup_means(FIRSTSYMBOL,Ratio, sig)
     model.setup_means(FIRSTSYMBOL,Ratio, sig)
-    
-    NEWDATA = True   
+
+    NEWDATA = True
     for run in range(Nruns):
 
         print '\n-------------------------------------------\n Ratio = ',Ratio, ':  Starting Run ',run+1, 'of', Nruns, '\n\n'
         # open the log file
         id = str(int(100*(Ratio)))+'iter'+str(run)  # encode the ratio (delta mu/sigma) into filename
-    
+
         #####    make a string report describing the setup
         #
         #
@@ -211,8 +213,8 @@ for Ratio in RatioList:
             l.set_Obs_Density(model.outputs[l.Name],sig)
             # set up the Ps (prob of success)
             l.set_Ps(model.PS[model.statenos[l.Name]])
-            
-            
+
+
         #############################################
         #
         #    Generate Simulated Data only on first round
@@ -233,21 +235,21 @@ for Ratio in RatioList:
             seq_data_f.close()
             print 'Finished simulating ',NEpochs,'  epochs'
             NEWDATA = False
-            
+
         #############################################
         #
         #    Read simulated sequence data
         #
 
         Y = []    # Observations
-        X = []    # True state 
+        X = []    # True state
         Ls = []   # Length of each sequence
         seq_data_f = open(sequence_name,'r')
         [X,Y,Ls] = read_obs_seqs(seq_data_f)
         seq_data_f.close()
 
         assert len(Y) > 0, 'Empty observation sequence data'
- 
+
 
         #############################################
         #
@@ -266,32 +268,32 @@ for Ratio in RatioList:
 
         A_row_test(M.transmat_, sys.stdout)   # Make sure A-Matrix Valid
 
-        
+
         testeps = 0.00001
         if(not HMM_RANDOM_INIT and HMM_delta > testeps):
             #HMM_ABT_to_random(M)   # randomize probabilites
             #print 'Applied Random Matrix Perturbation'
             HMM_perturb(M, HMM_delta)
             print 'Applied Matrix Perturbation: ' + str(HMM_delta)
-            
+
 
         if (HMM_RANDOM_INIT):
             M.transmat_, M.means_ = HMM_fully_random(model)
             print 'Applied FULLY RANDOM Matrix Perturbation: '
             outputAmat(M.transmat_, 'RANDOM a-mat', model.names)
             print 'Applied FULLY RANDOM B-matrix Perturbation'
-      
-      
+
+
         A_row_test(M.transmat_, sys.stdout)   # Make sure A-Matrix Valid
 
         # special test code
         #  compare the two A matrices
         #     (compute error metrics)
         testeps = 0.00001
-        if HMM_delta > testeps: 
+        if HMM_delta > testeps:
             [e,e2,em,N2,im,jm,anoms,erasures] = Adiff(Ar,M.transmat_, model.names)
 
-            
+
             ##  some assertions to make sure pertubations are being done right
             #   (if they aren't there's not point in doing the sim)
             assert em > 0.0 , 'Perturbation caused no difference in A matrices'
@@ -309,20 +311,28 @@ for Ratio in RatioList:
         #end of special test code
 
 
-            
+
         ###   make sure everything is cool with the HMM we will use below:
         A_row_test(M.transmat_, sys.stdout)
-        HMM_model_sizes_check(M)        
+        HMM_model_sizes_check(M)
 
-            
+
         ##################################################
         #
         #       Forward Algorithm
         #
         if(task == Forward):
             print 'Not ready to run forward/backward ... quitting'
-            quit()
-            
+            counter = 0
+            logprob = 0
+            log_avg = 0
+            for i in range(len(Ls)):
+                sample = Y[counter:counter+Ls[i]]
+                logprob += M.score(sample,[Ls[i]])
+                counter += Ls[i]
+            log_avg = logprob/len(Ls)
+            print >>fdata, '{:2d}, {:.3f}, {:3d}, {:.3f}, {:.3f}, {:2d}, {:.3f}, {:.3f}'.format(task, Ratio, int(di), HMM_delta, float(sig), run+1, log_avg, logprob)
+
         ##################################################
         #
         #       Veterbi Algorithm
@@ -333,7 +343,7 @@ for Ratio in RatioList:
             print 'Sequence Size:', state_seq_result.size
             true_state_nums = []
             for name in X:
-                true_state_nums.append(model.statenos[name]-1)  # correct 0 offset in M.decode()
+                true_state_nums.append(model.statenos[name]-1)  # correct 0 offset in M.decode() TODO Ask Prof Hannaford about the offset
             #print '--------   data looks like: -------'
             #for i in range(20):
                 #print true_state_nums[i], state_seq_result[i]
@@ -353,7 +363,7 @@ for Ratio in RatioList:
                     d1 = ed.eval(a,b)
                 #print >>ftest, Ratio, '{:5.2f}'.format(HMM_delta), '                ', d1/float(len(a))
                 i += j+1
-                
+
             print 'Sequence Size:', state_seq_result.size
             totald, cost, count = Veterbi_Eval(state_seq_result,true_state_nums,model.names,Ls, model.statenos)
             print >>fdata, '{:2d}, {:.3f}, {:3d}, {:.3f}, {:.3f}, {:2d}, {:.3f}, {:.3f}'.format(task, Ratio, int(di), HMM_delta, float(sig), run+1, float(totald), count)
@@ -391,7 +401,7 @@ for Ratio in RatioList:
             #print >> of, 'Erasures : ', erasures
 
             print >>fdata, '{:2d}, {:.3f}, {:3d}, {:.3f}, {:.3f}, {:2d}, {:.3f}, {:.3f}'.format(task, Ratio, int(di), HMM_delta, float(sig), run+1, e2,em)
- 
+
 
     #  End of loop of runs
 
@@ -400,7 +410,3 @@ fdata.close()
 fmeta.close()
 
 print '\n\n                         Model Run Completed   \n\n'
-
-
-
-

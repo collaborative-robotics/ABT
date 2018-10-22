@@ -7,17 +7,17 @@
 NSYMBOLS = 250
 FIRSTSYMBOL = 25
 
-SMALL = 1   # flags to switch models 
+SMALL = 1   # flags to switch models
 BIG   = 2
 
-
+RatioList = [.5, 1, 2, 3]
 MODEL = SMALL   # may need to clear this for test_xxx.py
 
 random_flag = 0.500  # if a 'perturbation' is  > this, it means totally random
                      #  state transition matrix with no zero elements
 
 #RatioList = [5.0, 0.0, 0.25, 1.0, 2.5]  # output spacing ratios (di/sigma)
- 
+
 T = True
 F = False
 
@@ -37,5 +37,4 @@ NEpochs = 20*K
 ####  How many analysis runs to do
 Nruns = 15
 
-task = BWTest
-
+task = 0
