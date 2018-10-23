@@ -158,11 +158,15 @@ ymax = 1.0  #error plotting range 0.0--ymax
 
 #####################################################
 #
-##   Collect error values for each "X" value
+##   Collect data values for each "X" value
 #
 nprows = 0
 taskID = 0
 data = []
+datamin = []   #min error for each set
+dataminx = []   #min x val for each set
+
+
 rs = set(RatioL)   # default is set of all ratios found
 print 'Ratios: ', sorted(rs)
 ratiostring = 'all ratios'
@@ -172,41 +176,52 @@ if cmd_line_Ratio >= 0.0:   # this means we are going to select a specific ratio
     ratiostring = 'Ratio = {:5.2f}'.format(cmd_line_Ratio)
     
 nan_count = 0
-usedrows = []
+usedrows = []     # for debugging basically
 epsilon = 0.0001
+
+
+#
+#   Note: when plotting BW convergence, "Ratio" field is really tolerance
+ic_v_tol = []  #iteration counts for each run for each tolerance and selected Ratios
+
 for r in sorted(rs): #iterate over the Ratios
     l = []
+    ic = []
+    emin = 99999999999999.0
     for [j, v] in enumerate(Eavg):
         if not np.isnan(v): 
             if abs(r-RatioL[j])<epsilon: # cheezy grep
                 usedrows.append(allrows[j])
                 l.append(v)
+                if v < emin:
+                    emin = v
+                ic.append(IterCount[j])
                 nprows += 1
         else:
             nan_count += 1
     # l is a list of all Eavg values for a each Ratio
     data.append(l)   # get a list of lists: [ ... [Eavg samples for given ratio ] ....]
+    # plot min error instead!
+    datamin.append(emin)   # only one point per "ratio"
+    dataminx.append(r)
+    ic_v_tol.append(ic)   # add data collected for this tolerance ("Ratio")
 
 dperts= []
-ic_v_perts = []
 perts = set(pert)
 print 'Perturbations (HMM_deltas):', sorted(perts)
 for p in sorted(perts):
     l = []
-    ic = []
     for [j,v] in enumerate(Eavg):   #Y axis values
         if not np.isnan(v): 
             if abs(p-pert[j])<epsilon:   # cheezy grep
                 if RatioL[j] in rs:      # selected ratio(s)
                     l.append(v)
-                    ic.append(IterCount[j])
                     
     dperts.append(l)  # get a list of lists: [ ... [Eavg samples for given perturbation ] ....]
-    ic_v_perts.append(ic)   # iteration counts for each run for each pert. and selected Ratios
     
 dct = 0
-for l in data:
-    dct += len(l)
+#for l in data:
+    #dct += len(l)
     
 #
 # collect convergence iteration count for each test (if BW_testing)
@@ -406,7 +421,10 @@ if(firsttask == BWTest):
     #  Plot 1: Error vs. Ratio
     fig1 = plt.figure(figno)
     #figno += 1
-    bp = plt.boxplot(data, notch=True,vert=True ,patch_artist=True)
+    
+    
+    #bp = plt.boxplot(data, notch=True,vert=True ,patch_artist=True)
+    bp = plt.scatter(dataminx, datamin)
     
     #standardize graph size
     #figptr = plt.gcf()
@@ -414,19 +432,19 @@ if(firsttask == BWTest):
     DPI = figptr.get_dpi()    
     figptr.set_size_inches(plotH/float(DPI),plotV/float(DPI))
     
-    for b in bp['boxes']:
-        b.set_facecolor('lightblue')
+    #for b in bp['boxes']:
+        #b.set_facecolor('lightblue')
 
 
     plt.xlabel('Convergence Tolerance')
-    plt.ylabel('RMS Error')
+    plt.ylabel('BEST RMS Error')
     plt.ylim(0.0, ymax)
-    plt.title('BW Parameter Estimation: Avg Error vs. Tolerance, '+modelstring)
+    plt.title('BW Parameter Estimation: BEST Error vs. Tolerance, '+modelstring)
     tols = rs.copy()    # just to keep naming right -- data file entry differes only in Ratio
     tstrs = ['0.0']
     for t in sorted(tols):
         tstrs.append(str(t))
-    plt.xticks(range(len(tols)+1), tstrs)
+    #plt.xticks(range(len(tols)+1), tstrs)
 
     plt.show(block=False)
         
@@ -443,7 +461,7 @@ if(firsttask == BWTest):
     #figno += 1
     figno = 2
     fig2 = plt.figure(figno)
-    bp = plt.boxplot(ic_v_perts, notch=True,vert=True ,patch_artist=True)
+    bp = plt.boxplot(ic_v_tol, notch=True,vert=True ,patch_artist=True)
     
     #standardize graph size
     #figptr = plt.gcf()
@@ -454,16 +472,16 @@ if(firsttask == BWTest):
     for b in bp['boxes']:
         b.set_facecolor('lightblue')
 
-    plt.xlabel('HMM Perturbation')
+    plt.xlabel('BW Converg tolerance')
     plt.ylabel('Number of iterations to converge')
     ymax = 15  # iteration count
     plt.ylim(0.0, ymax)
-    plt.title('BW Parameter Estimation: Iterations vs. perturbation, '+modelstring)
+    plt.title('BW Parameter Estimation: Iterations vs. tolerance, '+modelstring)
     tols = rs.copy()    # just to keep naming right -- data file entry differes only in Ratio
     tstrs = ['0.0']
-    for t in sorted(perts):
+    for t in sorted(tols):
         tstrs.append(str(t))
-    plt.xticks(range(len(perts)+1), tstrs)
+    plt.xticks(range(len(tols)+1), tstrs)
 
     plt.show(block=False)
         
