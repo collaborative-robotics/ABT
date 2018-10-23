@@ -256,7 +256,7 @@ for tol in [0.1, 0.01, 0.001, 0.0001, 0.00001]:
         A = model.A.copy()
         Ac = A.copy()  # isolate orig A matrix from HMM
         Ar = A.copy()  # reference original copy
-        M = HMM_setup(model, tol)
+        M = HMM_setup(model, tol, 20)   # a very big iteration count(!)
 
         #############################################
         #
@@ -321,7 +321,7 @@ for tol in [0.1, 0.01, 0.001, 0.0001, 0.00001]:
         #       Forward Algorithm
         #
         if(task == Forward):
-            print 'Not ready to run forward/backward ... quitting'
+            print 'This program is only for Baum Welch Convergence Testing - quitting.'
             quit()
             
         ##################################################
@@ -329,37 +329,8 @@ for tol in [0.1, 0.01, 0.001, 0.0001, 0.00001]:
         #       Veterbi Algorithm
         #
         if(task == Viterbi):
-            print 'Task variable: ', task, '(1=Viterbi!)'
+            print 'This program is only for Baum Welch Convergence Testing - quitting.'
             quit()
-            print "Identifying State Sequence of the generated data with ", len(Y)," observations"
-            log_test,state_seq_result= M.decode(Y,Ls,"viterbi")
-            print 'Sequence Size:', state_seq_result.size
-            true_state_nums = []
-            for name in X:
-                true_state_nums.append(model.statenos[name]-1)  # correct 0 offset in M.decode()
-            #print '--------   data looks like: -------'
-            #for i in range(20):
-                #print true_state_nums[i], state_seq_result[i]
-            #quit()
-            i = 0
-            cnt = 0
-            for l in Ls:
-                cnt += 1
-                #if (cnt > 100):
-                    #break
-                a = ''
-                b = ''
-                for j in range(l):
-                    #print >>ftest, Ratio, '{:5.2f}'.format(HMM_delta), true_state_nums[i+j], ', ', state_seq_result[i+j]
-                    a = a + str(true_state_nums[i+j])
-                    b = b + str(state_seq_result[i+j])
-                    d1 = ed.eval(a,b)
-                #print >>ftest, Ratio, '{:5.2f}'.format(HMM_delta), '                ', d1/float(len(a))
-                i += j+1
-                
-            print 'Sequence Size:', state_seq_result.size
-            totald, cost, count = Veterbi_Eval(state_seq_result,true_state_nums,model.names,Ls, model.statenos)
-            print >>fdata, '{:2d}, {:.3f}, {:3d}, {:.3f}, {:.3f}, {:2d}, {:.3f}, {:.3f}'.format(task, Ratio, int(di), HMM_delta, float(sig), run+1, float(totald), count)
 
 
         if(task == BaumWelch or task == BWTest):
@@ -386,7 +357,8 @@ for tol in [0.1, 0.01, 0.001, 0.0001, 0.00001]:
             ##  compare the two A matrices
             #     (compute error metrics)
             [e,e2,em,N2,im,jm,anoms,erasures] = Adiff(A,M.transmat_, model.names)
-
+            quit()
+            
             #print >> of, 'EAavg    A-matrix error: {:.8f} ({:d} non zero elements)'.format(e2,N2)
             #print >> of, 'EAinfty  A-matrix error: {:.3f} (at {:d} to {:d})'.format(em,im,jm)
 
@@ -397,7 +369,7 @@ for tol in [0.1, 0.01, 0.001, 0.0001, 0.00001]:
                 anoms = 'None'
             #print >> of, 'Erasures : ', erasures
             if task == BWTest:                 
-                print >>fdata, '{:2d}, {:.6f}, {:3d}, {:.3f}, {:.3f}, {:2d}, {:.3f}, {:.3f}'.format(task, tol, int(di), HMM_delta, float(sig), run+1, e2,em)
+                print >>fdata, '{:2d}, {:.6f}, {:3d}, {:.3f}, {:.3f}, {:2d}, {:.3f}, {:.3f}'.format(task, tol, M.monitor_.iter, HMM_delta, float(sig), run+1, e2,em)
             else: 
                 print >>fdata, '{:2d}, {:.3f}, {:3d}, {:.3f}, {:.3f}, {:2d}, {:.3f}, {:.3f}'.format(task, Ratio, int(di), HMM_delta, float(sig), run+1, e2,em)
  
