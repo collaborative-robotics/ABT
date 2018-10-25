@@ -31,6 +31,8 @@ F = False
 Forward   = 0
 Viterbi   = 1
 BaumWelch = 2
+BWTest    = 3
+
 
 ######################
 sig = 2.0
