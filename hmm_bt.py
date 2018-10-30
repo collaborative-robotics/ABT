@@ -61,23 +61,26 @@ def HMM_setup(model, toler=0.01, maxiter=20):     #  New: setup model.B:  discre
     #M.n_features = 1
     M.startprob_ = model.Pi
     M.transmat_ = model.A
+    #############################  Gaussian emissions
     #  set emissionprob below
+    #  .means and .covars are for GaussianHMM()
     #tmpmeans = []
     #for i in range(len(names)):
         #tmpmeans.append( [ outputs[names[i]] ] )
     #M.means_ = np.array(tmpmeans)
     #M.means_ = 0.5*np.ones(l).reshape([l,1])  # is this a bug??? what about \delta\mu * i???
-    m = np.zeros(model.n)
-    for i,n in enumerate(model.names):
-        m[i] = model.outputs[n]
-    m.shape = [l,1]
-    M.means_ = m
+    #m = np.zeros(model.n)
+    #for i,n in enumerate(model.names):
+        #m[i] = model.outputs[n]
+    #m.shape = [l,1]
+    #M.means_ = m
     #print 'means shape: ', M.means_.shape
-    tmpcovars = model.sigma * np.ones((l))
-    tmpcovars.shape = [l,1]
-    M.covars_ = np.array(tmpcovars)
+    #tmpcovars = model.sigma * np.ones((l))
+    #tmpcovars.shape = [l,1]
+    #M.covars_ = np.array(tmpcovars)
     #########################
     sig = 2.0  # HACK!!!
+    #############################   Multinomial emissions
     #   setup discrete model.B for MultinomialHMM()
     for i,n in enumerate(model.names):
         tmp_leaf = abtc.aug_leaf(0.500)  # dummy leaf to use SetObsDensity() method
@@ -256,10 +259,10 @@ def Adiff(A1,A2,names):    # from 8/28
     N = A1.shape[0]
     assert A1.shape == A2.shape, 'Adiff: A-matrix size mismatch!'
     #print 'Adiff: A shape: ', A1.shape
-    print "A1: "
-    print A1
-    print "A2: "
-    print A2
+    #print "A1: "
+    #print A1
+    #print "A2: "
+    #print A2
      
     N2 = 0   # count the non-zero Aij entries
             #  should be 2(l+2) of course
