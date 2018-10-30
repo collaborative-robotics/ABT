@@ -102,7 +102,7 @@ def HMM_model_sizes_check(M):
     l = M.transmat_.shape[0]
     fs = 'Your HMM has inconsistent model sizes and will not run: quitting'
     assert M.transmat_.shape == (l,l), fs
-    assert M.means_.shape == (l,1), fs
+    #assert M.means_.shape == (l,1), fs
     
 
 #  Replace ABT transition probabilities with 
