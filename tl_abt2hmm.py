@@ -100,7 +100,7 @@ git_hash = subprocess.check_output(['git', 'rev-parse', 'HEAD'])[:10]  # first 1
 
 if task == Viterbi:
     datadir = 'vit_output/'
-if task == BaumWelch:
+if task == BaumWelch or task == BWTest:
     datadir = 'bw_output/'
 if task ==  Forward:
     datadir = "fow_output/"
@@ -314,9 +314,14 @@ for Ratio in RatioList:
 
         ###   make sure everything is cool with the HMM we will use below:
         A_row_test(M.transmat_, sys.stdout)
+<<<<<<< HEAD
         HMM_model_sizes_check(M)
 
 
+=======
+        HMM_model_sizes_check(M)        
+            
+>>>>>>> UWmaster2
         ##################################################
         #
         #       Forward Algorithm
@@ -375,6 +380,8 @@ for Ratio in RatioList:
             #   Identify HMM params with Baum-Welch
             #
             print "starting HMM fit with ", len(Y), ' observations.'
+            M._check_input_symbols(Y)
+            print 'Input symbols Passed'
 
             M.fit(Y,Ls)
             # print the output file header

@@ -19,6 +19,7 @@ class model():
         self.n = Nstates
         self.A = np.zeros([Nstates,Nstates])
         self.PS = np.zeros(Nstates)     # prob of success
+        self.B = np.zeros( (Nstates, NSYMBOLS) )   # discrete symbol emission probs. 
         self.names = []
         self.Pi = np.zeros(Nstates)
         self.Pi[0] = 1.0  # always start at first state

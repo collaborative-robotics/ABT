@@ -17,6 +17,7 @@ from hmmlearn import hmm
 import random as random
 
 from abt_constants import *
+import abtclass as abtc
 
 def outputAmat(A,title,names,of=sys.stdout):
     print >> of, title   # eg, "Original  A matrix:"
@@ -51,28 +52,42 @@ def A_row_test(A,of):
         #print  'assertion:', i,r
         assert abs(r-1.0) < eps, 'Assert Problem: a row sum of A-matrix is != 1.0, sum = '+str(r)
         
-def HMM_setup(model, toler=0.01):                    ####    25-sept  MAJOR bug in intialization of Output means fixed!!!!
+def HMM_setup(model, toler=0.01, maxiter=20):     #  New: setup model.B:  discrete emission probs. 
     #print 'Size: A: ', A.shape
     l = model.A.shape[0]
     #print 'len(Pi): ', len(Pi), l
-    M = hmm.GaussianHMM(n_components=l, covariance_type='diag', n_iter=20, tol=toler, init_params='')
+    #M = hmm.GaussianHMM(n_components=l, covariance_type='diag', n_iter=maxiter, tol=toler, init_params='')
+    M = hmm.MultinomialHMM(n_components=l, n_iter=maxiter,  init_params='')
     #M.n_features = 1
     M.startprob_ = model.Pi
     M.transmat_ = model.A
+    #############################  Gaussian emissions
+    #  set emissionprob below
+    #  .means and .covars are for GaussianHMM()
     #tmpmeans = []
     #for i in range(len(names)):
         #tmpmeans.append( [ outputs[names[i]] ] )
     #M.means_ = np.array(tmpmeans)
     #M.means_ = 0.5*np.ones(l).reshape([l,1])  # is this a bug??? what about \delta\mu * i???
-    m = np.zeros(model.n)
-    for i,n in enumerate(model.names):
-        m[i] = model.outputs[n]
-    m.shape = [l,1]
-    M.means_ = m
+    #m = np.zeros(model.n)
+    #for i,n in enumerate(model.names):
+        #m[i] = model.outputs[n]
+    #m.shape = [l,1]
+    #M.means_ = m
     #print 'means shape: ', M.means_.shape
-    tmpcovars = model.sigma * np.ones((l))
-    tmpcovars.shape = [l,1]
-    M.covars_ = np.array(tmpcovars)
+    #tmpcovars = model.sigma * np.ones((l))
+    #tmpcovars.shape = [l,1]
+    #M.covars_ = np.array(tmpcovars)
+    #########################
+    sig = 2.0  # HACK!!!
+    #############################   Multinomial emissions
+    #   setup discrete model.B for MultinomialHMM()
+    for i,n in enumerate(model.names):
+        tmp_leaf = abtc.aug_leaf(0.500)  # dummy leaf to use SetObsDensity() method
+        tmp_leaf.set_Obs_Density(model.outputs[n], sig)
+        for j in range(NSYMBOLS):
+            model.B[i,j] = tmp_leaf.Obs[j]    # guarantees same P's as ABT(!)
+    M.emissionprob_ = np.array(model.B.copy())  # docs unclear on this name!!!!
     #print 'covars shape:', M.covars_.shape
     #quit()
     return M
@@ -87,7 +102,7 @@ def HMM_model_sizes_check(M):
     l = M.transmat_.shape[0]
     fs = 'Your HMM has inconsistent model sizes and will not run: quitting'
     assert M.transmat_.shape == (l,l), fs
-    assert M.means_.shape == (l,1), fs
+    #assert M.means_.shape == (l,1), fs
     
 
 #  Replace ABT transition probabilities with 
@@ -237,11 +252,18 @@ def Adiff_Report(A1,A2,names,of=sys.stdout):
 
 def Adiff(A1,A2,names):    # from 8/28
     e = 0
-    em = -99999.9
+    em = -9.9999E100
+    imax = np.nan
+    jmax = np.nan
     e2 = 0   # avg error of NON ZERO elements
     N = A1.shape[0]
     assert A1.shape == A2.shape, 'Adiff: A-matrix size mismatch!'
     #print 'Adiff: A shape: ', A1.shape
+    #print "A1: "
+    #print A1
+    #print "A2: "
+    #print A2
+     
     N2 = 0   # count the non-zero Aij entries
             #  should be 2(l+2) of course
     anoms = [] #identification
