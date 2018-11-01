@@ -193,6 +193,12 @@ def HMM_perturb(M, d):
     #    because then some states have bigger probabilty errors than others. 
     sigma = 2.0    #  HACK
     bdelta = 2 * d * sigma    # factor of 2 just feels better(!)  
+    
+    #
+    #  Needs new coding for Multinomial - explicit probs over the symbol integers
+    #   (some kind of "shift"??)  or just regenerate. 
+    #
+    
     B = M.means_
     for i,b in enumerate(B):
         #B[i] = int(0.5 + b * (1.0 +  randsign() * d))
