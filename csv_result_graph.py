@@ -100,7 +100,7 @@ files = []
 modelsize = menu[sti][4]  # user must stay with same model size
 print 'Setting prev mod size:', modelsize
 for i in range(sti,eni+1):
-    files.append(data_prefix+menu[i][1].strip())   #filename
+    files.append(data_prefix+menu[i][1].strip())   #filenames
     if menu[i][4] != modelsize:
         print 'you have selected multiple model sizes - not a fair comparison'
         quit()
@@ -127,11 +127,7 @@ for file in files:
             nrow += 1
             sttask  = row[0]
             stRatioL = row[1]
-<<<<<<< HEAD
             stdi    = row[2]
-=======
-            stdi    = row[2] 
->>>>>>> UWmaster2
             stpert  = row[3]    # same as HMM_delta
             stsig   = row[4]
             strn    = row[5]
@@ -150,7 +146,7 @@ for file in files:
             pert.append(float(stpert))
             Eavg.append(float(stEavg))
             Emax.append(float(stEmax))
-
+print pert
 # New names for convergence tol and iteration count
 ConvTol = RatioL
 
@@ -215,33 +211,23 @@ perts = set(pert)
 print 'Perturbations (HMM_deltas):', sorted(perts)
 for p in sorted(perts):
     l = []
-<<<<<<< HEAD
-    for [j,v] in enumerate(Eavg):
-        if not np.isnan(v):
-=======
     for [j,v] in enumerate(Eavg):   #Y axis values
-        if not np.isnan(v): 
->>>>>>> UWmaster2
+        if not np.isnan(v):
             if abs(p-pert[j])<epsilon:   # cheezy grep
                 if RatioL[j] in rs:      # selected ratio(s)
                     l.append(v)
-                    
-    dperts.append(l)  # get a list of lists: [ ... [Eavg samples for given perturbation ] ....]
-    
-dct = 0
-<<<<<<< HEAD
-for l in data:
-    dct += len(l)
 
-=======
+    dperts.append(l)  # get a list of lists: [ ... [Eavg samples for given perturbation ] ....]
+
+dct = 0
+
 #for l in data:
     #dct += len(l)
-    
+
 #
 # collect convergence iteration count for each test (if BW_testing)
 #
-    
->>>>>>> UWmaster2
+
 print 'plotting ', nprows,' rows ' , len(usedrows)
 print nan_count, ' NaN values for Eavg, out of ', dct
 print ''
@@ -501,32 +487,20 @@ if(firsttask == BWTest):
     #
     #  Plot 1: Error vs. Ratio
     fig1 = plt.figure(figno)
-<<<<<<< HEAD
-    figno += 1
-    bp = plt.boxplot(data, notch=True,vert=True ,patch_artist=True)
-
-=======
     #figno += 1
-    
-    
+
+
     #bp = plt.boxplot(data, notch=True,vert=True ,patch_artist=True)
     bp = plt.scatter(dataminx, datamin)
-    
->>>>>>> UWmaster2
+
     #standardize graph size
     #figptr = plt.gcf()
     figptr = fig1
     DPI = figptr.get_dpi()
     figptr.set_size_inches(plotH/float(DPI),plotV/float(DPI))
-<<<<<<< HEAD
 
-    for b in bp['boxes']:
-        b.set_facecolor('lightblue')
-=======
-    
     #for b in bp['boxes']:
         #b.set_facecolor('lightblue')
->>>>>>> UWmaster2
 
 
     plt.xlabel('Convergence Tolerance')
@@ -540,13 +514,10 @@ if(firsttask == BWTest):
     #plt.xticks(range(len(tols)+1), tstrs)
 
     plt.show(block=False)
-<<<<<<< HEAD
-=======
-        
-    figure_output(plt, 'BW_vs_tol', modelstring, ratiostring)    
+    figure_output(plt, 'BW_vs_tol', modelstring, ratiostring)
 
     ############################################
-     
+
     #data_vis(data,sorted(rs))
     #quit()
     ##########
@@ -557,13 +528,13 @@ if(firsttask == BWTest):
     figno = 2
     fig2 = plt.figure(figno)
     bp = plt.boxplot(ic_v_tol, notch=True,vert=True ,patch_artist=True)
-    
+
     #standardize graph size
     #figptr = plt.gcf()
     figptr = fig2
-    DPI = figptr.get_dpi()    
+    DPI = figptr.get_dpi()
     figptr.set_size_inches(plotH/float(DPI),plotV/float(DPI))
-    
+
     for b in bp['boxes']:
         b.set_facecolor('lightblue')
 
@@ -579,8 +550,7 @@ if(firsttask == BWTest):
     plt.xticks(range(len(tols)+1), tstrs)
 
     plt.show(block=False)
-        
-    figure_output(plt, 'Iter_vs_tol', modelstring, ratiostring)    
->>>>>>> UWmaster2
+
+    figure_output(plt, 'Iter_vs_tol', modelstring, ratiostring)
 
     figure_output(plt, 'BW_vs_tol', modelstring, ratiostring)

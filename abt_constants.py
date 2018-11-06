@@ -17,10 +17,9 @@ random_flag = 0.500  # if a 'perturbation' is  > this, it means totally random
                      #  state transition matrix with no zero elements
 
 #RatioList = [5.0, 0.0, 0.25, 1.0, 2.5]  # output spacing ratios (di/sigma)
-<<<<<<< HEAD
-=======
-RatioList = [1.0]
->>>>>>> UWmaster2
+
+#RatioList = [1.0]
+
 
 T = True
 F = False

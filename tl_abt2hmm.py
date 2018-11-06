@@ -314,20 +314,14 @@ for Ratio in RatioList:
 
         ###   make sure everything is cool with the HMM we will use below:
         A_row_test(M.transmat_, sys.stdout)
-<<<<<<< HEAD
+
         HMM_model_sizes_check(M)
 
-
-=======
-        HMM_model_sizes_check(M)        
-            
->>>>>>> UWmaster2
         ##################################################
         #
         #       Forward Algorithm
         #
         if(task == Forward):
-            print 'Not ready to run forward/backward ... quitting'
             counter = 0
             logprob = 0
             log_avg = 0
