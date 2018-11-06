@@ -194,10 +194,32 @@ def HMM_perturb(M, d):
     sigma = 2.0    #  HACK
     bdelta = 2 * d * sigma    # factor of 2 just feels better(!)
 
-    #
-    #  Needs new coding for Multinomial - explicit probs over the symbol integers
-    #   (some kind of "shift"??)  or just regenerate.
-    #
+    # Shifting the probabilty based on the lengthof the symbols and the petrubations passed through the function
+
+    # Option 1 # By rolling
+    # B = M.emissionprob_
+    # for i in range(B.shape[0]):
+    #     B[i] = np.roll(B[i],int(B.shape[1]*d*randsign()))
+    # M.emissionprob_ = B
+
+    #Option 2 # By shifting the mean
+    # B = M.emissionprob_
+    # for i in range(B.shape[0]):
+    #     tmp_leaf = abtc.aug_leaf(0.500)  # dummy leaf to use SetObsDensity() method
+    #     tmp_leaf.set_Obs_Density(int(np.argmax(B[i])+B.shape[1]*d*randsign()), sig)
+    #     for j in range(NSYMBOLS):
+    #         B[i,j] = tmp_leaf.Obs[j]
+    # M.emissionprob_ = B
+
+    #Option 3
+    B = M.emissionprob_
+    for i in range(B.shape[0]):
+        tmp_leaf = abtc.aug_leaf(0.500)  # dummy leaf to use SetObsDensity() method
+        tmp_leaf.set_Obs_Density(int(np.argmax(B[i])+bdelta*randsign()), sig)
+        for j in range(NSYMBOLS):
+            B[i,j] = tmp_leaf.Obs[j]
+    M.emissionprob_ = B
+    #assert np.array_equiv(B,M.emissionprob_)
 
     # B = M.means_
     # for i,b in enumerate(B):
