@@ -212,13 +212,13 @@ def HMM_perturb(M, d):
     # M.emissionprob_ = B
 
     #Option 3
-    B = M.emissionprob_
-    for i in range(B.shape[0]):
-        tmp_leaf = abtc.aug_leaf(0.500)  # dummy leaf to use SetObsDensity() method
-        tmp_leaf.set_Obs_Density(int(np.argmax(B[i])+bdelta*randsign()), sig)
-        for j in range(NSYMBOLS):
-            B[i,j] = tmp_leaf.Obs[j]
-    M.emissionprob_ = B
+    # B = M.emissionprob_
+    # for i in range(B.shape[0]):
+    #     tmp_leaf = abtc.aug_leaf(0.500)  # dummy leaf to use SetObsDensity() method
+    #     tmp_leaf.set_Obs_Density(int(np.argmax(B[i])+bdelta*randsign()), sig)
+    #     for j in range(NSYMBOLS):
+    #         B[i,j] = tmp_leaf.Obs[j]
+    # M.emissionprob_ = B
     #assert np.array_equiv(B,M.emissionprob_)
 
     # B = M.means_
@@ -329,7 +329,7 @@ def Adiff(A1,A2,names):    # from 8/28
     #e = 0
     #e_abs_total = 0.0
     #em = -99999.9
-    #e2 = 0   # avg error of NON ZERO elements
+    #e2 = 0   # avg error of NON ZERO elementstoler=0.01, maxiter=20
     #N = A1.shape[0]
     ##print 'Adiff: A shape: ', A1.shape
     #N2 = 0   # count the non-zero Aij entries

@@ -75,7 +75,7 @@ for line in fmeta:
     runfacts = line.split('|')
     runs.append(runfacts)
 
-MenuSize = 30
+MenuSize = 50
 print '-------------------------------------------------'
 print 'Select one or more files to plot:         ('+metadata_name+')'
 menu = runs[-MenuSize:]

@@ -149,7 +149,7 @@ sequence_name =  seqdir+'seq_'+urunid+'.txt'   # name of sim sequence file
 #
 
 testname = 'vit_test'+urunid+'.csv'
-
+read
 #ftest = open(testname, 'w') # testing
 fmeta = open(metadata_name, 'a')  #  append metadata to a big log
 fdata = open(datafile_name, 'w')  #  unique filename for csv output
