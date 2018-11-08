@@ -150,9 +150,10 @@ for file in files:
 # New names for convergence tol and iteration count
 ConvTol = RatioL
 
-print 'Read in ', nrow,' rows' 
-print ''
-
+print 'read in', files
+#print len(pert), ' perturbations'
+#print pert 
+#quit()
 
 ymax = 1.0  #error plotting range 0.0--ymax
 

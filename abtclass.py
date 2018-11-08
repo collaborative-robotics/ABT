@@ -28,12 +28,14 @@ class model():
         self.outputs = {}    # mean value for each state name (dict) 
 
     def setup_means(self,first, Ratio, sig):
+        ''' *means* here means mean value of output symbol for each state 
+        '''
         assert len(self.names) > 0, 'Names have to be set up first'
         assert len(self.names) == self.n, 'Wrong number of states'
         i = first
         di = Ratio*sig  # 
         for n in self.outputs.keys():
-            self.outputs[n] = i
+            self.outputs[n] = i    # outputs[] = mean output for each state
             i += di
 
 def gaussian(x, mu, sig):
@@ -71,12 +73,12 @@ class aug_leaf(b3.Action):
             print self.Name, mu, sig
             #quit()
         psum = 0.0
-        pmin = 0.0001 # smallest allowed probability
+        pmin = 0.00001 # smallest allowed probability
         for j in range(NSYMBOLS):
             self.Obs[j] = gaussian(float(j),float(mu),float(sig))
             #clear the tiny numerical values
             if self.Obs[j] < pmin:
-                self.Obs[j] = 0.0
+                self.Obs[j] = pmin   ###   require B[i,j] >= pmin
             psum += self.Obs[j]
 
         #normalize the Observation distrib so it sums to 1.000

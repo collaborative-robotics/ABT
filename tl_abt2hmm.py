@@ -271,7 +271,7 @@ for Ratio in RatioList:
         if(not HMM_RANDOM_INIT and HMM_delta > testeps):
             #HMM_ABT_to_random(M)   # randomize probabilites
             #print 'Applied Random Matrix Perturbation'
-            HMM_perturb(M, HMM_delta)
+            HMM_perturb(M, HMM_delta, model)
             print 'Applied Matrix Perturbation: ' + str(HMM_delta)
             
 
@@ -363,7 +363,9 @@ for Ratio in RatioList:
             #
             #   Identify HMM params with Baum-Welch
             #
+            A_row_test(M.transmat_, sys.stdout)
             print "starting HMM fit with ", len(Y), ' observations.'
+            outputAmat(M.transmat_, 'A-matrix for multinomial BW', model.names)
             M._check_input_symbols(Y)
             print 'Input symbols Passed'
 
@@ -381,8 +383,12 @@ for Ratio in RatioList:
             #     (compute error metrics)
             [e,e2,em,N2,im,jm,anoms,erasures] = Adiff(A,M.transmat_, model.names)
 
+            Adiff_Report(A, M.transmat_, model.names)
             #print >> of, 'EAavg    A-matrix error: {:.8f} ({:d} non zero elements)'.format(e2,N2)
             #print >> of, 'EAinfty  A-matrix error: {:.3f} (at {:d} to {:d})'.format(em,im,jm)
+            #print 'after fitting: '
+            #print 'EAavg    A-matrix error: {:.8f} ({:d} non zero elements)'.format(e2,N2)
+            #print 'EAinfty  A-matrix error: {:.3f} (at {:d} to {:d})'.format(em,im,jm)
 
             if len(anoms) == 0:
                 anoms = 'None'

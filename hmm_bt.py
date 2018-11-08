@@ -52,12 +52,35 @@ def A_row_test(A,of):
         #print  'assertion:', i,r
         assert abs(r-1.0) < eps, 'Assert Problem: a row sum of A-matrix is != 1.0, sum = '+str(r)
         
+#def A_non_zero(A):
+    #'''
+    #make sure trans matrix has no 0.0 elements 
+    #'''
+    #eps = 1.0E-5        # min value 
+    ##print 'A-matrix row test'
+    #for i in range(A.shape[0]):
+        #for j in range(A.shape[1]):
+            #if(A[i,j] < eps):
+                #A[i,j] = eps 
+        #sum = 0.0
+        #for j in range(A.shape[1]):
+            #sum += A[i,j]
+        #for j in range(A.shape[1]):
+            #A[i,j] /= sum
+
+        
 def HMM_setup(model, toler=0.01, maxiter=20):     #  New: setup model.B:  discrete emission probs. 
     #print 'Size: A: ', A.shape
     l = model.A.shape[0]
     #print 'len(Pi): ', len(Pi), l
     #M = hmm.GaussianHMM(n_components=l, covariance_type='diag', n_iter=maxiter, tol=toler, init_params='')
-    M = hmm.MultinomialHMM(n_components=l, n_iter=maxiter,  init_params='')
+    #M.typestring = 'GaussianHMM'
+    #   fit all params:  params='ste'
+    #   fit only A matrix:  params='t'
+    
+    M = hmm.MultinomialHMM(n_components=l, n_iter=maxiter, params='t', init_params='')
+    M.typestring = 'MultinomialHMM'
+    
     #M.n_features = 1
     M.startprob_ = model.Pi
     M.transmat_ = model.A
@@ -85,11 +108,10 @@ def HMM_setup(model, toler=0.01, maxiter=20):     #  New: setup model.B:  discre
     for i,n in enumerate(model.names):
         tmp_leaf = abtc.aug_leaf(0.500)  # dummy leaf to use SetObsDensity() method
         tmp_leaf.set_Obs_Density(model.outputs[n], sig)
+        #print 'mean: ', model.outputs[n]
         for j in range(NSYMBOLS):
             model.B[i,j] = tmp_leaf.Obs[j]    # guarantees same P's as ABT(!)
     M.emissionprob_ = np.array(model.B.copy())  # docs unclear on this name!!!!
-    #print 'covars shape:', M.covars_.shape
-    #quit()
     return M
 
 
@@ -159,8 +181,12 @@ def HMM_fully_random(model):
 #    NEW: if d > 5  initialize A matrix to RANDOM values
 #
 
-def HMM_perturb(M, d):
-      # A matrix
+def HMM_perturb(M, d, model=abtc.model(1)):
+    ''' M = an hmmlearn HMM object
+        d = perturbation (0 < d < 1.0)
+        model = model parameters
+        '''
+    assert len(model.names) > 1, 'HMM_perturb() [in hmm_bt.py] must be called with a model (2nd argument)'    
     A = M.transmat_
     #np.save("M_trans",M.transmat_)
     #np.save("Means",M.means_)
@@ -190,20 +216,37 @@ def HMM_perturb(M, d):
                 flag = A[r][c]      # store value (for use above) 
     
     # Perturb B matrix means.  Each mean must be perturbed by same amount, not by a 1+delta as above
-    #    because then some states have bigger probabilty errors than others. 
+    #    because before, some states had bigger probability errors than others. 
     sigma = 2.0    #  HACK
     bdelta = 2 * d * sigma    # factor of 2 just feels better(!)  
-    
     #
-    #  Needs new coding for Multinomial - explicit probs over the symbol integers
+    #  New coding for Multinomial - explicit probs over the symbol integers
     #   (some kind of "shift"??)  or just regenerate. 
     #
-    
-    B = M.means_
-    for i,b in enumerate(B):
-        #B[i] = int(0.5 + b * (1.0 +  randsign() * d))
-        B[i] += randsign() * bdelta
-    M.means_ = B
+    if M.typestring == 'GaussianHMM':
+        B = M.means_
+        for i,b in enumerate(B):
+            #B[i] = int(0.5 + b * (1.0 +  randsign() * d))
+            B[i] += randsign() * bdelta
+        M.means_ = B
+    elif M.typestring == 'MultinomialHMM':     
+        #########################
+        sig = 2.0  # HACK!!!
+        #############################   Multinomial emissions
+        #   setup discrete model.B for MultinomialHMM()
+        for i,n in enumerate(model.names):
+            tmp_leaf = abtc.aug_leaf(0.500)  # dummy leaf to use SetObsDensity() method
+            #perturb the mean by bdelta before generating the emission probs.
+            newmean = model.outputs[n] + randsign() * bdelta
+            print 'Setting mean for state ',i, 'from ' , model.outputs[n], ' to ', newmean
+            tmp_leaf.set_Obs_Density(newmean, sig)
+            for j in range(NSYMBOLS):
+                model.B[i,j] = tmp_leaf.Obs[j]    # guarantees same P's as ABT(!)
+        M.emissionprob_ = np.array(model.B.copy())  # docs unclear on this name!!!!    
+    else:
+        print 'Unknown model typestring'
+        quit()
+    return
     
 def randsign():
     a = random.random()
@@ -264,6 +307,8 @@ def Adiff(A1,A2,names):    # from 8/28
     e2 = 0   # avg error of NON ZERO elements
     N = A1.shape[0]
     assert A1.shape == A2.shape, 'Adiff: A-matrix size mismatch!'
+    assert not np.isnan(A1).all(), 'A-matrix contains nan'
+    assert not np.isnan(A2).all(), 'A-matrix contains nan'
     #print 'Adiff: A shape: ', A1.shape
     #print "A1: "
     #print A1
