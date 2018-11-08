@@ -238,7 +238,7 @@ def HMM_perturb(M, d, model=abtc.model(1)):
             tmp_leaf = abtc.aug_leaf(0.500)  # dummy leaf to use SetObsDensity() method
             #perturb the mean by bdelta before generating the emission probs.
             newmean = model.outputs[n] + randsign() * bdelta
-            print 'Setting mean for state ',i, 'from ' , model.outputs[n], ' to ', newmean
+            #print 'Setting mean for state ',i, 'from ' , model.outputs[n], ' to ', newmean
             tmp_leaf.set_Obs_Density(newmean, sig)
             for j in range(NSYMBOLS):
                 model.B[i,j] = tmp_leaf.Obs[j]    # guarantees same P's as ABT(!)
@@ -333,7 +333,7 @@ def Adiff(A1,A2,names):    # from 8/28
                 e2 += e1
                 N2 += 1
             e += e1
-            if(A1[i,j]==0.0 and A2[i,j]>0.0):
+            if(A1[i,j]==0.0 and A2[i,j]>0.0):    # for regular but not random perturbations
                 anoms.append([i,j])
             if(A1[i,j]>0.0 and A2[i,j] < 0.0000001):
                 erasures.append([names[i],names[j]])
