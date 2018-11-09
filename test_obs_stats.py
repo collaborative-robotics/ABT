@@ -6,12 +6,12 @@ import sys
 
 from abt_constants import *
 
-MODEL = BIG
+MODEL = SMALL
 
-testeps = 1.96 / np.sqrt(float(NEpochs))  # will convert to confidence interval
-testsigeps = 0.10   # mean must be within this many SDs of actual mean.
+testeps = 2.0
+testsigeps = 2.0 # sigma must be within this of actual sigma.
 
-print 'Test sig epsilon: ', testsigeps, ' standard deviations'
+print 'Test sig epsilon: ', testsigeps/sig, ' standard deviations'
 
 ##
 #    Supress Deprecation Warnings from hmm_lean / scikit
@@ -61,8 +61,7 @@ elif nargs == 2:
 print 'Starting observation stats test on ', lfname
 if GENDATA:
     print ' Generating NEW data'
-
-Ratio = float(raw_input('Enter the Ratio expected for the data:'))
+    Ratio = float(raw_input('Enter the Ratio expected for the data:'))
 
 NEpochs = 100000
 
@@ -87,11 +86,12 @@ rep.append(' ')
 #    Build the ABT and its blackboard
 #
 
-model.setup_means(FIRSTSYMBOL, Ratio, sig)
-
-[ABT, bb, leaves] = ABTtree(model)  # see file xxxx_ABT (e.g. Peg2_ABT, simp_ABT)
 
 if(GENDATA):
+    model.setup_means(FIRSTSYMBOL, Ratio, sig)
+
+    [ABT, bb, leaves] = ABTtree(model)  # see file xxxx_ABT (e.g. Peg2_ABT, simp_ABT)
+
     print 'Data will appear in '+lfname
     x = 'About to perform %d simulations. <enter> to cont.:' % NEpochs
     raw_input(x)
@@ -162,10 +162,6 @@ if lfname == refdataname:
     print '\n\nUsing reference data set: checking accurate length count: ', nsims , ' Observations:',nobs
     assert nsims== NEpochs, 'Failed to get accurate number of simulations'
     print 'Passed: correct simulation count assertion'
-    # assertion below not really meaningful - doesn't test anything outside this file
-    #assert nobs==1089131, 'Failed to get accurate number of observations'
-    #print 'Passed: correct observation count assertion'
-
 else:
     print 'Processed ',nsims,' Epochs, ', nobs, 'Observations.'
 
@@ -181,6 +177,7 @@ print model.names
 print 'Intended Obs Means:'
 print model.outputs
 
+print 'Sigma estimation tolerance: ', testsigeps
 print '    name        N            sum        sum^2           mu          S.D.'
 for [i,n] in enumerate(names):
     smu[n] = dSum[n] / float(dN[n])
@@ -188,12 +185,13 @@ for [i,n] in enumerate(names):
     print '%10s  %8d  %12.1f %12.1f %12.1f %12.1f' % ( n, dN[n], dSum[n], dS2[n], smu[n], ssig[n])
 
     if i < num_states-2: # ignore last two states OutS OutF
-        #print 'Sigma estimation error: ', abs(ssig[n]-sig)
+        print 'Sigma estimation error: ', abs(ssig[n]-sig)
     
         assert(abs(ssig[n] - sig) < testsigeps), 'Excessive error in SD'
 
         mu_err = abs(smu[n]-model.outputs[n])  # check inside 95% confidence interval
-        assert mu_err < testsigeps*ssig[n] , 'Excessive error in mean'
+        print 'Mean error: ', mu_err
+        assert mu_err < testeps , 'Excessive error in mean'
 
-print 'Passed: state mean and SD assertions'
+print '\n\n            Passed: state emission mean and SD assertions'
 
