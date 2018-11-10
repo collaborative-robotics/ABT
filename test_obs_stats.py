@@ -4,6 +4,12 @@
 import numpy as np
 import sys
 
+import matplotlib.mlab as mlab
+import matplotlib.pyplot as plt
+
+from matplotlib.colors import BoundaryNorm
+from matplotlib.ticker import MaxNLocator
+
 from abt_constants import *
 
 MODEL = SMALL
@@ -34,7 +40,7 @@ if MODEL==SMALL:
     from model00 import *
     model = modelo00
 
-
+Ratio = 4    # doesn't matter so keep it fixed.
 GENDATA = False  #  (determined by # args below)
 
 logdir = ''
@@ -61,7 +67,7 @@ elif nargs == 2:
 print 'Starting observation stats test on ', lfname
 if GENDATA:
     print ' Generating NEW data'
-    Ratio = float(raw_input('Enter the Ratio expected for the data:'))
+    #Ratio = float(raw_input('Enter the Ratio expected for the data:'))
 
 NEpochs = 100000
 
@@ -76,7 +82,7 @@ rep.append('-------------------------- Stat Validation of ABT Sim output -------
 if(GENDATA):
     rep.append('  Generating new test data')
 rep.append('NSYMBOLS: {:d}   NEpochs: {:d} Number of states: {:d}'.format(NSYMBOLS,NEpochs,num_states))
-rep.append('sigma: {:.2f}    Symbol delta: {:d}   Ratio:  {:.2f}'.format(sig, int(di), float(di)/float(sig)))
+rep.append('sigma: {:.2f}    Ratio:  {:.2f}'.format(sig, Ratio))
 rep.append('----------------------------------------------------------------------------------')
 rep.append(' ')
 
@@ -86,9 +92,36 @@ rep.append(' ')
 #    Build the ABT and its blackboard
 #
 
+mu = 50
+sig = 2.0
+data = []
+##  Test our "gaussian" function
+a = mu - 5*sig
+b = mu + 5*sig
+
+for i in range(0,1000):
+    x = a + (b-a)*float(i)/100.00
+    data.append(gaussian(x, mu, sig))
+    
+mu_hat = 0    
+for i,d in enumerate(data):
+    mu_hat += i*d
+
+print 'Gaussian function test: '
+print 'Mean, mean error: ', mu, mu-mu_hat
+#print 'Sig, sig error:   ', sig, sig-np.std(data)
+quit()
+
+##   Test initialization of stat observation means
+print 'Testing observation means and SD:'
+
+print 'States:'
+print model.names
+print 'Intended Obs Means:'
+print model.outputs
+model.setup_means(FIRSTSYMBOL, Ratio, sig)
 
 if(GENDATA):
-    model.setup_means(FIRSTSYMBOL, Ratio, sig)
 
     [ABT, bb, leaves] = ABTtree(model)  # see file xxxx_ABT (e.g. Peg2_ABT, simp_ABT)
 
@@ -103,15 +136,16 @@ if(GENDATA):
     print '\n\n computing and storing simulation data for ', NEpochs, ' simulations.\n\n'
     ###    Debugging
     #quit()
+    
     # open the log file
     logf = open(lfname,'w')
     bb.set('logfileptr',logf)
 
-    osu = names[-2]  # state names
-    ofa = names[-1]
+    osu = model.names[-2]  # state names
+    ofa = model.names[-1]
 
     for i in range(NEpochs):
-        result = ABT.tick("ABT Simulation", bb)
+        result = ABT.tick("ABT Simulation", bb)  # tree is composed of aug_leaf nodes
         # Generate the output observation corresponding to tree exit value
         if (result == b3.SUCCESS):
             logf.write('{:s}, {:.0f}\n'.format(osu,outputs[osu]))  # not random obs!
@@ -130,7 +164,8 @@ if(GENDATA):
 #
 
 logf = open(lfname,'r')
-
+print 'Opening ', lfname
+ 
 dN = {}    # number of observations seen for each state  
 dSum = {}  # sum of observations in each state
 dS2 = {}   # sum of observation^2 in each state
@@ -138,7 +173,7 @@ smu = {}   # mean of each state's observations
 ssig = {}  # standard dev of each state's observations
 
 # initial values
-for n in names:
+for n in model.names:
     #print 'looking for state: ', n
     dN[n] = 0
     dSum[n] = float(0)
@@ -179,7 +214,7 @@ print model.outputs
 
 print 'Sigma estimation tolerance: ', testsigeps
 print '    name        N            sum        sum^2           mu          S.D.'
-for [i,n] in enumerate(names):
+for [i,n] in enumerate(model.names):
     smu[n] = dSum[n] / float(dN[n])
     ssig[n] = np.sqrt(dN[n]*dS2[n] - dSum[n]*dSum[n]) / float(dN[n])
     print '%10s  %8d  %12.1f %12.1f %12.1f %12.1f' % ( n, dN[n], dSum[n], dS2[n], smu[n], ssig[n])
@@ -195,3 +230,29 @@ for [i,n] in enumerate(names):
 
 print '\n\n            Passed: state emission mean and SD assertions'
 
+
+n = 'l2'  #  study a state 
+
+logf = open(lfname,'r')
+
+tf = open('t.csv','w')
+
+em = []
+for line in logf:
+    if line == '---\n':
+        nsims += 1
+    else:  # accumulate observation data for each true state
+        [st, sy] = line.split(',')
+        if st == n:
+            em.append(float(sy))
+            
+print 'Computed mean/sd: ', np.mean(em), np.std(em)
+plt.figure(12)    # histogram of ALL run paces
+ 
+n, bins, patches = plt.hist(em, 100, normed=0, facecolor='blue', alpha=0.5)
+plt.xlabel('emission')
+plt.xlim([20,40])
+plt.xticks(range(20,40))
+plt.title('Emission Frequency, State l2')
+plt.show()
+logf.close()
