@@ -73,7 +73,7 @@ class aug_leaf(b3.Action):
             print self.Name, mu, sig
             #quit()
         psum = 0.0
-        pmin = 0.00001 # smallest allowed probability
+        pmin = 1.0e-9 # smallest allowed probability (see test_obs_stats.py!!)
         for j in range(NSYMBOLS):
             self.Obs[j] = gaussian(float(j),float(mu),float(sig))
             #clear the tiny numerical values
@@ -108,8 +108,8 @@ class aug_leaf(b3.Action):
 
     def tick(self,tick):
         f = tick.blackboard.get('logfileptr')   # this output is for the HMM analysis (not testing)
-        a = np.random.uniform(0,0.99999)
         f.write(self.Name+', '+str(self.gen_obs())+'\n')  # this output is for the HMM analysis (not testing)
+        a = np.random.uniform(0,0.99999)
         if a<self.pS:
             return b3.SUCCESS
         else:

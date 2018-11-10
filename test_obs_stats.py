@@ -12,6 +12,7 @@ from matplotlib.ticker import MaxNLocator
 
 from abt_constants import *
 
+ 
 MODEL = SMALL
 
 testeps = 2.0
@@ -86,31 +87,114 @@ rep.append('sigma: {:.2f}    Ratio:  {:.2f}'.format(sig, Ratio))
 rep.append('----------------------------------------------------------------------------------')
 rep.append(' ')
 
-
-#############################################
+#################################################
 #
-#    Build the ABT and its blackboard
-#
-
+#    Test gaussian(x, mu, sig)
 mu = 50
 sig = 2.0
 data = []
 ##  Test our "gaussian" function
 a = mu - 5*sig
 b = mu + 5*sig
-
-for i in range(0,1000):
-    x = a + (b-a)*float(i)/100.00
-    data.append(gaussian(x, mu, sig))
+N = 250
+x = []
+for i in range(0,N):
+    #x = a + (b-a)*float(i)/100.00
+    xv = (a + (b-a)*float(i)/100.00)
+    data.append(gaussian(xv, mu, sig))
+    x.append(xv)
     
-mu_hat = 0    
+psum = 0.0
+pmin = 0.0000001 # smallest allowed probability
+#pmin = 0.0
+for i,xv in enumerate(x): 
+    #clear the tiny numerical values
+    if data[i] < pmin:
+        data[i] = pmin   ###   require B[i,j] >= pmin
+    psum += data[i]
+
+#normalize the Observation distrib so it sums to 1.000
+for i in range(N):
+    data[i] /= psum 
+
+mu_hat = 0.0
 for i,d in enumerate(data):
     mu_hat += i*d
+    
+stat_eps = 0.01
 
 print 'Gaussian function test: '
-print 'Mean, mean error: ', mu, mu-mu_hat
-#print 'Sig, sig error:   ', sig, sig-np.std(data)
-quit()
+print 'Mean, mean error: ', mu, mu - mu_hat
+assert abs(mu-mu_hat) < stat_eps, 'Excessive mean error in gaussian()'
+
+ex2 = 0
+for i in range(N):
+    xv = x[i]
+    d = data[i]
+    ex2 += (xv*xv*d)
+sig_hat = np.sqrt(ex2-mu_hat*mu_hat) 
+
+print 'Sig, sig error:   ', sig, sig-sig_hat
+assert abs(sig-sig_hat) < stat_eps, 'Excessive SD error in gaussian()'
+
+
+#################################################
+#   2nd test of 
+#         gaussian(x, mu, sig)
+#        to understand effect of quantization
+#
+print '\n         Gaussian Quantization Test \n'
+mu = 65
+sig = 2.0
+x = []
+data = [] 
+N = 250       # same as application
+for i in range(0,N):
+    #x = a + (b-a)*float(i)/100.00
+    xv = float(i)
+    data.append(gaussian(xv, mu, sig))
+    x.append(xv)
+    
+psum = 0.0
+pmin = 0.0000001 # smallest allowed probability
+#pmin = 0.0
+pmin = 1.0E-8
+print 'Prob. Floor (pmin): ', pmin
+for i,xv in enumerate(x): 
+    #clear the tiny numerical values
+    if data[i] < pmin:
+        data[i] = pmin   ###   require B[i,j] >= pmin
+    psum += data[i]
+
+#normalize the Observation distrib so it sums to 1.000
+for i in range(N):
+    data[i] /= psum 
+
+mu_hat = 0.0
+for i,d in enumerate(data):
+    mu_hat += i*d
+    
+stat_eps = 0.01
+
+print '2nd Gaussian function test: '
+print 'Mean, mean error: ', mu, mu - mu_hat
+assert abs(mu-mu_hat) < stat_eps, 'Excessive mean error in gaussian()'
+
+ex2 = 0
+for i in range(N):
+    xv = x[i]
+    d = data[i]
+    ex2 += (xv*xv*d)
+sig_hat = np.sqrt(ex2-mu_hat*mu_hat) 
+
+print 'Sig, sig error:   ', sig, sig-sig_hat
+assert abs(sig-sig_hat) < stat_eps, 'Excessive SD error in gaussian()'
+
+
+#############################################
+#
+#    Build the ABT and its blackboard
+#
 
 ##   Test initialization of stat observation means
 print 'Testing observation means and SD:'
