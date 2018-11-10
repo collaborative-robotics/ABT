@@ -335,8 +335,8 @@ plt.figure(12)    # histogram of ALL run paces
  
 n, bins, patches = plt.hist(em, 100, normed=0, facecolor='blue', alpha=0.5)
 plt.xlabel('emission')
-plt.xlim([20,40])
-plt.xticks(range(20,40))
+plt.xlim([20,60])
+plt.xticks(range(20,60))
 plt.title('Emission Frequency, State l2')
 plt.show()
 logf.close()
