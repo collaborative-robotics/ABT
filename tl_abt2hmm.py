@@ -370,6 +370,7 @@ for Ratio in RatioList:
             print 'Input symbols Passed'
 
             M.fit(Y,Ls)
+            
             # print the output file header
             #for rline in rep:
                 #print >>of, rline

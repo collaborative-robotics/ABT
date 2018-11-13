@@ -78,7 +78,7 @@ def HMM_setup(model, toler=0.01, maxiter=20):     #  New: setup model.B:  discre
     #   fit all params:  params='ste'
     #   fit only A matrix:  params='t'
     
-    M = hmm.MultinomialHMM(n_components=l, n_iter=maxiter, params='t', init_params='')
+    M = hmm.MultinomialHMM(n_components=l, n_iter=maxiter, params='te', init_params='')
     M.typestring = 'MultinomialHMM'
     
     #M.n_features = 1
@@ -338,7 +338,7 @@ def Adiff(A1,A2,names):    # from 8/28
             if(A1[i,j]>0.0 and A2[i,j] < 0.0000001):
                 erasures.append([names[i],names[j]])
     e  = np.sqrt(e/(N*N))  # div total number of Aij elements
-    e2 = np.sqrt(e2/N2)  # RMS error of NON zero Aij
+    e2 = np.sqrt(e2/N2)  # RMS error of NON zero A[1]ij
     em = np.sqrt(em)     # Max error
     #print 'imax, jmax; ', imax, jmax
     return [e,e2,em,N2,imax,jmax,anoms,erasures]
