@@ -316,10 +316,10 @@ def Adiff(A1,A2,names):    # from 8/28
     #print A2
      
     N2 = 0   # count the non-zero Aij entries
-            #  should be 2(l+2) of course
+            #  should be 2(l+2) for ABT-based matrices
     anoms = [] #identification
     erasures = []
-    for i in range(N-2): # skip last two rows which are 1.000
+    for i in range(N):
         for j in range(N):
             e1 = (A1[i,j]-A2[i,j])**2
             #print 'error: ', e1,i,j

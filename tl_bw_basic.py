@@ -53,6 +53,9 @@ HMM_RANDOM_INIT = False
 if HMM_delta > random_flag:
     HMM_RANDOM_INIT = True
 
+Nrunouts = 15000
+sig = 2.0
+Ratio = 1.0
 
 #
 ########     Generate HMM model parameters
@@ -66,28 +69,38 @@ for i in range(N):
  
 # INITIAL State Transition Probabilities
 #  make A one bigger to make index human
+RAND = 1
+RAND_PLUS_ZEROS = 2
+SLR = 3
 
-Case = 2
+Case = RAND_PLUS_ZEROS
 
-if Case == 1:
+if Case == RAND or Case == RAND_PLUS_ZEROS:
     #
     #    Case 1:  fully random 
     #
+    zerofrac = 0.20   #  zero out 20% of entries
     A = np.zeros((N+1,N+1))
-
+    rsum = np.zeros(N+1)
     [rn,cn] = A.shape
-    for r in range(1,rn):   # ignore 0th row    
-        rsum = 0.0
+    for r in range(1,rn):   # ignore 0th row
         for c in range(1,cn):
             A[r][c] = random.random()
-            rsum += A[r][c]
+            if Case == RAND_PLUS_ZEROS:
+                if random.random() < zerofrac:
+                    A[r][c] = 0.0
+            rsum[r] += A[r][c]
+    
+            
+    for r in range(1,rn):
         for c in range(1,cn):  # normalize the rows
-            A[r][c] /= rsum
+            A[r][c] /= rsum[r]
             
     A = A[1:N+1,1:N+1]  # get zero offset index (instead of math/fortran style)
     A_row_test(A, sys.stdout)
 
-elif Case == 2:
+
+elif Case == SLR:
     #
     #   Case 2: Simple L-to-R
     #
@@ -125,9 +138,10 @@ statenos = {}
 for n in names:
     statenos[n] = names.index(n)
 
-di = 2  # placeholder
+di = sig*Ratio  # placeholder
 
-###  Regenerate output means:
+#######################################
+### generate output means:
 i = FIRSTSYMBOL
 #di = Ratio*sig  # = nxsigma !!  now in abt_constants
 for n in outputs.keys():
@@ -141,6 +155,7 @@ modelT.outputs = outputs
 modelT.statenos = statenos
 modelT.names = names
 modelT.sigma = sig
+modelT.typestring = "MultinomialHMM"
 
 #A_row_test(modelT.A, sys.stdout)
 
@@ -150,12 +165,11 @@ M = HMM_setup(modelT)
 
 #  Generate data set for model fitting
 #
-Nrunouts = 15000
 data = []
 lens = []
 smax = N-1
 
-if Case == 2:
+if Case == SLR:
     Nsamples = 3*N
     # generate observation data from HMM
     for i in range(Nrunouts):
@@ -172,7 +186,7 @@ if Case == 2:
                 break
         #print X,states
                 
-elif Case == 1:
+elif Case == RAND or Case == RAND_PLUS_ZEROS:
     Nsamples = 3*N
     # generate observation data from HMM
     for i in range(Nrunouts):
@@ -192,9 +206,43 @@ print 'Total Lengths: ', np.sum(lens),len(data)
 
 assert np.sum(lens) == len(data), 'data doesnt match lengths (can be just a RARE event)'
 
-M2 = M.fit(data,lens)
+#
+#   Perturb HMM params so that it is not starting at same point as dataset
+#
 
-Adiff_Report(A,M.transmat_,modelT.names,of=sys.stdout)
+#HMM_perturb(M, 0.20, modelT)
+A2, B2 = HMM_fully_random(modelT) 
+
+
+model02 = abtc.model(len(names))  # make a new model
+model02.A = A2.copy()
+#model02.PS = PS
+model02.outputs = modelT.outputs
+model02.statenos = modelT.statenos
+model02.names = modelT.names
+model02.sigma = sig
+model02.typestring = "MultinomialHMM"
+
+
+M2 = HMM_setup(model02)
+
+HMM_model_sizes_check(M2)
+
+print '\n\n'
+print "Initial A-matrix perturbation: "
+Adiff_Report(A,M2.transmat_,modelT.names,of=sys.stdout)
+
+M2._check()
+
+M2.fit(data,lens)
+
+print '\n\n'
+print "Initial FIT M->M2: "
+Adiff_Report(A,M2.transmat_,modelT.names,of=sys.stdout)
+
+print '\n\n'
+print "Initial FIT M2->M: "
+Adiff_Report(M2.transmat_,A, modelT.names,of=sys.stdout)
 
 #print '\n\n Model B matrix'
 #print np.where(M.emissionprob_ > 0.01)
