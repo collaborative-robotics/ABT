@@ -288,9 +288,9 @@ def read_obs_seqs(logf):
 def Adiff_Report(A1,A2,names,of=sys.stdout):
     [e,e2,em,N2,im,jm,anoms,erasures] = Adiff(A1, A2, names)
 
-
-    print >> of, 'Avg abs A-matrix error: {:.3f}'.format(e)
-    print >> of, 'Avg abs A-matrix error: {:.8f} ({:d} non zero elements)'.format(e2,N2)
+    N = len(names)
+    print >> of, 'RMS A-matrix error: {:.3f}'.format(e)
+    print >> of, 'RMS A-matrix error: {:.8f} (only the {:d}/{:d} non zero elements)'.format(e2,N2,N*N)
     print >> of, 'Max abs A-matrix error: {:.3f} (at {:d} to {:d})'.format(em,im,jm)
     if len(anoms) == 0:
         anoms = 'None'
