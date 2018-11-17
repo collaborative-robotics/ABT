@@ -45,6 +45,10 @@ if len(sys.argv) != 3:
 HMM_delta = float(sys.argv[1])
 comment = str(sys.argv[2])
 
+
+# for now:
+HMM_delta = 0.5
+
 #################################################
 #     Normally 0.0 < HMM_delta < 0.500
 ###   As a flag, if HMM_delta > random_flag it is a signal 
@@ -72,6 +76,7 @@ for i in range(N):
 RAND = 1
 RAND_PLUS_ZEROS = 2
 SLR = 3
+ABT_LIKE = 4
 
 Case = RAND_PLUS_ZEROS
 
@@ -112,6 +117,29 @@ elif Case == SLR:
             A[i,i+1] = 0.75
         else:
             A[i,i] = 1.0
+    A_row_test(A, sys.stdout)
+       
+elif Case == ABT_LIKE:
+    #
+    #   Like an ABT
+    #
+    A = np.zeros((N,N))
+    # simple-left-to-right
+    for r in range(N):
+        if r<(N-2):
+            A[r,r] = 0.0
+            p = 0.5 + 0.25 * random.random()
+            A[r,r+1] = p
+        else:
+            A[r,r] = 1.0   # output states Os Of
+            
+    for r in range(N-2):
+        q = 1.0 - A[r,r+1]
+        j = r + 2 + int(random.random()*(N-r-3)+ 0.5)   # pick a random col > diagonal+1
+        A[r,j] = q
+        
+    # normalize?
+        
     A_row_test(A, sys.stdout)
        
 else:
@@ -169,7 +197,7 @@ data = []
 lens = []
 smax = N-1
 
-if Case == SLR:
+if Case == SLR or Case==ABT_LIKE:
     Nsamples = 3*N
     # generate observation data from HMM
     for i in range(Nrunouts):
@@ -185,7 +213,7 @@ if Case == SLR:
                 lens.append(lencnt)
                 break
         #print X,states
-                
+        
 elif Case == RAND or Case == RAND_PLUS_ZEROS:
     Nsamples = 3*N
     # generate observation data from HMM
@@ -210,21 +238,29 @@ assert np.sum(lens) == len(data), 'data doesnt match lengths (can be just a RARE
 #   Perturb HMM params so that it is not starting at same point as dataset
 #
 
-#HMM_perturb(M, 0.20, modelT)
-A2, B2 = HMM_fully_random(modelT) 
+#HMM_perturb(M, HMM_delta, modelT)
+if(Case == RAND or Case == RAND_PLUS_ZEROS):
+    A2, B2 = HMM_fully_random(modelT) 
 
 
-model02 = abtc.model(len(names))  # make a new model
-model02.A = A2.copy()
-#model02.PS = PS
-model02.outputs = modelT.outputs
-model02.statenos = modelT.statenos
-model02.names = modelT.names
-model02.sigma = sig
-model02.typestring = "MultinomialHMM"
+    model02 = abtc.model(len(names))  # make a new model
+    model02.A = A2.copy()
+    #model02.PS = PS
+    model02.outputs = modelT.outputs
+    model02.statenos = modelT.statenos
+    model02.names = modelT.names
+    model02.sigma = sig
+    model02.typestring = "MultinomialHMM"
 
 
-M2 = HMM_setup(model02)
+    M2 = HMM_setup(model02)
+
+
+        
+elif Case == ABT_LIKE:
+    HMM_perturb(M, HMM_delta, model)
+
+                    
 
 HMM_model_sizes_check(M2)
 
