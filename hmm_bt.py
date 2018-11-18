@@ -192,13 +192,14 @@ def HMM_perturb(M, d, model=abtc.model(1)):
     #np.save("Means",M.means_)
     [r1, c1] = A.shape
     r1 -= 2    # don't perturb for Os and Of states
-    for r in range(r1):
+    for r in range(r1):  # go through the rows
         flag = -1
-        rowcnt = 0
+        rowcnt = 0   # how many non-zero elements in this row?
         for c in range(c1):
             if A[r][c] > 0.0000001:
                 rowcnt += 1
-        if rowcnt <= 2:    # ABT type models
+        assert rowcnt > 1, 'only 1 non-zero element should not occur - quitting'
+        if rowcnt == 2:    # ABT type models and SLR models
             for c in range(c1):
                 # second non-zero element of row
                 #print 'looking at element: ',r,c
@@ -218,6 +219,8 @@ def HMM_perturb(M, d, model=abtc.model(1)):
                     #print 'Actual Change: ', (paft-pbef)/pbef
                     if A[r][c] >  0.9999:
                         A[r][c] = 0.9999  # don't allow going to 1.0 or above
+                    if A[r][c] < 0.0000001:  # don't allow negative
+                        A[r][c] = 0.0000001
                     flag = A[r][c]      # store value (for use above) 
         elif rowcnt == 3:     #ABT + duration type models
             flag = 0
@@ -238,6 +241,8 @@ def HMM_perturb(M, d, model=abtc.model(1)):
                         #print 'Actual Change: ', (paft-pbef)/pbef
                         if A[r][c] >  0.9999:
                             A[r][c] = 0.9999  # don't allow going to 1.0 or above
+                        if A[r][c] < 0.0000001:  # don't allow negative
+                            A[r][c] = 0.0000001
                         flag = A[r][c]      # store value (for use above) 
                          
         else: 
