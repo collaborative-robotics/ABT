@@ -35,16 +35,27 @@ warnings.filterwarnings('ignore', category=DeprecationWarning)
 
 if len(sys.argv) != 3:
     print 'Please use two command line arguments as follows:'
-    print ' > tl_bw_hmm    X.XXX comment'
-    print '  to indicate the HMM perturbation value (0.0--1.0)'
+    print ' > tl_bw_hmm    d comment'
+    print '  to indicate the model Case'
     print '  and a comment (use single quotes for multiple words) to describe the run'
     print 'You entered: '
+    print '''
+# INITIAL State Transition Probabilities
+#  make A one bigger to make index human
+RAND = 1
+RAND_PLUS_ZEROS = 2
+SLR = 3
+ABT_LIKE = 4
+ABT_DUR  = 5
+'''
     print sys.argv
     quit()
     
-HMM_delta = float(sys.argv[1])
+#HMM_delta = float(sys.argv[1])
+Case = int(sys.argv[1])
 comment = str(sys.argv[2])
 
+git_hash = subprocess.check_output(['git', 'rev-parse', 'HEAD'])[:10]  # first 10 chars to ID software version
 
 # for now:
 HMM_delta = 0.5
@@ -57,7 +68,7 @@ HMM_RANDOM_INIT = False
 if HMM_delta > random_flag:
     HMM_RANDOM_INIT = True
 
-Nrunouts = 15000
+Nrunouts = 100
 sig = 2.0
 Ratio = 1.0
 
@@ -77,8 +88,21 @@ RAND = 1
 RAND_PLUS_ZEROS = 2
 SLR = 3
 ABT_LIKE = 4
+ABT_DUR  = 5
 
-Case = RAND_PLUS_ZEROS
+#Case = RAND_PLUS_ZEROS
+if Case == RAND:
+    print 'Randomized A-matrix'
+if Case == RAND_PLUS_ZEROS:
+    print 'Randomized A-matrix with about 20% zeros'
+if Case == SLR:
+    print 'Simple Left-to-Right HMM'
+if Case == ABT_LIKE:
+    print 'ABT-like HMM structure'
+if Case == ABT_DUR:
+    print 'ABT HMM structure + SELF STATE TRANS.'
+    
+print 'Ratio = ', Ratio, '   HMM delta / perturbation = ', HMM_delta
 
 if Case == RAND or Case == RAND_PLUS_ZEROS:
     #
@@ -119,7 +143,7 @@ elif Case == SLR:
             A[i,i] = 1.0
     A_row_test(A, sys.stdout)
        
-elif Case == ABT_LIKE:
+elif Case == ABT_LIKE or Case == ABT_DUR:
     #
     #   Like an ABT
     #
@@ -139,8 +163,15 @@ elif Case == ABT_LIKE:
         A[r,j] = q
         
     # normalize?
+    if Case == ABT_DUR:
+        #
+        #    Add in  a self-state transition to ABT
+        #
+        for r in range(N-2):
+            A[r,r] = 0.2
+            A[r,r+1] -= 0.2
         
-    A_row_test(A, sys.stdout)
+    A_row_test(A, sys.stdout)    # just a good idea
        
 else:
     print 'Invalid model Case defined (must be 1 or 2)'
@@ -191,13 +222,17 @@ M = HMM_setup(modelT)
 
 #print M.sample(3*N)   #  enough to always get stuck in last state
 
+
+
+#####################################################################
+#
 #  Generate data set for model fitting
 #
 data = []
 lens = []
-smax = N-1
+smax = N-2   #  real states vs terminal states (Os & Of)
 
-if Case == SLR or Case==ABT_LIKE:
+if Case == SLR or Case==ABT_LIKE or Case == ABT_DUR:
     Nsamples = 3*N
     # generate observation data from HMM
     for i in range(Nrunouts):
@@ -213,6 +248,7 @@ if Case == SLR or Case==ABT_LIKE:
                 lens.append(lencnt)
                 break
         #print X,states
+        #x = raw_input ('Enter: ')
         
 elif Case == RAND or Case == RAND_PLUS_ZEROS:
     Nsamples = 3*N
@@ -234,6 +270,8 @@ print 'Total Lengths: ', np.sum(lens),len(data)
 
 assert np.sum(lens) == len(data), 'data doesnt match lengths (can be just a RARE event)'
 
+
+#####################################################################
 #
 #   Perturb HMM params so that it is not starting at same point as dataset
 #
@@ -257,19 +295,32 @@ if(Case == RAND or Case == RAND_PLUS_ZEROS):
 
 
         
-elif Case == ABT_LIKE:
-    HMM_perturb(M, HMM_delta, model)
+elif Case == SLR or Case == ABT_LIKE or Case == ABT_DUR:
+    HMM_perturb(M, HMM_delta, modelT)
+    
+    
+    model02 = abtc.model(len(names))  # make a new model
+    model02.A = M.transmat_.copy()
+    #model02.PS = PS
+    model02.outputs = modelT.outputs
+    model02.statenos = modelT.statenos
+    model02.names = modelT.names
+    model02.sigma = sig
+    model02.typestring = "MultinomialHMM"
+
+
+    M2 = HMM_setup(model02)
+
 
                     
+M2._check()
 
 HMM_model_sizes_check(M2)
 
 print '\n\n'
 print "Initial A-matrix perturbation: "
 Adiff_Report(A,M2.transmat_,modelT.names,of=sys.stdout)
-
-M2._check()
-
+ 
 M2.fit(data,lens)
 
 print '\n\n'
@@ -279,6 +330,18 @@ Adiff_Report(A,M2.transmat_,modelT.names,of=sys.stdout)
 print '\n\n'
 print "Initial FIT M2->M: "
 Adiff_Report(M2.transmat_,A, modelT.names,of=sys.stdout)
+
+
+[e,e2,em,N2,im,jm,anoms,erasures] = Adiff(A,M2.transmat_, modelT.names)
+
+fdata = open('basic_data.txt', 'a')
+
+line = '{:s} | {:s} | {:4.2f} | {:d} | {:f} | {:f} | {:s}'.format(datetime.datetime.now().strftime("%y-%m-%d-%H:%M"), git_hash, HMM_delta, Case, e2, em,  comment)
+
+print >> fdata, line
+
+fdata.close()
+
 
 #print '\n\n Model B matrix'
 #print np.where(M.emissionprob_ > 0.01)
