@@ -192,29 +192,63 @@ def HMM_perturb(M, d, model=abtc.model(1)):
     #np.save("Means",M.means_)
     [r1, c1] = A.shape
     r1 -= 2    # don't perturb for Os and Of states
-    for r in range(r1):
+    for r in range(r1):  # go through the rows
         flag = -1
+        rowcnt = 0   # how many non-zero elements in this row?
         for c in range(c1):
-            # second non-zero element of row
-            #print 'looking at element: ',r,c
-            #print 'flag = ', flag
-            if flag > 0  and A[r][c] > 0:
-                A[r][c] = 1.0 - flag
-                #print 'setting second element to', 1.0 - flag
-            # first non-zero element of row
-            elif A[r][c] > 0:
-                if abs(A[r][c] - 1.0) < 0.000001: # don't mess with 1.0 transitions
-                    continue
-                change =  randsign() * d
-                #print 'Applying change 1.0 + ',change
-                pbef = A[r][c]
-                A[r][c] *= (1.0 + change)
-                paft =  A[r][c]
-                #print 'Actual Change: ', (paft-pbef)/pbef
-                if A[r][c] >  0.9999:
-                    A[r][c] = 0.9999  # don't allow going to 1.0 or above
-                flag = A[r][c]      # store value (for use above) 
-    
+            if A[r][c] > 0.0000001:
+                rowcnt += 1
+        assert rowcnt > 1, 'only 1 non-zero element should not occur - quitting'
+        if rowcnt == 2:    # ABT type models and SLR models
+            for c in range(c1):
+                # second non-zero element of row
+                #print 'looking at element: ',r,c
+                #print 'flag = ', flag
+                if flag > 0  and A[r][c] > 0:
+                    A[r][c] = 1.0 - flag
+                    #print 'setting second element to', 1.0 - flag
+                # first non-zero element of row
+                elif A[r][c] > 0.0000001:
+                    if abs(A[r][c] - 1.0) < 0.000001: # don't mess with 1.0 transitions
+                        continue
+                    change =  randsign() * d
+                    #print 'Applying change 1.0 + ',change
+                    pbef = A[r][c]
+                    A[r][c] *= (1.0 + change)
+                    paft =  A[r][c]
+                    #print 'Actual Change: ', (paft-pbef)/pbef
+                    if A[r][c] >  0.9999:
+                        A[r][c] = 0.9999  # don't allow going to 1.0 or above
+                    if A[r][c] < 0.0000001:  # don't allow negative
+                        A[r][c] = 0.0000001
+                    flag = A[r][c]      # store value (for use above) 
+        elif rowcnt == 3:     #ABT + duration type models
+            flag = 0
+            for c in range(c1):
+                 if c > r: # only above diagonal (don't change A[r,r]
+                     if flag > 0 and A[r][c] > 0:
+                        # we've found the second transition to one of two next states
+                        A[r][c] = (1.0-A[r][r]) - flag  # keep sum == 1.0
+                     elif A[r][c] > 0.0000001:
+                        if abs(A[r][c] - 1.0) < 0.000001: # don't mess with 1.0 transitions
+                            continue
+                        # we've found the first transition to one of two next states
+                        change =  randsign() * d
+                        #print 'Applying change 1.0 + ',change
+                        pbef = A[r][c]
+                        A[r][c] *= (1.0 + change)
+                        paft =  A[r][c]
+                        #print 'Actual Change: ', (paft-pbef)/pbef
+                        if A[r][c] >  0.9999:
+                            A[r][c] = 0.9999  # don't allow going to 1.0 or above
+                        if A[r][c] < 0.0000001:  # don't allow negative
+                            A[r][c] = 0.0000001
+                        flag = A[r][c]      # store value (for use above) 
+                         
+        else: 
+             print 'I dont know how to perturb ', rowcnt, ' non-zero values in a row'
+             quit()
+             
     # Perturb B matrix means.  Each mean must be perturbed by same amount, not by a 1+delta as above
     #    because before, some states had bigger probability errors than others. 
     sigma = 2.0    #  HACK
@@ -288,9 +322,9 @@ def read_obs_seqs(logf):
 def Adiff_Report(A1,A2,names,of=sys.stdout):
     [e,e2,em,N2,im,jm,anoms,erasures] = Adiff(A1, A2, names)
 
-
-    print >> of, 'Avg abs A-matrix error: {:.3f}'.format(e)
-    print >> of, 'Avg abs A-matrix error: {:.8f} ({:d} non zero elements)'.format(e2,N2)
+    N = len(names)
+    print >> of, 'RMS A-matrix error: {:.3f}'.format(e)
+    print >> of, 'RMS A-matrix error: {:.8f} (only the {:d}/{:d} non zero elements)'.format(e2,N2,N*N)
     print >> of, 'Max abs A-matrix error: {:.3f} (at {:d} to {:d})'.format(em,im,jm)
     if len(anoms) == 0:
         anoms = 'None'
@@ -316,10 +350,10 @@ def Adiff(A1,A2,names):    # from 8/28
     #print A2
      
     N2 = 0   # count the non-zero Aij entries
-            #  should be 2(l+2) of course
+            #  should be 2(l+2) for ABT-based matrices
     anoms = [] #identification
     erasures = []
-    for i in range(N-2): # skip last two rows which are 1.000
+    for i in range(N):
         for j in range(N):
             e1 = (A1[i,j]-A2[i,j])**2
             #print 'error: ', e1,i,j
