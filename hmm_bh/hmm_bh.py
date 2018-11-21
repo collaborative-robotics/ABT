@@ -48,8 +48,20 @@ class hmm():
             tmpsum = 0.0   
             for st in range(self.N):  # do for each state 
                 for prev_st in range(self.N): # sum over previous states 
-                    tmpsum += self.transmat_[prev_st,st] * alpha[prev_st] 
-                alpha[st] = self.emissionprob_[st,y] * tmpsum 
+                    tmpsum += self.transmat_[prev_st,st]*alpha[prev_st] 
+                alpha[st] = self.emissionprob_[st,y] * tmpsum
+                prev_st = st
+        return alpha
+            
+    # Log-based forward algorithm for a single runout
+    def forwardSL(self, Y):
+        alphaL = np.log(self.Pi.copy())   # starting state probs. 
+        for y in Y:
+            tmpsum = 0.0   
+            for st in range(self.N):  # do for each state 
+                for prev_st in range(self.N): # sum over previous states 
+                    tmpsum += self.transmat_[prev_st,st]*alpha[prev_st] 
+                alpha[st] = self.emissionprob_[st,y] * tmpsum
                 prev_st = st
         return alpha
             
@@ -174,7 +186,7 @@ if __name__ == '__main__':
     m.check()
     print 'Model setup tests passed'
         
-    st, em = m.sample(10)
+    st, em = m.sample(20)
     print st
     print em
     assert len(st) == len(em), 'Emissions dont match states from sample()'
