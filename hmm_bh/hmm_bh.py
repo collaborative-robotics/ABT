@@ -18,8 +18,94 @@ import random as random
 NSYMBOLS = 20
 STRICT = True
 
+LZ = np.nan   # our log of zero value
+
 epsilon = 1.0E-4
 
+#  extended natural log
+def EL(x):
+    if x < 0.0:
+        print 'log arg < 0.0 - stopping'
+        quit()
+    if (x == 0):
+        y = LZ
+    else:
+        y = np.log(x)
+    return y
+#  extended exp()
+def EE(x):
+    if (np.isnan(x)):
+        y = 0
+    else:
+        y = np.exp(x)
+    return y
+
+ELv = np.vectorize(EL)
+EEv = np.vectorize(EE)
+
+def elog(X):
+    #assert np.sum(X >= 0.0) == len(X), 'elog(x): Attempted log of x < 0'
+    y = np.zeros(np.shape(X))  # just so y is same size as X
+    for i,x in enumerate(X):
+        #print 'elog(): ',i,x
+        if x < 0.0:
+            print 'log arg < 0.0 - stopping'
+            quit()
+        if (x == 0):
+            y[i] = LZ
+        else:
+            y[i] = np.log(x)
+    return y 
+    
+def eexp(X):
+    y = np.zeros(np.shape(X))
+    for i,x in enumerate(X):
+        if (np.isnan(x)):
+            y[i] = 0
+        else:
+            y[i] = np.exp(x)
+    return y
+    
+
+#  Class for log probabilities
+#
+#  Algorithms from hmm_scaling_revised.pdf 
+#     Tobias P. Mann, UW, 2006
+
+#  BH idea:
+#    (overload * and + )!!
+class logP():
+    def __init__(self,p):
+        self.lp = ELv(p)
+        self.shape = np.shape(p)
+        
+    def P(self):
+        return EEv(self.lp)
+    
+    def __getitem__(self,r,c=0):
+        if len(self.shape) == 2:
+            return self.lp[r,c]
+        elif len(self.shape) == 1:
+            return self.lp[r]
+    
+    def __mul__(self, lp2):
+        if self.lp == LZ or lp2.lp == LZ:
+            return LZ
+        else:
+            return self.lp + lp2.lp
+    
+    def __add__(self, lp2):
+        if self.lp==LZ or lp2.lp == LZ:
+            if self.lp == LZ:
+                return lp2.lp
+            else:
+                return self.lp
+        else:
+            if self.lp > lp2.lp:
+                return self.lp + ELv(1+np.exp(lp2.lp-self.lp))
+            else:
+                return  lp2.lp + ELv(1+np.exp(self.lp-lp2.lp))
+        
 
 class hmm():
     def __init__(self,nstates):
@@ -54,16 +140,18 @@ class hmm():
         return alpha
             
     # Log-based forward algorithm for a single runout
-    def forwardSL(self, Y):
-        alphaL = np.log(self.Pi.copy())   # starting state probs. 
+    def forwardSL(self, Y): 
+        alpha = logP(self.Pi)
+        logA = logP(self.transmat_)
+        logB = logP(self.emissionprob_)
         for y in Y:
-            tmpsum = 0.0   
-            for st in range(self.N):  # do for each state 
-                for prev_st in range(self.N): # sum over previous states 
-                    tmpsum += self.transmat_[prev_st,st]*alpha[prev_st] 
-                alpha[st] = self.emissionprob_[st,y] * tmpsum
+            tmpsum = logP(LZ)
+            for st in range(self.N):
+                for prev_st in range(self.N):
+                    tmpsum += logA[prev_st,st] * alpha[prev_st]
+                alpha[st] = logB[st,y] * tmpsum
                 prev_st = st
-        return alpha
+        return eexp(alpha)
             
         
     def sample(self,m): 
@@ -159,6 +247,52 @@ class hmm():
 if __name__ == '__main__':
     print '\n\n  Testing hmm_bh class...\n\n'
     
+    #####################################
+    # test basic log functions
+    e = np.exp(1)
+    
+    y = ELv([e, e*e, 0, np.sqrt(e)])
+    #print y
+    fs = ' elog() test FAIL'
+    assert y[0] - 1.0 < epsilon, fs
+    assert y[1] - 2.0 < epsilon, fs
+    assert np.isnan(y[2]), fs
+    assert y[3] - 0.5 < epsilon, fs
+    assert ELv(e*e)-2.0 < epsilon, fs
+    print ' elog() tests    PASSED'
+    
+    # eexp()
+    fs = ' eexp() test  FAIL'
+    assert  EEv(1)-e < epsilon, fs
+    y = EEv([2, 0, LZ, -1])
+    print y
+    assert y[0]-e*e < epsilon, fs
+    assert y[1]-1.0 < epsilon, fs
+    assert y[2]-0.0 < epsilon, fs
+    assert y[3]-1/e < epsilon, fs
+
+    assert EEv(1) - e < epsilon, fs
+    
+    y = EEv([[e, 0],[LZ, 1]])
+    assert y[1,1]-e < epsilon, fs
+    print ' eexp() tests    PASSED'
+
+    ###################################
+    # test logP class and operator overlays
+    x = logP(0.5)
+    y = logP(0.5)
+    z = x + y
+    fs = 'logP() class tests    FAIL'
+    assert x+y-1.0 < epsilon, fs
+    x = logP([0.1, 0.2, 0.3])
+    y = logP([0.9, 0.8, 0.7])
+    z = x + y
+    
+    print EEv(z)
+    
+
+    quit()
+    ###################################3
     # test pick_from_vec
     
     m = hmm(10)
@@ -199,6 +333,7 @@ if __name__ == '__main__':
     print 'got valid emissions'
     print 'state estimate: '
     print m.forwardS(em)
+    print m.forwardSL(em)
     
         
         
