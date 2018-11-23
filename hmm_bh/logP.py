@@ -1,21 +1,11 @@
 #!/usr/bin/python
 #
-#   Utilities for BT-HMM_
+#   Class and functions for log probability math
 #
 
 import numpy as np
-import numbers
-from random import *
-import matplotlib.pyplot as plt
-import editdistance as ed
-from tqdm import tqdm
-import os
-import sys
+import numbers  
 
-#sudo pip install scikit-learn  # dep for hmmlearn
-#pip install -U --user hmmlearn
-#from hmmlearn import hmm
-import random as random
 NSYMBOLS = 20
 STRICT = True
 
@@ -95,7 +85,8 @@ class logP():
         return EEv(self.lp)
     
     def __str__(self):
-        return '{:8s}'.format(self.lp)
+        #return '{:8.2s}'.format(self.lp)
+        return str(self.lp)
     
     def __float__(self):
         return float(self.lp)
@@ -121,19 +112,23 @@ class logP():
                 t.lp =  lp2.lp + ELv(1+np.exp(self.lp-lp2.lp))
         return t
     
+###########
+#
+#  a matrix of logP() instances
+#
 class logPm():
     def __init__(self, Pm):
         if STRICT:
             if len(np.shape(Pm)) != 2:
                 print 'LogPv() wrong shape'
                 quit()
-        self.lp = np.zeros(np.shape(Pm))
+        self.m = np.zeros(np.shape(Pm))
         for (i,j),p in np.ndenumerate(Pm):
-            self.lp[i,j] = logP(p)
+            self.m[i,j] = logP(p)
         #self.lp = np.array(map(logP, map(logP, Pm)))
         #self.lp = np.array(map(logP, map(logP, Pm)))
-        print '-- init Pm'
-        print np.shape(Pm) , '--->',np.shape(self.lp)
+        #print '-- init Pm'
+        #print np.shape(Pm) , '--->',np.shape(self.lp)
         
     def __getitem__(self,tuple):
         #print '========'
@@ -142,9 +137,16 @@ class logPm():
         #print t, self.lp[t] 
     
         t = logP(0.5)
-        t.lp = self.lp[tuple]
+        t.lp = self.m[tuple]
         return t
     
+                #def __str__(self):
+                    #stmp = ''
+                    #for x in self.v:
+                        ##print 'str: ', x
+                        #stmp += '{:10s} '.format(x)
+                    #return stmp
+        
     def __str__(self):
         ############3    How to output matrix as string?????/
         rc = np.shape(self.lp)[0]
@@ -152,23 +154,44 @@ class logPm():
         for r in range(rc):
             stmp = ''
             for c in range(cc):
-                stmp += '{:8s}'.format(self.lp[r,c])
+                stmp += '{:10f}'.format(self[r,c].lp)
+            stmp += '\n'
         return stmp
         
+                    
+                    #def __add__(self, P):
+                        #t = logPv(np.ones(len(self.v)))
+                        #print 'logPv add/t: ', t
+                        #for i,p in enumerate(P.v):
+                            #t.v[i] = self[i] + p
+                        #return t
+    
     
     def __add__(self, P):
-        return self + P
+        t = logPm(np.ones(np.shape(P)))
+        for (i,j), p in np.ndenumerate(P):
+            t.m[i,j] = self.m[i,j] + p
+        return t
     
     
+#    LogP vectors
+#    this should be a list of logP() instances
 class logPv():
     def __init__(self, Pv):
+        #assert insinstance(Pv, numbers.Number), 'logPv() bad input vector'
         if False:
             if len(np.shape(Pv)) != 1:
                 print 'LogPv() wrong shape'
                 quit()
-        self.lp = np.zeros(np.shape(Pv))
+        #self.lp = np.zeros(np.shape(Pv))
+        #v = np.ones(len(Pv))
+        self.v = []
         for i,p in enumerate(Pv):
-            self.lp[i] = logP(p) 
+            fs = 'bad input to logPv()'
+            assert isinstance(p,numbers.Number), fs
+            #assert p < 1.00, fs
+            assert p > 0.00, fs
+            self.v.append(logP(p))
         
     def __getitem__(self,i):
         #print '========'
@@ -177,162 +200,31 @@ class logPv():
         #t = logP(0.5)
         #t.lp = self.lp[i]
         #return t
+        return self.v[i]
     
     def __setitem__(self,p, i):
         #print '========'
         #print self.lp
         #print i
-        self.i = p
+        self.v[i] = p
         
     def __str__(self):
         stmp = ''
-        for v in self.lp:
-            stmp += '{:8.2f}'.format(v)
+        for x in self.v:
+            #print 'str: ', x
+            stmp += '{:10s} '.format(x)
         return stmp
         
     
     def __add__(self, P):
-        t = logPv(np.ones(len(self.lp)))
+        t = logPv(np.ones(len(self.v)))
         print 'logPv add/t: ', t
-        for i,p in enumerate(P):
-            t[i] = self[i] + p
+        for i,p in enumerate(P.v):
+            t.v[i] = self[i] + p
         return t
     
     
-         
-
-class hmm():
-    def __init__(self,nstates):
-        if nstates < 2:
-            self._error('HMM must have at least 2 states')
-        self.N = nstates
-        self.Pi = np.zeros(nstates)
-        self.Pi[0] = 1.0      # by default always start in state 1
-        self.transmat_ = np.zeros((nstates,nstates))
-        self.emissionprob_ = np.ones((self.N,NSYMBOLS))* 1/float(NSYMBOLS)  # default Uniform
-        self.names = []
-        self.typestring = 'hmm_bh'
-        for i in range(self.N):
-            self.names.append('-noname-')
-            
-    # Forward algorithm for multiple runouts
-    #def forwardM(self, X, lengths):
-        #for i, l in enumerate(lengths):
-            
-            #for st in range(self.N):
-                
-    # forward algorithm for a single runout
-    def forwardS(self, Y): # go through the emissions 
-        alpha = self.Pi.copy()   # starting state probs. 
-        for y in Y:
-            tmpsum = 0.0   
-            for st in range(self.N):  # do for each state 
-                for prev_st in range(self.N): # sum over previous states 
-                    tmpsum += self.transmat_[prev_st,st]*alpha[prev_st] 
-                alpha[st] = self.emissionprob_[st,y] * tmpsum
-                prev_st = st
-        return alpha
-            
-    # Log-based forward algorithm for a single runout
-    def forwardSL(self, Y): 
-        alpha = logPv(self.Pi)
-        logA =  logPm(self.transmat_)
-        logB =  logPm(self.emissionprob_)
-        for y in Y:
-            tmpsum = logP(0)
-            for st in range(self.N):
-                for prev_st in range(self.N):
-                    a = logA[prev_st,st] 
-                    b = alpha[prev_st]
-                    tmpsum +=  a * b
-                alpha[st] = logB[st,y] * tmpsum
-                prev_st = st
-        return eexp(alpha)
-            
-        
-    def sample(self,m): 
-        states = []
-        emissions = []
-        # initial starting state
-        state, p = self.pick_from_vec(self.Pi)
-        states.append(state)
-        print 'initial state: ',state
-        # main loop
-        for i in range(m):
-            # generate emission
-            em, p = self.pick_from_vec(self.emissionprob_[state,:])
-            emissions.append(em)
-            # find next state
-            state, p = self.pick_from_vec(self.transmat_[state])
-            #print 'next state: ', state
-            states.append(state)
-        
-        # generate a final emission
-        em, p = self.pick_from_vec(self.emissionprob_[state,:])
-        emissions.append(em)
-        return (states, emissions)
-
-
-
-##########################################################################
-#
-#   Utility functions
-#                
-    def vec_normalize(self, v): 
-        sum = np.sum(v)
-        return v/sum
-        
-    def pick_from_vec(self,vector):
-        if STRICT:
-            vector = self.vec_normalize(vector)
-            self.row_check(vector,len(vector))
-            
-        r = random.random()
-        P = 0.0
-        for i in range(len(vector)):
-            P += vector[i]
-            if r<=P:
-                return (i, vector[i])
-        self._error('invalid prob vector')
-            
-    def check(self):
-        sh = np.shape(self.transmat_)
-        if (sh[0] != self.N or sh[1] != self.N):
-            self.error(' transmat_ wrong size')
-        sh = np.shape(self.emissionprob_)
-        if (sh[0] != self.N or sh[1] != NSYMBOLS):
-            self.error(' emissionprob_ wrong size')
-        for r in range(self.N):
-            self.row_check(self.transmat_[r],self.N)
-        sum = 0.0
-        for st in range(self.N):
-            self.row_check(self.emissionprob_[st,:],NSYMBOLS)
-        self.row_check(self.Pi,self.N)
-                
-            
-    def row_check(self,row,m):
-        valid = True
-        #print 'row_check:', row
-        sum = 0.0
-        for c in range(m):
-            t = row[c]
-            if t > 1.0 or  t < 0.0 :
-                print 'illegal probability found'
-                valid = False
-            sum += t
-        if abs(sum-1.0) > epsilon:
-            valid = False
-        if not valid:
-            print row
-            print 'Sum: ', sum
-            self._error('a vector failed row check: sum != 1.0')
-        return True
-        
-        
-    def _error(self,msg):
-        print 'hmm class (hmm_bh): ' + msg
-        quit()
-        
+          
         
         
 #################################################################################################
@@ -341,7 +233,7 @@ class hmm():
 #
 
 if __name__ == '__main__':
-    print '\n\n  Testing hmm_bh class...\n\n'
+    print '\n\n  Testing logP() class and related ...\n\n'
     
     #####################################
     # test basic log functions
@@ -421,8 +313,8 @@ if __name__ == '__main__':
     
     # let's exponentiate sums and check them
     m = []
-    for l in z.lp:
-        m.append(EE(l))
+    for l in z.v:
+        m.append(EE(l.lp))
     m = np.array(m)
 
     print 'm;',m
@@ -433,7 +325,7 @@ if __name__ == '__main__':
     assert abs(m[2] - (e*e*e + 1/e)) < epsilon, fs
     
     print 'logPv() tests            PASS'
-    quit()
+   
     
     #######################################
     #
@@ -450,7 +342,10 @@ if __name__ == '__main__':
         [e*e, e, 1/e]  ])
     
     fs = 'logPm returns wrong type'
-    assert isinstance(x[0,0], logP), fs
+    assert np.shape(x.m) == (3,3), fs
+    print x[0,0], type(x.m[0,0])
+    assert isinstance(x.m[0,0], numbers.Number), fs
+    assert isinstance(y, logPm), fs
     assert isinstance(y[2,1], logP), fs
     
     print '---'
@@ -481,49 +376,4 @@ if __name__ == '__main__':
     
     print 'logPm() tests            PASS'
     
-    
-    ###################################3
-    # test pick_from_vec
-    
-    m = hmm(10)
-    vector = [0,0,0,.333,.333,.333, 0,0,0]  # note sum = 0.9990000
-    #optional if not STRICT:
-    #vector = m.vec_normalize(vector)
-    for i in range(10000):  # this really tests sum=1.000000
-        x,p = m.pick_from_vec(vector)
-        assert (x >1 and  x <= 5), 'failure of test_pic_from_vec'
-    print 'test_pic_from_vec() test passed'
-        
-    ntest =  5
-    m = hmm(ntest)
-    m.transmat_ = np.array([[.5,.5,0,0,0],[0,.6,.4,0,0],[0,0,.75,.25,0],[0,0,0,0.8,0.2],[0,0,0,0,1.0]])
-    for i in range(ntest):
-        mu = 3*(i+1)
-        for j in range(NSYMBOLS):
-            m.emissionprob_[i,j] = 0.0
-            if j>mu and j<=(mu+2):
-                m.emissionprob_[i,j] = 1/float(2)
-                
-    #m.emissionprob_[2,120] = 0.001
-    
-    print 'testing hmm with ', ntest, ' states'
-    m.check()
-    print 'Model setup tests passed'
-        
-    st, em = m.sample(20)
-    print st
-    print em
-    assert len(st) == len(em), 'Emissions dont match states from sample()'
-    
-    print '\n\nTest valid sample outputs:'
-    for i,s in enumerate(st):
-        #print 'checking: ' , i, s, em[i]
-        if m.emissionprob_[s,em[i]] < epsilon:
-            m._error('invalid emission detected')
-    print 'got valid emissions'
-    print 'state estimate: '
-    print m.forwardS(em)
-    print m.forwardSL(em)
-    
-        
-        
+     
