@@ -9,6 +9,9 @@ import numbers
 NSYMBOLS = 20
 STRICT = True
 
+PASS = '        PASS'
+FAIL = '        FAIL'
+
 LZ = np.nan   # our log of zero value
 
 epsilon = 1.0E-4
@@ -17,6 +20,7 @@ epsilon = 1.0E-4
 def EL(x):
     #print 'EL(x) rcvd: ', x, type(x)
     assert isinstance(x,numbers.Number), 'EL (log) wrong data type'
+    #print 'EL arg:', x
     if x < 0.0:
         print 'log problem: ', x
     #print 'EL(x): got', x
@@ -79,7 +83,11 @@ def eexp(X):
 #    (overload * and + )!!
 class logP():
     def __init__(self,p):
-        self.lp = ELv(p) 
+        fs = 'logP() __init__ bad input'
+        #print 'logP init: ', p
+        #assert p <= 1.00, fs
+        assert p >= 0.00, fs
+        self.lp = EL(p) 
         
     def P(self):
         return EEv(self.lp)
@@ -94,9 +102,12 @@ class logP():
     
     def __mul__(self, lp2):
         if self.lp == LZ or lp2.lp == LZ:
-            return LZ
+            t = logP(0)
+            return t
         else:
-            return self.lp + lp2.lp
+            t = logP(0)
+            t.lp = self.lp + lp2.lp
+            return t
     
     def __add__(self, lp2):
         t = logP(.5)
@@ -204,8 +215,6 @@ class logPv():
         for i,p in enumerate(Pv):
             fs = 'bad input to logPv()'
             assert isinstance(p,numbers.Number), fs
-            #assert p < 1.00, fs
-            assert p > 0.00, fs
             self.v.append(logP(p))
         
     def __getitem__(self,i):
@@ -291,14 +300,35 @@ if __name__ == '__main__':
     #print 'x: ', type(x)
     assert isinstance(x, logP), 'logP() returns wrong type'
     
+    ##############################
+    #
+    #  logP __add__()
+    
     z = x + y
     assert isinstance(z,logP), 'logP() __add__ returns wrong type'
     
     logsum = np.log(0.25 + 0.25)
     
-    fs = 'logP() __add__    FAIL'
-    assert abs(z.lp-logsum) < epsilon, fs
-    assert abs((x+y).lp-logsum) < epsilon, fs
+    fs = 'logP() __add__'
+    assert abs(z.lp-logsum) < epsilon, fs+FAIL
+    assert abs((x+y).lp-logsum) < epsilon, fs+FAIL
+    print fs+PASS
+    
+    ##############################
+    #
+    #  logP __mull__()
+    x = logP(0.25)
+    y = logP(0.25)
+    z = x * y
+    assert isinstance(z,logP), 'logP() __mul__ returns wrong type'
+    logprod = np.log(0.25*0.25)
+    
+    fs = 'logP() __mul__ '
+    assert abs(z.lp-logprod) < epsilon, fs+FAIL
+    assert abs((x*y).lp-logprod) < epsilon, fs+FAIL
+    z = x * logP(0)
+    assert np.isnan(z.lp), fs+FAIL
+    print fs+PASS
     
     print 'logP classes          PASS'
      

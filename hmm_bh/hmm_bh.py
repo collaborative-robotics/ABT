@@ -12,6 +12,8 @@ from tqdm import tqdm
 import os
 import sys
 
+from logP import *
+
 #sudo pip install scikit-learn  # dep for hmmlearn
 #pip install -U --user hmmlearn
 #from hmmlearn import hmm
@@ -26,217 +28,220 @@ FAIL = '          FAIL'
 PASS = '          PASS'
 
 
-#  extended natural log
-def EL(x):
-    #print 'EL(x) rcvd: ', x, type(x)
-    assert isinstance(x,numbers.Number), 'EL (log) wrong data type'
-    if x < 0.0:
-        print 'log problem: ', x
-    #print 'EL(x): got', x
-    assert x >= 0.0,  'log arg < 0.0 - stopping'
-    if (x == 0.0):
-        y = LZ
-    else:
-        y = np.log(x)
-    return y
+
+###########   replace with import logP.py
+
+##  extended natural log
+#def EL(x):
+    ##print 'EL(x) rcvd: ', x, type(x)
+    #assert isinstance(x,numbers.Number), 'EL (log) wrong data type'
+    #if x < 0.0:
+        #print 'log problem: ', x
+    ##print 'EL(x): got', x
+    #assert x >= 0.0,  'log arg < 0.0 - stopping'
+    #if (x == 0.0):
+        #y = LZ
+    #else:
+        #y = np.log(x)
+    #return y
     
-#  extended exp()
-def EE(x):
-    assert isinstance(x,numbers.Number), 'EE (exp) wrong data type'
-    if (np.isnan(x)):
-        y = 0
-    else:
-        y = np.exp(x)
-    return y
+##  extended exp()
+#def EE(x):
+    #assert isinstance(x,numbers.Number), 'EE (exp) wrong data type'
+    #if (np.isnan(x)):
+        #y = 0
+    #else:
+        #y = np.exp(x)
+    #return y
 
 
-ELv = np.vectorize(EL)
-EEv = np.vectorize(EE)
+#ELv = np.vectorize(EL)
+#EEv = np.vectorize(EE)
 
-def elog(X):
-    #assert np.sum(X >= 0.0) == len(X), 'elog(x): Attempted log of x < 0'
-    y = np.zeros(np.shape(X))  # just so y is same size as X
-    for i,x in enumerate(X):
-        #print 'elog(): ',i,x
-        if x < 0.0:
-            print 'log arg < 0.0 - stopping'
-            quit()
-        if (x == 0):
-            y[i] = LZ
-        else:
-            y[i] = np.log(x)
-    return y 
+#def elog(X):
+    ##assert np.sum(X >= 0.0) == len(X), 'elog(x): Attempted log of x < 0'
+    #y = np.zeros(np.shape(X))  # just so y is same size as X
+    #for i,x in enumerate(X):
+        ##print 'elog(): ',i,x
+        #if x < 0.0:
+            #print 'log arg < 0.0 - stopping'
+            #quit()
+        #if (x == 0):
+            #y[i] = LZ
+        #else:
+            #y[i] = np.log(x)
+    #return y 
     
-def eexp(X):
-    y = np.zeros(np.shape(X))
-    for i,x in enumerate(X):
-        if (np.isnan(x)):
-            y[i] = 0
-        else:
-            y[i] = np.exp(x)
-    return y
+#def eexp(X):
+    #y = np.zeros(np.shape(X))
+    #for i,x in enumerate(X):
+        #if (np.isnan(x)):
+            #y[i] = 0
+        #else:
+            #y[i] = np.exp(x)
+    #return y
     
 
-#  Class for log probabilities
-#
-#  Algorithms from hmm_scaling_revised.pdf 
-#     Tobias P. Mann, UW, 2006
-#
-#    usage:  x = logP(0.5)
-#       yields x = ln(0.5) etc.
-#       this is for scalars!
-#    to use with vectors use:
-##     v = map(logP, [ .5, .3, .9, 1.0, 0] )
-#     v is a vector of LogP's
-#  BH idea:
-#    (overload * and + )!!
-class logP():
-    def __init__(self,p):
-        self.lp = EL(p)
-        self.name = 'logP()'
+##  Class for log probabilities
+##
+##  Algorithms from hmm_scaling_revised.pdf 
+##     Tobias P. Mann, UW, 2006
+##
+##    usage:  x = logP(0.5)
+##       yields x = ln(0.5) etc.
+##       this is for scalars!
+##    to use with vectors use:
+###     v = map(logP, [ .5, .3, .9, 1.0, 0] )
+##     v is a vector of LogP's
+##  BH idea:
+##    (overload * and + )!!
+#class logP():
+    #def __init__(self,p):
+        #self.lp = EL(p)
+        #self.name = 'logP()'
         
-    def P(self):
-        return EEv(self.lp)
+    #def P(self):
+        #return EEv(self.lp)
     
-    def __str__(self):
-        return '{:8f}'.format(self.lp)
+    #def __str__(self):
+        #return '{:8f}'.format(self.lp)
     
-    def __float__(self):
-        return float(self.lp)
+    #def __float__(self):
+        #return float(self.lp)
 
     
-    def __mul__(self, lp2):
-        if self.lp == LZ or lp2.lp == LZ:
-            return LZ
-        else:
-            return self.lp + lp2.lp
+    #def __mul__(self, lp2):
+        #if self.lp == LZ or lp2.lp == LZ:
+            #return LZ
+        #else:
+            #return self.lp + lp2.lp
     
-    def __add__(self, lp2):
-        t = logP(.5)
-        if self.lp==LZ or lp2.lp == LZ:
-            if self.lp == LZ:
-                return lp2
-            else:
-                return self
-        else:
-            if self.lp > lp2.lp:
-                print 'a1'
-                t.lp = self.lp + ELv(1+np.exp(lp2.lp-self.lp))
-            else:
-                print 'a2'
-                t.lp =  lp2.lp + ELv(1+np.exp(self.lp-lp2.lp))
-        return t
+    #def __add__(self, lp2):
+        #t = logP(.5)
+        #if self.lp==LZ or lp2.lp == LZ:
+            #if self.lp == LZ:
+                #return lp2
+            #else:
+                #return self
+        #else:
+            #if self.lp > lp2.lp:
+                #print 'a1'
+                #t.lp = self.lp + ELv(1+np.exp(lp2.lp-self.lp))
+            #else:
+                #print 'a2'
+                #t.lp =  lp2.lp + ELv(1+np.exp(self.lp-lp2.lp))
+        #return t
     
-class logPm():
-    #  logPm.lp is the list of lists of logP()'s
-    #  WRONG:   self[i,j]  xxxxxxx
-    #  RIGHT:   self.lp[i,j] -> logP()
-    #  RIGHT:   self.[i,j] -> logP() (getitem - can't use inside class)
-    #  RIGHT:   self.lp[i,j].lp --> float
-    #  RIGHT:   self.[i,j].lp --> float  (getitem)
-    def __init__(self, Pm):
-        [rc,cc] = np.shape(Pm)
-        if True:
-            print 'logPm: Im getting: ', Pm
-            if len(np.shape(Pm)) != 2:
-                print 'LogPm() wrong shape'
-                quit()
-        self.name = 'log P matrix'
-        self.lp = []  
-        for r in range(rc):
-            row = []
-            for c in range(cc):
-                a = logP(Pm[r][c])
-                #print '      Im setting: ', a, type(a), a.name
-                row.append(a)
-            self.lp.append(row)
-                #print '        result  : ', self.lp[r,c], type(self.lp[r,c])
+#class logPm():
+    ##  logPm.lp is the list of lists of logP()'s
+    ##  WRONG:   self[i,j]  xxxxxxx
+    ##  RIGHT:   self.lp[i,j] -> logP()
+    ##  RIGHT:   self.[i,j] -> logP() (getitem - can't use inside class)
+    ##  RIGHT:   self.lp[i,j].lp --> float
+    ##  RIGHT:   self.[i,j].lp --> float  (getitem)
+    #def __init__(self, Pm):
+        #[rc,cc] = np.shape(Pm)
+        #if True:
+            #print 'logPm: Im getting: ', Pm
+            #if len(np.shape(Pm)) != 2:
+                #print 'LogPm() wrong shape'
+                #quit()
+        #self.name = 'log P matrix'
+        #self.lp = []  
+        #for r in range(rc):
+            #row = []
+            #for c in range(cc):
+                #a = logP(Pm[r][c])
+                ##print '      Im setting: ', a, type(a), a.name
+                #row.append(a)
+            #self.lp.append(row)
+                ##print '        result  : ', self.lp[r,c], type(self.lp[r,c])
         
-    def __getitem__(self,tuple):
-        #print '========'
-        #print self.lp
-        #print np.shape(self.lp)
-        #print t, self.lp[t] 
-        (r,c) = tuple
-        t = logP(0.5)
-        t.lp = self.lp[r][c].lp
-        return t
+    #def __getitem__(self,tuple):
+        ##print '========'
+        ##print self.lp
+        ##print np.shape(self.lp)
+        ##print t, self.lp[t] 
+        #(r,c) = tuple
+        #t = logP(0.5)
+        #t.lp = self.lp[r][c].lp
+        #return t
     
     
-    def __setitem__(self,p, tuple):
-        #print '========'
-        #print self.lp
-        #print i 
-        r,c = tuple    
-        self.lp[r][c] = p
+    #def __setitem__(self,p, tuple):
+        ##print '========'
+        ##print self.lp
+        ##print i 
+        #r,c = tuple    
+        #self.lp[r][c] = p
         
-    def __str__(self):
-        ############3    How to output matrix as string?????/
-        rc,cc = np.shape(self.lp)
-        print 'str: ', np.shape(self.lp)
-        stmp = '[  '
-        for r in range(rc):
-            stmp += ' ['
-            for c in range(cc):
-                stmp += '  {:8f}'.format(self.lp[r][c].lp)
-            stmp += ']\n   '
-        return stmp+ ']'
-        
-    
-    def __add__(self, P):
-        t = logPm(np.ones_like(P.lp))
-        #print 'add:  ', self, '+', P
-        rc,cc = np.shape(P.lp)
-        for r in range(rc):
-            for c in range(cc):
-            #print '        adding ', self.lp[i], '+',p
-                a = self.lp[r][c] + P.lp[r][c]
-                #print '        element sum: ', a, a.name
-                t.lp[r][c] = a
-            #print ' add returning: ',t, t.name
-        return t
-    
-    
-class logPv():
-    def __init__(self, Pv): 
-        self.lp=[]
-        for i in range(len(Pv)):
-            self.lp.append(logP(Pv[i]))     # logPv.lp is the list of logP()'s
-        self.name = 'log P Vector'          #  WRONG:   self[i]  xxxxxxx
-                                            #  RIGHT:   self.lp[i] -> logP()
-                                            #  RIGHT:   self.lp[i].lp --> float
-    def __getitem__(self,i):
-        #print '========'
-        #print self.lp
-        #print i
-        t = logP(0.5)
-        t.lp = self.lp[i]
-        return t
-    
-    def __setitem__(self,p, i):
-        #print '========'
-        #print self.lp
-        #print i
-        self.lp[i] = p
-        
-    def __str__(self):
-        stmp = '[ '
-        for v in self.lp:
-            stmp += '{:8.4f}'.format(v.lp)
-        stmp += ' ]'
-        return stmp
+    #def __str__(self):
+        #############3    How to output matrix as string?????/
+        #rc,cc = np.shape(self.lp)
+        #print 'str: ', np.shape(self.lp)
+        #stmp = '[  '
+        #for r in range(rc):
+            #stmp += ' ['
+            #for c in range(cc):
+                #stmp += '  {:8f}'.format(self.lp[r][c].lp)
+            #stmp += ']\n   '
+        #return stmp+ ']'
         
     
-    def __add__(self, P):
-        t = logPv(np.ones(len(self.lp)))
-        #print 'add:  ', self, '+', P
-        for i,p in enumerate(P.lp):
-            #print '        adding ', self.lp[i], '+',p
-            a = self.lp[i] + p
-            #print '        element sum: ', a, a.name
-            t.lp[i] = a
-            #print ' add returning: ',t, t.name
-        return t
+    #def __add__(self, P):
+        #t = logPm(np.ones_like(P.lp))
+        ##print 'add:  ', self, '+', P
+        #rc,cc = np.shape(P.lp)
+        #for r in range(rc):
+            #for c in range(cc):
+            ##print '        adding ', self.lp[i], '+',p
+                #a = self.lp[r][c] + P.lp[r][c]
+                ##print '        element sum: ', a, a.name
+                #t.lp[r][c] = a
+            ##print ' add returning: ',t, t.name
+        #return t
+    
+    
+#class logPv():
+    #def __init__(self, Pv): 
+        #self.lp=[]
+        #for i in range(len(Pv)):
+            #self.lp.append(logP(Pv[i]))     # logPv.lp is the list of logP()'s
+        #self.name = 'log P Vector'          #  WRONG:   self[i]  xxxxxxx
+                                            ##  RIGHT:   self.lp[i] -> logP()
+                                            ##  RIGHT:   self.lp[i].lp --> float
+    #def __getitem__(self,i):
+        ##print '========'
+        ##print self.lp
+        ##print i
+        #t = logP(0.5)
+        #t.lp = self.lp[i]
+        #return t
+    
+    #def __setitem__(self,p, i):
+        ##print '========'
+        ##print self.lp
+        ##print i
+        #self.lp[i] = p
+        
+    #def __str__(self):
+        #stmp = '[ '
+        #for v in self.lp:
+            #stmp += '{:8.4f}'.format(v.lp)
+        #stmp += ' ]'
+        #return stmp
+        
+    
+    #def __add__(self, P):
+        #t = logPv(np.ones(len(self.lp)))
+        ##print 'add:  ', self, '+', P
+        #for i,p in enumerate(P.lp):
+            ##print '        adding ', self.lp[i], '+',p
+            #a = self.lp[i] + p
+            ##print '        element sum: ', a, a.name
+            #t.lp[i] = a
+            ##print ' add returning: ',t, t.name
+        #return t
      
          
 
@@ -275,6 +280,8 @@ class hmm():
     # Log-based forward algorithm for a single runout
     def forwardSL(self, Y): 
         alpha = logPv(self.Pi)
+        print 'forwardSL debug:'
+        print 'alpha', alpha
         logA =  logPm(self.transmat_)
         logB =  logPm(self.emissionprob_)
         for y in Y:
@@ -283,7 +290,10 @@ class hmm():
                 for prev_st in range(self.N):
                     a = logA[prev_st,st] 
                     b = alpha[prev_st]
+                    print 'a: ', np.shape(a), type(a), a.lp
+                    print 'b: ', np.shape(b), type(b), b
                     tmpsum +=  a * b
+                    print tmpsum,tmpsum.lp
                 alpha[st] = logB[st,y] * tmpsum
                 prev_st = st
         return eexp(alpha)
@@ -385,6 +395,7 @@ if __name__ == '__main__':
     #####################################
     # test basic log functions
     e = np.exp(1)
+    m = logP(e)
     
     y = ELv([e, e*e, 0, np.sqrt(e)])
     
@@ -420,7 +431,7 @@ if __name__ == '__main__':
     y = logP(0.25)
     
     # make sure stuff returns right types
-    print 'x: ', type(x), x.name
+    print 'x: ', type(x) 
     assert isinstance(x, logP), 'logP() returns wrong type'
     assert x.lp == np.log(0.25), 'logP() returns wrong value'
     print x
@@ -458,9 +469,9 @@ if __name__ == '__main__':
     print '----'
     
     fs = 'logPv() instantiation'
-    assert abs(y.lp[0].lp -  2.0) < epsilon, fs + FAIL
-    assert abs(y.lp[1].lp -  1.0) < epsilon, fs + FAIL
-    assert abs(y.lp[2].lp - -1.0) < epsilon, fs + FAIL
+    assert abs(y.v[0].lp -  2.0) < epsilon, fs + FAIL
+    assert abs(y.v[1].lp -  1.0) < epsilon, fs + FAIL
+    assert abs(y.v[2].lp - -1.0) < epsilon, fs + FAIL
     print fs + PASS
     
     ############# 
@@ -468,13 +479,13 @@ if __name__ == '__main__':
     #
     z = x + y
     assert isinstance(z[0],logP), 'logPv() __add__ returns wrong type'
-    print 'Z;', z, type(z), z.name
+    print 'Z;', z, type(z)
     print '' 
     
-    assert z.lp[0] != 0, 'addition fail'
+    assert z.v[0].lp != 0, 'addition fail'
     
     v = np.ones(3)
-    for i,x in enumerate(z.lp):
+    for i,x in enumerate(z.v):
         v[i] = np.exp(x.lp)
         
     print 'v; ', v
@@ -484,9 +495,9 @@ if __name__ == '__main__':
     print 'm;',m
     fs = 'logPv  addition' 
     print z[0].lp, np.log(e+e*e)
-    assert abs(z.lp[0].lp - np.log(e+e*e)) < epsilon, fs + FAIL
-    assert abs(z.lp[1].lp - np.log(e+e*e)) < epsilon, fs + FAIL
-    assert abs(z.lp[2].lp - np.log(e*e*e + 1/e)) < epsilon, fs + FAIL
+    assert abs(z.v[0].lp - np.log(e+e*e)) < epsilon, fs + FAIL
+    assert abs(z.v[1].lp - np.log(e+e*e)) < epsilon, fs + FAIL
+    assert abs(z.v[2].lp - np.log(e*e*e + 1/e)) < epsilon, fs + FAIL
     print fs + PASS
     
     print 'logPv() tests            PASS'    
@@ -550,20 +561,30 @@ if __name__ == '__main__':
     
     print '\n\n      All LogPx() tests     PASSED \n\n'
     
-    quit()
     
-    ###################################3
-    # test pick_from_vec
     
+    #########################################################################
+    #########################################################################
+    
+    ###################################
+    # hmm class tests 
+    
+    # test pic_from_vect(v)
     m = hmm(10)
     vector = [0,0,0,.333,.333,.333, 0,0,0]  # note sum = 0.9990000
     #optional if not STRICT:
     #vector = m.vec_normalize(vector)
+    fs = 'test pic_from_vec'
     for i in range(10000):  # this really tests sum=1.000000
         x,p = m.pick_from_vec(vector)
-        assert (x >1 and  x <= 5), 'failure of test_pic_from_vec'
-    print 'test_pic_from_vec() test passed'
+        assert (x >1 and  x <= 5), fs+FAIL
+    print fs+PASS
         
+    
+    ######################################
+    #
+    #  test model setup for hmm
+    #
     ntest =  5
     m = hmm(ntest)
     m.transmat_ = np.array([[.5,.5,0,0,0],[0,.6,.4,0,0],[0,0,.75,.25,0],[0,0,0,0.8,0.2],[0,0,0,0,1.0]])
@@ -576,9 +597,9 @@ if __name__ == '__main__':
                 
     #m.emissionprob_[2,120] = 0.001
     
-    print 'testing hmm with ', ntest, ' states'
+    fs =  'testing hmm with ' + str(ntest) + ' states'
     m.check()
-    print 'Model setup tests passed'
+    print fs + ' [setup] ' + PASS
         
     st, em = m.sample(20)
     print st
