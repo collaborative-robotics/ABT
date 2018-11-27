@@ -22,6 +22,9 @@ STRICT = True
 LZ = np.nan   # our log of zero value
 
 epsilon = 1.0E-4
+FAIL = '          FAIL'
+PASS = '          PASS'
+
 
 #  extended natural log
 def EL(x):
@@ -89,13 +92,14 @@ def eexp(X):
 #    (overload * and + )!!
 class logP():
     def __init__(self,p):
-        self.lp = ELv(p) 
+        self.lp = EL(p)
+        self.name = 'logP()'
         
     def P(self):
         return EEv(self.lp)
     
     def __str__(self):
-        return '{:8s}'.format(self.lp)
+        return '{:8f}'.format(self.lp)
     
     def __float__(self):
         return float(self.lp)
@@ -116,89 +120,124 @@ class logP():
                 return self
         else:
             if self.lp > lp2.lp:
+                print 'a1'
                 t.lp = self.lp + ELv(1+np.exp(lp2.lp-self.lp))
             else:
+                print 'a2'
                 t.lp =  lp2.lp + ELv(1+np.exp(self.lp-lp2.lp))
         return t
     
 class logPm():
+    #  logPm.lp is the list of lists of logP()'s
+    #  WRONG:   self[i,j]  xxxxxxx
+    #  RIGHT:   self.lp[i,j] -> logP()
+    #  RIGHT:   self.[i,j] -> logP() (getitem - can't use inside class)
+    #  RIGHT:   self.lp[i,j].lp --> float
+    #  RIGHT:   self.[i,j].lp --> float  (getitem)
     def __init__(self, Pm):
-        if STRICT:
+        [rc,cc] = np.shape(Pm)
+        if True:
+            print 'logPm: Im getting: ', Pm
             if len(np.shape(Pm)) != 2:
-                print 'LogPv() wrong shape'
+                print 'LogPm() wrong shape'
                 quit()
-        self.lp = np.zeros(np.shape(Pm))
-        for (i,j),p in np.ndenumerate(Pm):
-            self.lp[i,j] = logP(p)
-        #self.lp = np.array(map(logP, map(logP, Pm)))
-        #self.lp = np.array(map(logP, map(logP, Pm)))
-        print '-- init Pm'
-        print np.shape(Pm) , '--->',np.shape(self.lp)
+        self.name = 'log P matrix'
+        self.lp = []  
+        for r in range(rc):
+            row = []
+            for c in range(cc):
+                a = logP(Pm[r][c])
+                #print '      Im setting: ', a, type(a), a.name
+                row.append(a)
+            self.lp.append(row)
+                #print '        result  : ', self.lp[r,c], type(self.lp[r,c])
         
     def __getitem__(self,tuple):
         #print '========'
         #print self.lp
         #print np.shape(self.lp)
         #print t, self.lp[t] 
-    
+        (r,c) = tuple
         t = logP(0.5)
-        t.lp = self.lp[tuple]
+        t.lp = self.lp[r][c].lp
         return t
     
+    
+    def __setitem__(self,p, tuple):
+        #print '========'
+        #print self.lp
+        #print i 
+        r,c = tuple    
+        self.lp[r][c] = p
+        
     def __str__(self):
         ############3    How to output matrix as string?????/
-        rc = np.shape(self.lp)[0]
-        cc = np.shape(self.lp)[1]
+        rc,cc = np.shape(self.lp)
+        print 'str: ', np.shape(self.lp)
+        stmp = '[  '
         for r in range(rc):
-            stmp = ''
+            stmp += ' ['
             for c in range(cc):
-                stmp += '{:8s}'.format(self.lp[r,c])
-        return stmp
+                stmp += '  {:8f}'.format(self.lp[r][c].lp)
+            stmp += ']\n   '
+        return stmp+ ']'
         
     
     def __add__(self, P):
-        return self + P
+        t = logPm(np.ones_like(P.lp))
+        #print 'add:  ', self, '+', P
+        rc,cc = np.shape(P.lp)
+        for r in range(rc):
+            for c in range(cc):
+            #print '        adding ', self.lp[i], '+',p
+                a = self.lp[r][c] + P.lp[r][c]
+                #print '        element sum: ', a, a.name
+                t.lp[r][c] = a
+            #print ' add returning: ',t, t.name
+        return t
     
     
 class logPv():
-    def __init__(self, Pv):
-        if False:
-            if len(np.shape(Pv)) != 1:
-                print 'LogPv() wrong shape'
-                quit()
-        self.lp = np.zeros(np.shape(Pv))
-        for i,p in enumerate(Pv):
-            self.lp[i] = logP(p) 
-        
+    def __init__(self, Pv): 
+        self.lp=[]
+        for i in range(len(Pv)):
+            self.lp.append(logP(Pv[i]))     # logPv.lp is the list of logP()'s
+        self.name = 'log P Vector'          #  WRONG:   self[i]  xxxxxxx
+                                            #  RIGHT:   self.lp[i] -> logP()
+                                            #  RIGHT:   self.lp[i].lp --> float
     def __getitem__(self,i):
         #print '========'
         #print self.lp
         #print i
-        #t = logP(0.5)
-        #t.lp = self.lp[i]
-        #return t
+        t = logP(0.5)
+        t.lp = self.lp[i]
+        return t
     
     def __setitem__(self,p, i):
         #print '========'
         #print self.lp
         #print i
-        self.i = p
+        self.lp[i] = p
         
     def __str__(self):
-        stmp = ''
+        stmp = '[ '
         for v in self.lp:
-            stmp += '{:8.2f}'.format(v)
+            stmp += '{:8.4f}'.format(v.lp)
+        stmp += ' ]'
         return stmp
         
     
     def __add__(self, P):
         t = logPv(np.ones(len(self.lp)))
-        print 'logPv add/t: ', t
-        for i,p in enumerate(P):
-            t[i] = self[i] + p
+        #print 'add:  ', self, '+', P
+        for i,p in enumerate(P.lp):
+            #print '        adding ', self.lp[i], '+',p
+            a = self.lp[i] + p
+            #print '        element sum: ', a, a.name
+            t.lp[i] = a
+            #print ' add returning: ',t, t.name
         return t
-    
-    
+     
          
 
 class hmm():
@@ -381,9 +420,16 @@ if __name__ == '__main__':
     y = logP(0.25)
     
     # make sure stuff returns right types
-    print 'x: ', type(x)
+    print 'x: ', type(x), x.name
     assert isinstance(x, logP), 'logP() returns wrong type'
+    assert x.lp == np.log(0.25), 'logP() returns wrong value'
+    print x
+    #assert str(x) == '0.25', 'FAIL'
     
+    #################################
+    #
+    #  test addition for logP() scalar
+    #
     z = x + y
     assert isinstance(z,logP), 'logP() __add__ returns wrong type'
     
@@ -395,7 +441,8 @@ if __name__ == '__main__':
     
     print 'logP classes          PASS'
      
-    ####################################################
+    ####################################################################
+    #
     #  logP for vectors 
     #
     x = logPv([e, e*e, e*e*e])
@@ -410,77 +457,100 @@ if __name__ == '__main__':
     print y
     print '----'
     
-    fs = 'logPv() instantiation    FAIL'
-    assert abs(y[0].lp -  2.0) < epsilon, fs
-    assert abs(y[1].lp -  1.0) < epsilon, fs
-    assert abs(y[2].lp - -1.0) < epsilon, fs
+    fs = 'logPv() instantiation'
+    assert abs(y.lp[0].lp -  2.0) < epsilon, fs + FAIL
+    assert abs(y.lp[1].lp -  1.0) < epsilon, fs + FAIL
+    assert abs(y.lp[2].lp - -1.0) < epsilon, fs + FAIL
+    print fs + PASS
+    
+    ############# 
+    #  test addition of logP() vectors
+    #
     z = x + y
     assert isinstance(z[0],logP), 'logPv() __add__ returns wrong type'
-    print 'Z;', z, type(z)
+    print 'Z;', z, type(z), z.name
     print '' 
     
-    # let's exponentiate sums and check them
-    m = []
-    for l in z.lp:
-        m.append(EE(l))
-    m = np.array(m)
-
-    print 'm;',m
-    fs = 'logPv  FAIL'
-    print 'compare: ', m[0], (e+e*e)
-    assert abs(m[0] - (e+e*e)) < epsilon, fs
-    assert abs(m[1] - (e+e*e)) < epsilon, fs
-    assert abs(m[2] - (e*e*e + 1/e)) < epsilon, fs
+    assert z.lp[0] != 0, 'addition fail'
     
-    print 'logPv() tests            PASS'
-    quit()
+    v = np.ones(3)
+    for i,x in enumerate(z.lp):
+        v[i] = np.exp(x.lp)
+        
+    print 'v; ', v
+    
+    #m = EEv(v)  # let's exponentiate sums and check them
+    m = v
+    print 'm;',m
+    fs = 'logPv  addition' 
+    print z[0].lp, np.log(e+e*e)
+    assert abs(z.lp[0].lp - np.log(e+e*e)) < epsilon, fs + FAIL
+    assert abs(z.lp[1].lp - np.log(e+e*e)) < epsilon, fs + FAIL
+    assert abs(z.lp[2].lp - np.log(e*e*e + 1/e)) < epsilon, fs + FAIL
+    print fs + PASS
+    
+    print 'logPv() tests            PASS'    
+    
     
     #######################################
     #
     #   test logPm  - matrix version
     #
      #  logP for matrices 
-    x = logPm([
+    x = logPm(np.array([
         [e, e*e, e*e*e],
         [e, e*e, e*e*e],
-        [e, e*e, e*e*e]  ])
-    y = logPm([
+        [e, e*e, e*e*e]  ]))
+    y = logPm(np.array([
         [e*e, e, 1/e],
         [e*e, e, 1/e],
-        [e*e, e, 1/e]  ])
+        [e*e, e, 1/e]  ]))
     
-    fs = 'logPm returns wrong type'
-    assert isinstance(x[0,0], logP), fs
-    assert isinstance(y[2,1], logP), fs
+    fs = 'logPm return type'
+    print fs, ':',type(x[0,0])
+    assert isinstance(x[0,0], logP), fs + FAIL
+    assert isinstance(y[2,1], logP), fs + FAIL
+    print fs+PASS
     
     print '---'
     print x
     print y
     print '----'
     
-    fs = 'logPm() instantiation    FAIL'
+    fs = 'logPm() instantiation'
     print '>>', y[1,0].lp, 2.0
-    assert abs(y[1,0].lp - 2.0) < epsilon, fs
+    assert abs(y[1,0].lp - 2.0) < epsilon, fs + FAIL
     
     print '>>', y[2,1].lp, 0.0
-    assert abs(y[2,1].lp - 1.0) < epsilon, fs
-    assert abs(y[1,2].lp - -1.0) < epsilon
+    assert abs(y[2,1].lp - 1.0) < epsilon, fs + FAIL
+    assert abs(y[1,2].lp - -1.0) < epsilon, fs + FAIL
+    
+    print fs + PASS
+    
+    
     z = x + y
     print 'Z;',z 
     print ''
     
-    v = z[1]   # first row of matrix
-    m = EEv(z)  # let's exponentiate sums and check them
+    assert isinstance(z,logPm), ' logPm() __add__ returns wrong type'
+    m = np.ones(3)
+    r = 0
+    for c in range(3):
+        m[c] = z[r,c].lp  # first row of z
     
     print 'm;',m
-    fs = 'logPm  FAIL'
-    print m[0].lp, logP(e+e*e).lp
-    assert abs(m[0].lp - np.log(e+e*e)) < epsilon, fs
-    assert abs(m[1].lp - np.log(e+e*e)) < epsilon, fs
-    assert abs(m[2].lp - np.log(e*e*e + 1/e)) < epsilon, fs
+    fs = 'logPm  addition '
+    print m[0], logP(e+e*e).lp
+    assert abs(m[0] - np.log(e+e*e)) < epsilon, fs + FAIL
+    assert abs(m[1] - np.log(e+e*e)) < epsilon, fs + FAIL
+    assert abs(m[2] - np.log(e*e*e + 1/e)) < epsilon, fs + FAIL
     
-    print 'logPm() tests            PASS'
+    print fs + PASS    
     
+    
+    print '\n\n      All LogPx() tests     PASSED \n\n'
+    
+    quit()
     
     ###################################3
     # test pick_from_vec
