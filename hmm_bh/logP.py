@@ -19,6 +19,8 @@ epsilon = 1.0E-4
 #  extended natural log
 def EL(x):
     #print 'EL(x) rcvd: ', x, type(x)
+    #if np.isnan(x):
+        #return LZ
     assert isinstance(x,numbers.Number), 'EL (log) wrong data type'
     #print 'EL arg:', x
     if x < 0.0:
@@ -330,6 +332,21 @@ if __name__ == '__main__':
     assert np.isnan(z.lp), fs+FAIL
     print fs+PASS
     
+    #############################
+    #
+    #  logP += A*B
+    #
+
+    x = logP(0.25)
+    y = logP(0.25)
+    t = logP(0.25)
+    t += x*y
+    fs = 'logP() combined add and times'
+    assert isinstance(t, logP),fs+FAIL
+    assert np.exp(t.lp)== 0.25*0.25+0.25 ,fs+FAIL
+    print fs+PASS
+    
+    
     print 'logP classes          PASS'
      
     ####################################################
@@ -430,8 +447,36 @@ if __name__ == '__main__':
     assert abs(m[0,0].lp - np.log(e+e*e)) < epsilon, fs + 'FAIL'
     assert abs(m[0,1].lp - np.log(e+e*e)) < epsilon, fs + 'FAIL'
     assert abs(m[0,2].lp - np.log(e*e*e + 1/e)) < epsilon, fs + 'FAIL'
-    
     print fs + '         PASS'
+    
+    
+    ###################################################################
+    #
+    #  math combining vector, matrix, getitem, etc.
+    #
+    
+    fs = 'logPx mixed math tests'
+
+    s = logP(0.5)
+    v = logPv([1.0, 0.5, 0.25, e])
+    m = logPm([[1.0, 0.5, 0.25, e],
+               [1.0, 0.5, 0.25, e],
+               [1.0, 0.5, 0.25, e]])
+
+    n = logPv(np.ones(4))
+    
+    t = s + v[1]
+    assert np.exp(t.lp) == 1.0, fs+FAIL
+    t = v[0] + m[1,1]
+    assert np.exp(t.lp) == 1.5, fs+FAIL
+    t = s + n[2]
+    assert np.exp(t.lp) == 1.5, fs+FAIL
+    t = logP(0) + n[2]
+    assert np.exp(t.lp) == 1.0, fs+FAIL
+
+ 
+    print fs+PASS
+    
     
     print '\n\n           logPx() --  ALL TESTS PASS \n\n'
     
