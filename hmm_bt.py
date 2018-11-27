@@ -78,7 +78,7 @@ def HMM_setup(model, toler=0.01, maxiter=20):     #  New: setup model.B:  discre
     #   fit all params:  params='ste'
     #   fit only A matrix:  params='t'
     
-    M = hmm.MultinomialHMM(n_components=l, n_iter=maxiter, params='te', init_params='')
+    M = hmm.MultinomialHMM(n_components=l, n_iter=maxiter, params='t', init_params='')
     M.typestring = 'MultinomialHMM'
     
     #M.n_features = 1
