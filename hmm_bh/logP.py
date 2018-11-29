@@ -220,18 +220,9 @@ class logPv():
             self.v.append(logP(p))
         
     def __getitem__(self,i):
-        #print '========'
-        #print self.lp
-        #print i
-        #t = logP(0.5)
-        #t.lp = self.lp[i]
-        #return t
         return self.v[i]
     
     def __setitem__(self,i,p):
-        #print '========'
-        #print i
-        #print self.v[i]
         self.v[i] = p
         
     def __str__(self):
@@ -247,6 +238,14 @@ class logPv():
         #print 'logPv add/t: ', t
         for i,p in enumerate(P.v):
             t.v[i] = self[i] + p
+        return t
+    
+    
+    def __mul__(self, P):
+        t = logPv(np.ones(len(self.v)))
+        #print 'logPv mul/t: ', t
+        for i,p in enumerate(P.v):
+            t.v[i] = self[i] * p
         return t
     
     
@@ -388,6 +387,19 @@ if __name__ == '__main__':
     
     print fs + '         PASS'
    
+   
+    fs = 'logPv() vector * vector multiply'
+    
+    x = logPv([e, e*e, e*e*e])
+    y = logPv([e*e, e, 1/e])
+    
+    t = x*y
+    print t, type(t)
+    assert t.v[0].lp == 3.0, fs + FAIL
+    assert t.v[1].lp == 3.0, fs + FAIL
+    assert t.v[2].lp == 2.0, fs + FAIL
+    
+    print 'logPv() Tests  ' + PASS
     
     #######################################
     #
