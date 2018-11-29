@@ -132,10 +132,8 @@ class logP():
 class logPm():
     def __init__(self, Pm):
         if STRICT:
-            if len(np.shape(Pm)) != 2:
-                print 'LogPm() wrong shape:'
-                print Pm
-                quit()
+            fs = 'LogPm() wrong shape:'
+            assert len(np.shape(Pm)) == 2, fs
         self.m = np.zeros(np.shape(Pm))
         for (i,j),p in np.ndenumerate(Pm):
             self.m[i,j] = logP(p)
@@ -144,14 +142,14 @@ class logPm():
         #print '-- init Pm'
         #print np.shape(Pm) , '--->',np.shape(self.lp)
         
-    def __getitem__(self,tuple):
+    def __getitem__(self,tpl):
         #print '========'
         #print self.lp
         #print np.shape(self.lp)
         #print t, self.lp[t] 
     
         t = logP(0.5)
-        t.lp = self.m[tuple]
+        t.lp = self.m[tpl]
         return t
     
                 #def __str__(self):
@@ -161,11 +159,11 @@ class logPm():
                         #stmp += '{:10s} '.format(x)
                     #return stmp
         
-    def __setitem__(self,i,j,p):
+    def __setitem__(self,t,p):
         #print '========'
         #print self.lp
         #print i
-        self.m[i,j] = p
+        self.m[t] = p
         
     def __str__(self):
         ############3    How to output matrix as string?????/
@@ -372,6 +370,15 @@ if __name__ == '__main__':
     #print 'Z;', z, type(z)
     #print '' 
     
+    
+    
+    print 'Setitem tests'
+    
+    q =logPv([e*e, e, 1/e]) 
+    q[1] = logP(0.5)
+    
+    
+    
     # let's exponentiate sums and check them
     m = []
     for l in z.v:
@@ -440,6 +447,14 @@ if __name__ == '__main__':
     #print 'z = x+y: ',z 
     #print ''
      
+    print 'Setitem tests'
+    
+    q =logPm([
+        [e*e, e, 1/e],
+        [e*e, e, 1/e],
+        [e*e, e, 1/e]  ]) 
+    q[1,2] = logP(5)
+    
     
     #m = EEv(z)  # let's exponentiate sums and check them
     m = logPm(0.5*np.ones((3,3)))

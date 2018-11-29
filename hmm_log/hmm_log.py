@@ -52,18 +52,22 @@ class hmm():
     # forward algorithm for a single runout
     def forwardS(self, Y): # go through the emissions 
         #alpha = logPv(self.Pi) * logPv(self.emissionprob_[:,Y[0]].T)  # starting state probs.
-        alpha = np.ones(self.N)
+        #print 'forwardS: lenY:', len(Y)
+        alpha = np.ones((len(Y),self.N))
         for i in range(self.N):
-            alpha[i] = self.Pi[i] * self.emissionprob_[i, Y[0]]
+            alpha[0,i] = self.Pi[i] * self.emissionprob_[i, Y[0]]
             
-        for y in Y[1:]:
+        ai = 1
+        for jj,y in enumerate( Y[1:]):
+            #print '    iter, ai:', jj,ai
             tmpsum = 0.0   
             for st in range(self.N):  # do for each state 
                 for prev_st in range(self.N): # sum over previous states 
-                    tmpsum += self.transmat_[prev_st,st]*alpha[prev_st] 
-                alpha[st] = self.emissionprob_[st,y] * tmpsum
+                    tmpsum += self.transmat_[prev_st,st]*alpha[ai-1,prev_st] 
+                alpha[ai,st] = self.emissionprob_[st,y] * tmpsum
                 prev_st = st
-        return alpha
+            ai += 1
+        return alpha 
             
     # Log-based forward algorithm for a single runout
     def forwardSL(self, Y, alpha=None): 
@@ -72,31 +76,34 @@ class hmm():
         #'''
         #alpha = logPv(self.Pi)
         if alpha is None:
-            alpha = logPv(self.Pi) * logPv(self.emissionprob_[:,Y[0]])
+            alpha = logPm(np.ones((len(Y), self.N)))
+            for j in range(self.N):
+                alpha[0,j] = logP(self.Pi[j]) * logP(self.emissionprob_[j,Y[0]])
                                                   
         #print 'forwardSL debug:'
         #print '  alpha', alpha
         logA =  logPm(self.transmat_)
         logB =  logPm(self.emissionprob_)
+        ai = 1
         for y in Y[1:]:  # emission sequence
             tmpsum = logP(0)
             for st in range(self.N):
                 for prev_st in range(self.N):
                     a = logA[prev_st,st] 
-                    b = alpha[prev_st]
+                    b = alpha[ai-1,prev_st]
                     #print 'a: ', np.shape(a), type(a), a.lp
                     #print 'b: ', np.shape(b), type(b), b
                     tmpsum +=  a * b
                     #print 'tmpsum: ',tmpsum.lp
-                    c = logB[st,y] 
-                    #print 'c: ', np.shape(c), type(c), c
-                alpha[st] = c * tmpsum
+                c = logB[st,y] 
+                #print 'c: ', np.shape(c), type(c), c
+                alpha[ai,st] = c * tmpsum
                 prev_st = st
-            #print 'alpha >', alpha
-        #print '  final alpha: ', alpha
-        v = np.ones(len(alpha.v))
-        for i in range(len(alpha.v)):
-            v[i] = EE(alpha[i].lp)
+            ai += 1 
+        v = np.ones((len(Y),self.N))
+        if i in range(len(Y)):
+            for j in range(self.N):
+                v[i,j] = np.exp(alpha.m[i,j])
         return v, alpha
             
             
@@ -123,7 +130,10 @@ class hmm():
             print beta    
         return beta
             
-    
+    # 
+    #  gamma term
+    #
+    #def gamma(alpha, beta)
     
     
     # Log-based forward algorithm for multiple runouts
@@ -456,7 +466,7 @@ if __name__ == '__main__':
     
     A10 = np.zeros((10,10))
     
-    nsim_samples = 15
+    nsim_samples = 14
     nsim_rollouts = 1
     
     for r in range(10):
@@ -510,9 +520,12 @@ if __name__ == '__main__':
         print '\nForward Algorithm:'
 
         print 'state estimate: '
+        print '       forwardS()   (regular math)'
         print m.forwardS(em)
+        print '       forwardSL()  (log math)'
+        print '         (v-matrix)'
         print m.forwardSL(em)[0]
         
         print '\nBackward Algorithm:'
-        print m.backwardSL(em)
+        #print m.backwardSL(em)
      
