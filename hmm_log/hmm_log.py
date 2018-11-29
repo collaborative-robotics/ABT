@@ -101,7 +101,7 @@ class hmm():
                 prev_st = st
             ai += 1 
         v = np.ones((len(Y),self.N))
-        if i in range(len(Y)):
+        for i in range(len(Y)):
             for j in range(self.N):
                 v[i,j] = np.exp(alpha.m[i,j])
         return v, alpha
