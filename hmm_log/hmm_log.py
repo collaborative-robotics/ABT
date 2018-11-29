@@ -474,7 +474,7 @@ if __name__ == '__main__':
         if(r+1 < 10):
             A10[r,r+1] = 1.0-A10[r,r]
                     
-    for ntest in [5,10]:
+    for ntest in [5]:
         fs =  '\n\ntesting hmm with ' + str(ntest) + ' states'
         print fs
         m = hmm(ntest)
@@ -527,5 +527,5 @@ if __name__ == '__main__':
         print m.forwardSL(em)[0]
         
         print '\nBackward Algorithm:'
-        #print m.backwardSL(em)
+        print m.backwardSL(em)
      
