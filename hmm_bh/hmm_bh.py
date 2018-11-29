@@ -18,7 +18,7 @@ from logP import *
 #pip install -U --user hmmlearn
 #from hmmlearn import hmm
 import random as random
-NSYMBOLS = 20
+NSYMBOLS = 40
 STRICT = True
 
 LZ = np.nan   # our log of zero value
@@ -278,27 +278,56 @@ class hmm():
         return alpha
             
     # Log-based forward algorithm for a single runout
-    def forwardSL(self, Y): 
-        alpha = logPv(self.Pi)
+    def forwardSL(self, Y, alpha=None): 
+        #'''       Y = all observations concatenated
+                #alpha = starting LOG probability of each state
+        #'''
+        #alpha = logPv(self.Pi)
+        if alpha is None:
+            print ' setting alpha to starting Pi'
+            alpha = logPv(self.Pi)
         print 'forwardSL debug:'
-        print 'alpha', alpha
+        print '  alpha', alpha
         logA =  logPm(self.transmat_)
         logB =  logPm(self.emissionprob_)
-        for y in Y:
+        for y in Y:  # emission sequence
             tmpsum = logP(0)
             for st in range(self.N):
                 for prev_st in range(self.N):
                     a = logA[prev_st,st] 
                     b = alpha[prev_st]
-                    print 'a: ', np.shape(a), type(a), a.lp
-                    print 'b: ', np.shape(b), type(b), b
+                    #print 'a: ', np.shape(a), type(a), a.lp
+                    #print 'b: ', np.shape(b), type(b), b
                     tmpsum +=  a * b
-                    print tmpsum,tmpsum.lp
-                alpha[st] = logB[st,y] * tmpsum
+                    #print 'tmpsum: ',tmpsum.lp
+                    c = logB[st,y] 
+                    #print 'c: ', np.shape(c), type(c), c
+                alpha[st] = c * tmpsum
                 prev_st = st
-        return eexp(alpha)
+            #print 'alpha >', alpha
+        print '  final alpha: ', alpha
+        v = np.ones(len(alpha.v))
+        for i in range(len(alpha.v)):
+            v[i] = EE(alpha[i].lp)
+        return v, alpha
             
-        
+    # Log-based forward algorithm for multiple runouts
+    #'''
+       #Y = all observations concatenated
+       #L = list of runout lengths.
+       
+       #returns:  v = vector of probabilities for each state 
+                 #alpha = vector of log probabilities for each state
+    #'''
+    def forwardNSL(self, Y,L):
+        i = 0 
+        alpha = logPv(self.Pi)
+        for l in L:
+            y = Y[i:i+l]
+            v, alpha = self.forwardSL(y,alpha)  #  update alpha from each sequence
+            i = i+l+1 
+        return v,alpha
+    
     def sample(self,m): 
         states = []
         emissions = []
@@ -345,6 +374,7 @@ class hmm():
         self._error('invalid prob vector')
             
     def check(self):
+        print 'model check:'
         sh = np.shape(self.transmat_)
         if (sh[0] != self.N or sh[1] != self.N):
             self.error(' transmat_ wrong size')
@@ -354,6 +384,7 @@ class hmm():
         for r in range(self.N):
             self.row_check(self.transmat_[r],self.N)
         sum = 0.0
+        print 'got here'
         for st in range(self.N):
             self.row_check(self.emissionprob_[st,:],NSYMBOLS)
         self.row_check(self.Pi,self.N)
@@ -583,38 +614,95 @@ if __name__ == '__main__':
     
     ######################################
     #
-    #  test model setup for hmm
+    #  test model setups for hmm
     #
-    ntest =  5
-    m = hmm(ntest)
-    m.transmat_ = np.array([[.5,.5,0,0,0],[0,.6,.4,0,0],[0,0,.75,.25,0],[0,0,0,0.8,0.2],[0,0,0,0,1.0]])
-    for i in range(ntest):
-        mu = 3*(i+1)
-        for j in range(NSYMBOLS):
-            m.emissionprob_[i,j] = 0.0
-            if j>mu and j<=(mu+2):
-                m.emissionprob_[i,j] = 1/float(2)
-                
-    #m.emissionprob_[2,120] = 0.001
     
-    fs =  'testing hmm with ' + str(ntest) + ' states'
-    m.check()
-    print fs + ' [setup] ' + PASS
+    A5 = np.array([[.5,.5,0,0,0],[0,.6,.4,0,0],[0,0,.75,.25,0],[0,0,0,0.8,0.2],[0,0,0,0,1.0]])
+    pv = [0.5, 0.5, 0.7, 0.65, 0.8, 0.5, 0.3,0.6,0.7, 1.0]
+    
+    A10 = np.zeros((10,10))
+    
+    nsim_samples = 15
+    nsim_rollouts = 10
+    
+    for r in range(10):
+        A10[r,r] = pv[r]
+        if(r+1 < 10):
+            A10[r,r+1] = 1.0-A10[r,r]
+                    
+    for ntest in [5]:
+        fs =  '\n\ntesting hmm with ' + str(ntest) + ' states'
+        print fs
+        m = hmm(ntest)
+        if ntest == 5:
+            m.transmat_ = A5
+        else:
+            m.transmat_ = A10
         
-    st, em = m.sample(20)
-    print st
-    print em
-    assert len(st) == len(em), 'Emissions dont match states from sample()'
+        w = 6
+        for i in range(ntest):
+            mu = 0.5*w*(i+1)
+            for j in range(NSYMBOLS):
+                m.emissionprob_[i,j] = 0.0
+                if j>mu-w/2 and j<=(mu+w/2):
+                    m.emissionprob_[i,j] = 1/float(w)
+        print m.emissionprob_
+        #if ntest == 10:
+            #quit()
+        
+        for i in range(ntest):
+            sum = 0.0
+            for j in range(NSYMBOLS):
+                sum += m.emissionprob_[i,j]
+            
+        #m.emissionprob_[2,120] = 0.001
+        
+        m.check()
+        print fs + ' [setup] ' + PASS
+            
+        st, em = m.sample(nsim_samples)
+        print '----------- state sequence & emissions -----------------------'
+        print st
+        print em
+        assert len(st) == len(em), 'Emissions dont match states from sample()'
+        
+        print '\n\nTest valid sample outputs:'
+        for i,s in enumerate(st):
+            #print 'checking: ' , i, s, em[i]
+            if m.emissionprob_[s,em[i]] < epsilon:
+                m._error('invalid emission detected')
+        print 'got valid emissions'
+        print 'state estimate: '
+        print m.forwardS(em)
+        print m.forwardSL(em)[0]
     
-    print '\n\nTest valid sample outputs:'
-    for i,s in enumerate(st):
-        #print 'checking: ' , i, s, em[i]
-        if m.emissionprob_[s,em[i]] < epsilon:
-            m._error('invalid emission detected')
-    print 'got valid emissions'
-    print 'state estimate: '
-    print m.forwardS(em)
-    print m.forwardSL(em)
-    
+        print '\n\n--------------------   test with multiple sequences ----------------------'
+        nsim_samples *= 2
+        X = []
+        Y = []
+        L = []
+        for r in range(nsim_rollouts):
+            st, em = m.sample(nsim_samples)
+            lastst = st[-1]
+            i = -1
+            sl = len(st)+1
+            while st[i] == lastst:
+                sl -= 1
+                i -= 1
+            for i in range(sl+1):
+                X.append(st[i])  # accumulate true state seq
+                Y.append(em[i])  # accumulate emissions
+            L.append(sl)         # length of this seq
+
+        print '------------ state, emission, Lengths'
+        i = 0
+        for l in L:
+            print ' - - - -  L=',l
+            print X[i:i+l]
+            print Y[i:i+l]
+            i = i+l+1 
+        
+        v,alpha = m.forwardNSL(Y,L)
+        
         
         

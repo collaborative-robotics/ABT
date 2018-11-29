@@ -46,28 +46,28 @@ def EE(x):
 ELv = np.vectorize(EL)
 EEv = np.vectorize(EE)
 
-def elog(X):
-    #assert np.sum(X >= 0.0) == len(X), 'elog(x): Attempted log of x < 0'
-    y = np.zeros(np.shape(X))  # just so y is same size as X
-    for i,x in enumerate(X):
-        #print 'elog(): ',i,x
-        if x < 0.0:
-            print 'log arg < 0.0 - stopping'
-            quit()
-        if (x == 0):
-            y[i] = LZ
-        else:
-            y[i] = np.log(x)
-    return y 
+#def elog(X):
+    ##assert np.sum(X >= 0.0) == len(X), 'elog(x): Attempted log of x < 0'
+    #y = np.zeros(np.shape(X))  # just so y is same size as X
+    #for i,x in enumerate(X):
+        ##print 'elog(): ',i,x
+        #if x < 0.0:
+            #print 'log arg < 0.0 - stopping'
+            #quit()
+        #if (x == 0):
+            #y[i] = LZ
+        #else:
+            #y[i] = np.log(x)
+    #return y 
     
-def eexp(X):
-    y = np.zeros(np.shape(X))
-    for i,x in enumerate(X):
-        if (np.isnan(x)):
-            y[i] = 0
-        else:
-            y[i] = np.exp(x)
-    return y
+#def eexp(X):
+    #y = np.zeros(np.shape(X))
+    #for i,x in enumerate(X):
+        #if (np.isnan(x)):
+            #y[i] = 0
+        #else:
+            #y[i] = np.exp(x)
+    #return y
     
 
 #  Class for log probabilities
@@ -103,18 +103,18 @@ class logP():
 
     
     def __mul__(self, lp2):
-        if self.lp == LZ or lp2.lp == LZ:
+        if np.isnan(self.lp) or np.isnan(lp2.lp):
             t = logP(0)
             return t
         else:
-            t = logP(0)
+            t = logP(0.5)
             t.lp = self.lp + lp2.lp
             return t
     
     def __add__(self, lp2):
         t = logP(.5)
-        if self.lp==LZ or lp2.lp == LZ:
-            if self.lp == LZ:
+        if np.isnan(self.lp) or np.isnan(lp2.lp):
+            if np.isnan(self.lp):
                 return lp2
             else:
                 return self
@@ -161,7 +161,7 @@ class logPm():
                         #stmp += '{:10s} '.format(x)
                     #return stmp
         
-    def __setitem__(self,p, i,j):
+    def __setitem__(self,i,j,p):
         #print '========'
         #print self.lp
         #print i
@@ -228,10 +228,10 @@ class logPv():
         #return t
         return self.v[i]
     
-    def __setitem__(self,p, i):
+    def __setitem__(self,i,p):
         #print '========'
-        #print self.lp
         #print i
+        #print self.v[i]
         self.v[i] = p
         
     def __str__(self):
@@ -465,6 +465,8 @@ if __name__ == '__main__':
 
     n = logPv(np.ones(4))
     
+    t = logP(0) + logP(0)
+    assert np.isnan(t.lp), fs+FAIL
     t = s + v[1]
     assert np.exp(t.lp) == 1.0, fs+FAIL
     t = v[0] + m[1,1]
@@ -473,6 +475,8 @@ if __name__ == '__main__':
     assert np.exp(t.lp) == 1.5, fs+FAIL
     t = logP(0) + n[2]
     assert np.exp(t.lp) == 1.0, fs+FAIL
+    t = logP(0) * n[2]
+    assert np.isnan(t.lp), fs+FAIL
 
  
     print fs+PASS
