@@ -102,7 +102,27 @@ class hmm():
             
     #  Backward Algorithm
     #
-    #def backwardSL(self, Y)
+    def backwardSL(self, Y):
+        T = len(Y)
+        print Y
+        logA =  logPm(self.transmat_)
+        logB =  logPm(self.emissionprob_)
+        beta = logPv(np.ones(self.N))
+        print len(Y)
+        for k in range(1,T):
+            t = T-k-1
+            print 't: ', t, Y[t]
+            for i in range(self.N):
+                b = logP(0)
+                for j in range(self.N):
+                    a1 = logA[i,j] 
+                    a2 = logB[j,Y[t+1]]
+                    a3 = beta[j]
+                    b += logA[i,j]*logB[j,Y[t+1]]*beta[j]
+                beta[i] = b
+            print beta    
+        return beta
+            
     
     
     
@@ -486,7 +506,13 @@ if __name__ == '__main__':
             if m.emissionprob_[s,em[i]] < epsilon:
                 m._error('invalid emission detected')
         print 'got valid emissions'
+        
+        print '\nForward Algorithm:'
+
         print 'state estimate: '
         print m.forwardS(em)
         print m.forwardSL(em)[0]
+        
+        print '\nBackward Algorithm:'
+        print m.backwardSL(em)
      
