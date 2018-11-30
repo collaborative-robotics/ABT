@@ -7,8 +7,8 @@ import numpy as np
 import numbers
 from random import *
 import matplotlib.pyplot as plt
-import editdistance as ed
-from tqdm import tqdm
+#import editdistance as ed   #pip install editdistance
+##from tqdm import tqdm
 import os
 import sys
 
@@ -129,7 +129,53 @@ class hmm():
                 beta[i] = b
             print beta    
         return beta
-            
+    
+    
+    
+    #
+    #   Viterbi Algorithm
+    #     (Rabiner '89 eqns 32a-35)
+    
+    def Viterbi(Seq):
+        SMALLEST_LOG = -1.0E300
+        #Initialization             (32a,b)
+        T = len(Seq)
+        delta = logPm(np.ones((T,self.N)))
+        for j in range(N):
+            delta[0,j] = logP(self.Pi[j]) * logB[j,Y[0]]
+        chi = np.zeros((T,self.N)) # note: NOT a logPx()
+               
+        #Recursion                   (33)  
+        for t in range(1,T):     
+            for j in range(N):
+                max = SMALLEST_LOG
+                d = delta[t-1,j]
+                for i in range(N): # compute max
+                    a = d*logA[i,j]
+                    if a.lp > max:
+                        imax = i
+                        max = a.lp
+                        mlogp = a
+                delta[t,j] = mlogp * logB[j,Y[t]]
+                chi[t,j] = imax             
+                    
+        #Termination                   (34)
+        max = SMALLEST_LOG
+        for i in range(N):
+            if delta[T,j].lp > max:
+                max = delta[T,j].lp
+                imax = i
+                pstar = delta[T,j]
+        qstar = np.zeros(T)
+        qstar[T] = imax
+        
+        # State Seq. backtracking        (35)
+        for i in range(T):
+            t = T-i-1
+            qstar[t] = chi[t+1]*qstar(t+1)
+        
+        return qstar
+     
     # 
     #  gamma term
     #
