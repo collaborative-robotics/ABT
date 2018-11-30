@@ -217,6 +217,19 @@ class logPv():
             assert isinstance(p,numbers.Number), fs
             self.v.append(logP(p))
         
+    # return argmax, max for a logP vector
+    def maxlv(self):
+        SMALLEST_LOG = -1.0E306
+        max = SMALLEST_LOG
+        t = logP(0.5)
+        imax = -1
+        for i,x in enumerate(self.v):
+            if x.lp > max: 
+                t.lp = x.lp
+                imax = i
+        assert imax >= 0, 'maxlv() Somethings wrong!'
+        return imax, t
+    
     def __getitem__(self,i):
         return self.v[i]
     
@@ -354,22 +367,12 @@ if __name__ == '__main__':
     
     fs = 'logPv returns wrong type'
     assert isinstance(x[0], logP), fs
-    assert isinstance(y[2], logP), fs
-    
-    #print '---'
-    #print x
-    #print y
-    #print '----'
+    assert isinstance(y[2], logP), fs 
     
     fs = 'logPv() instantiation    FAIL'
     assert abs(y[0].lp -  2.0) < epsilon, fs
     assert abs(y[1].lp -  1.0) < epsilon, fs
     assert abs(y[2].lp - -1.0) < epsilon, fs
-    z = x + y
-    assert isinstance(z[0],logP), 'logPv() __add__ returns wrong type'
-    #print 'Z;', z, type(z)
-    #print '' 
-    
     
     
     print 'Setitem tests'
@@ -380,10 +383,14 @@ if __name__ == '__main__':
     
     
     # let's exponentiate sums and check them
+    z = x+y
+    assert isinstance(z, logPv), ' logPv addition produces wrong type'
     m = []
     for l in z.v:
         m.append(EE(l.lp))
     m = np.array(m)
+    
+    
 
     #print 'm;',m
     fs = 'logPv() addition tests '
@@ -394,7 +401,22 @@ if __name__ == '__main__':
     
     print fs + '         PASS'
    
+    ###############################################3
+    #   maxlv() test 
+    #
+    v = logPv([0.001, 0.01, 0.5, 4, 0.0])
+    i, l = v.maxlv()
+    
+    fs = 'logPv() maxlv()  '
+    assert i==3, fs + FAIL
+    print l, l.lp
+    assert l.lp == np.log(4), fs + FAIL
+    print fs + PASS
    
+   
+    ##########################################
+    #  logPv  __mul__ tests 
+    #
     fs = 'logPv() vector * vector multiply'
     
     x = logPv([e, e*e, e*e*e])
@@ -406,7 +428,9 @@ if __name__ == '__main__':
     assert t.v[1].lp == 3.0, fs + FAIL
     assert t.v[2].lp == 2.0, fs + FAIL
     
-    print 'logPv() Tests  ' + PASS
+    
+
+    print '\nlogPv() Tests  ' + PASS
     
     #######################################
     #
