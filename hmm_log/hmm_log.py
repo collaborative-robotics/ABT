@@ -157,9 +157,10 @@ class hmm():
             for j in range(self.N):   # state loop time t
                 for i in range(self.N):   # state loop time t-1
                     d[i] = delta[t-1,i]*logA[i,j]
-                print 'd: ',d
+                #print 'd: ',d
                 argmax, lpmax = d.maxlv()
                 delta[t,j] = lpmax * logB[j,Obs[t]] 
+                print 'del:', delta[t,:]
                 chi[t,j] = argmax
                     
         #Termination      
@@ -172,11 +173,11 @@ class hmm():
         qstar[T-1] = qam
         
         # State Seq. backtracking        (35)
-        for i in range(0,T-1):
-            t = T-i-1
+        for i in range(0,T-2):
+            t = T-2-i
             #print 't:', t
-            print qstar[t], qstar[t-1]
-            qstar[t] = chi[t-1,qstar[t-1]]
+            print 't,q*[x]:',t,qstar[t], qstar[t+1]
+            qstar[t] = chi[t-1,qstar[t+1]]
         
         return qstar
      
