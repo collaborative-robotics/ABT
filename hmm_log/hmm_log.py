@@ -145,9 +145,9 @@ class hmm():
         delta = logPm(np.ones((T,self.N)))
         for j in range(self.N):
             delta[0,j] = logP(self.Pi[j]) * logB[j,Obs[0]]
-        print 'self.Pi:', self.Pi
-        print 'logBj[0,Obs[0]:',  logB[0,Obs[0]]
-        print 'init delta: ',delta[0,:]       
+        #print 'self.Pi:', self.Pi
+        #print 'logBj[0,Obs[0]:',  logB[0,Obs[0]]
+        #print 'init delta: ',delta[0,:]       
         chi = np.zeros((T,self.N)).astype(int)    # note: NOT a logPx()
             
         #Recursion                   (33)  
@@ -159,9 +159,11 @@ class hmm():
                     d[i] = delta[t-1,i]*logA[i,j]
                 #print 'd: ',d
                 argmax, lpmax = d.maxlv()
+                #print 'j,am, lpmax:',j, argmax, lpmax
                 delta[t,j] = lpmax * logB[j,Obs[t]] 
-                print 'del:', delta[t,:]
                 chi[t,j] = argmax
+                
+            #print 'del:', delta[t,:], ' obs: ', t,Obs[t]
                     
         #Termination      
        
@@ -173,11 +175,12 @@ class hmm():
         qstar[T-1] = qam
         
         # State Seq. backtracking        (35)
+        print 'Vit state backtracking:'
         for i in range(0,T-2):
             t = T-2-i
             #print 't:', t
             print 't,q*[x]:',t,qstar[t], qstar[t+1]
-            qstar[t] = chi[t-1,qstar[t+1]]
+            qstar[t] = chi[t,qstar[t+1]]
         
         return qstar
      
@@ -535,7 +538,7 @@ if __name__ == '__main__':
             m.transmat_ = A10
         
         w = 6
-        for i in range(ntest):
+        for i in range(m.N):
             mu = 0.5*w*(i+1)
             for j in range(NSYMBOLS):
                 m.emissionprob_[i,j] = 0.0
@@ -544,14 +547,7 @@ if __name__ == '__main__':
         #print m.emissionprob_
         #if ntest == 10:
             #quit()
-        
-        for i in range(ntest):
-            sum = 0.0
-            for j in range(NSYMBOLS):
-                sum += m.emissionprob_[i,j]
-            
-        #m.emissionprob_[2,120] = 0.001
-        
+                 
         m.check()
         print fs + ' [setup] ' + PASS
         
@@ -587,10 +583,10 @@ if __name__ == '__main__':
         print '\n\nViterbi Algorithm:'
         print 'st:',st
         print 'em:',em
-        print m.emissionprob_
+        #print m.emissionprob_
         
          
         qs = m.Viterbi(em)
         for i,q in enumerate(st):
-            print '   ',q,qs[i]
+            print '   ',q,'--->', em[i], '->estim->',qs[i]
             
