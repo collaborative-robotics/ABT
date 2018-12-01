@@ -224,9 +224,14 @@ class logPv():
         t = logP(0.5)
         imax = -1
         for i,x in enumerate(self.v):
+            if np.isnan(x.lp):
+                continue 
             if x.lp > max: 
                 t.lp = x.lp
                 imax = i
+        if  imax < 0:
+            # we saw all nan's 
+            return 0,logP(0)
         assert imax >= 0, 'maxlv() Somethings wrong!'
         return imax, t
     

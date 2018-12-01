@@ -111,7 +111,7 @@ class hmm():
     #
     def backwardSL(self, Y):
         T = len(Y)
-        print Y
+        #print Y
         logA =  logPm(self.transmat_)
         logB =  logPm(self.emissionprob_)
         beta = logPv(np.ones(self.N))
@@ -136,43 +136,47 @@ class hmm():
     #   Viterbi Algorithm
     #     (Rabiner '89 eqns 32a-35)
     
-    def Viterbi(Seq):
-        SMALLEST_LOG = -1.0E300
+    def Viterbi(self,Obs):
+        logA =  logPm(self.transmat_)
+        logB =  logPm(self.emissionprob_)
+        
         #Initialization             (32a,b)
-        T = len(Seq)
+        T = len(Obs)
         delta = logPm(np.ones((T,self.N)))
-        for j in range(N):
-            delta[0,j] = logP(self.Pi[j]) * logB[j,Y[0]]
-        chi = np.zeros((T,self.N)) # note: NOT a logPx()
-               
+        for j in range(self.N):
+            delta[0,j] = logP(self.Pi[j]) * logB[j,Obs[0]]
+        print 'self.Pi:', self.Pi
+        print 'logBj[0,Obs[0]:',  logB[0,Obs[0]]
+        print 'init delta: ',delta[0,:]       
+        chi = np.zeros((T,self.N)).astype(int)    # note: NOT a logPx()
+            
         #Recursion                   (33)  
-        for t in range(1,T):     
-            for j in range(N):
-                max = SMALLEST_LOG
-                d = delta[t-1,j]
-                for i in range(N): # compute max
-                    a = d*logA[i,j]
-                    if a.lp > max:
-                        imax = i
-                        max = a.lp
-                        mlogp = a
-                delta[t,j] = mlogp * logB[j,Y[t]]
-                chi[t,j] = imax             
+        #v = logPv(np.zeros(self.N))
+        d = logPv(np.zeros(self.N))
+        for t in range(1,T):    #emission loop
+            for j in range(self.N):   # state loop time t
+                for i in range(self.N):   # state loop time t-1
+                    d[i] = delta[t-1,i]*logA[i,j]
+                print 'd: ',d
+                argmax, lpmax = d.maxlv()
+                delta[t,j] = lpmax * logB[j,Obs[t]] 
+                chi[t,j] = argmax
                     
-        #Termination                   (34)
-        max = SMALLEST_LOG
-        for i in range(N):
-            if delta[T,j].lp > max:
-                max = delta[T,j].lp
-                imax = i
-                pstar = delta[T,j]
-        qstar = np.zeros(T)
-        qstar[T] = imax
+        #Termination      
+       
+        tmp = logPv(np.ones(self.N))
+        for i,lp in enumerate(tmp):
+            lp = delta[T-1,i] 
+        qam, pstar = tmp.maxlv()
+        qstar = [0]*T
+        qstar[T-1] = qam
         
         # State Seq. backtracking        (35)
-        for i in range(T):
+        for i in range(0,T-1):
             t = T-i-1
-            qstar[t] = chi[t+1]*qstar(t+1)
+            #print 't:', t
+            print qstar[t], qstar[t-1]
+            qstar[t] = chi[t-1,qstar[t-1]]
         
         return qstar
      
@@ -549,7 +553,11 @@ if __name__ == '__main__':
         
         m.check()
         print fs + ' [setup] ' + PASS
-            
+        
+        ##############################################################
+        #
+        #    Simulate the HMM
+        #
         st, em = m.sample(nsim_samples)
         print '----------- state sequence & emissions -----------------------'
         print st
@@ -575,3 +583,13 @@ if __name__ == '__main__':
         print '\nBackward Algorithm:'
         print m.backwardSL(em)
      
+        print '\n\nViterbi Algorithm:'
+        print 'st:',st
+        print 'em:',em
+        print m.emissionprob_
+        
+         
+        qs = m.Viterbi(em)
+        for i,q in enumerate(st):
+            print '   ',q,qs[i]
+            

@@ -19,17 +19,19 @@ class logP:
         self.mant = np.float64(x)
         
     def __mul__(self,y):  
-        print 'mul arg y: ',y
+        #print 'mul arg y: ', y.mant,' x10^', y.exp
         assert isinstance(y,logP), 'logP().__mul__:  wrong data type'
 
         np.seterr(under='raise')
         try:
-            print 'trying'
+            #print 'trying'
             zm = self.mant * y.mant
         except: 
             print 'I caught exception'
+            print 'x = ', self.mant, 'x10^',self.exp
+            print 'y = ', y.mant, 'x10^',y.exp
             self.exp += (-200)
-            print 'my type is: ', self
+            #print 'my type is: ', self
             ap = self.mant
             a = np.float64(ap) * np.float64(1.0E200)
             #a = self.mant
@@ -53,7 +55,7 @@ c = a*b
 print 'got here 2'
 print c.mant, c.exp 
 
-for i in range(330):
+for i in range(350):
     al = al * y 
 #print 'r: ', '{:f}'.format(r)
 
