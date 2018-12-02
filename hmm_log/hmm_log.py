@@ -168,9 +168,10 @@ class hmm():
         #Termination      
        
         tmp = logPv(np.ones(self.N))
-        for i,lp in enumerate(tmp):
-            lp = delta[T-1,i] 
-        qam, pstar = tmp.maxlv()
+        print 'delta term:', delta[T-1,:]
+        for i,lpv in enumerate(tmp):
+            tmp[i] = delta[T-1,i] 
+        qam, pstar = tmp.maxlv()  # most likely terminal state
         qstar = [0]*T
         qstar[T-1] = qam
         
@@ -182,8 +183,28 @@ class hmm():
             print 't,q*[x]:',t,qstar[t], qstar[t+1]
             qstar[t] = chi[t,qstar[t+1]]
         
+        self.VitVis(Obs,qstar,delta,chi)
         return qstar
      
+    def VitVis(self,Obs,qstar,delta,chi):
+        lines = []
+        for j in range(self.N):
+            lj = ''
+            for t in range(len(Obs)):
+                c = ' '
+                if not np.isnan(delta[t,j].lp):
+                    c = '.'
+                if j == qstar[t]:
+                    c = '*'
+                    if np.isnan(delta[t,j].lp):
+                        c = 'X'  # this shouldn't be 
+                lj += c
+            lines.append(lj)
+        
+        print 'State evolution:'
+        for j in range(self.N):
+            print j, '  ['+lines[j]+']'
+        print '\n\n'
     # 
     #  gamma term
     #
@@ -209,7 +230,7 @@ class hmm():
             i = i+l+1 
         return v,alpha
     
-    def sample(self,m): 
+    def sample(self,T): 
         states = []
         emissions = []
         # initial starting state
@@ -217,12 +238,12 @@ class hmm():
         states.append(state)
         print 'initial state: ',state
         # main loop
-        for i in range(m):
+        for i in range(T-1):
             # generate emission
             em, p = self.pick_from_vec(self.emissionprob_[state,:])
             emissions.append(em)
             # find next state
-            state, p = self.pick_from_vec(self.transmat_[state])
+            state, p = self.pick_from_vec(self.transmat_[state,:])
             #print 'next state: ', state
             states.append(state)
         
@@ -300,201 +321,11 @@ class hmm():
 #################################################################################################
 #################################################################################################
 #
-#     TESTS
+#     TESTS of hmm_log class
 #
 
 if __name__ == '__main__':
-    print '\n\n  Testing hmm_bh class...\n\n'
-    
-    #####################################
-    # test basic log functions
-    e = np.exp(1)
-    m = logP(e)
-    
-    y = ELv([e, e*e, 0, np.sqrt(e)])
-    
-    assert isinstance(y[0], float), 'ELv returns wrong type'
-    #print y
-    fs = ' elog() test FAIL'
-    assert abs(y[0] - 1.0) < epsilon, fs
-    assert abs(y[1] - 2.0) < epsilon, fs
-    assert np.isnan(y[2]), fs
-    assert abs(y[3] - 0.5) < epsilon, fs
-    assert abs(ELv(e*e)-2.0) < epsilon, fs
-    print ' elog() tests    PASSED'
-    
-    # eexp()
-    fs = ' eexp() test  FAIL'
-    assert  abs(EEv(1)-e) < epsilon, fs
-    y = EEv([2, 0, LZ, -1])
-    print y
-    assert abs(y[0]-e*e) < epsilon, fs
-    assert abs(y[1]-1.0) < epsilon, fs
-    assert abs(y[2]-0.0) < epsilon, fs
-    assert abs(y[3]-1/e) < epsilon, fs
-
-    assert abs(EEv(1) - e) < epsilon, fs
-    
-    y = EEv([[e, 0],[LZ, 1]])
-    assert abs(y[1,1]-e) < epsilon, fs
-    print ' eexp() tests    PASSED'
-
-    ###################################
-    # test logP classes and operator overlays
-    x = logP(0.25)
-    y = logP(0.25)
-    
-    # make sure stuff returns right types
-    print 'x: ', type(x) 
-    assert isinstance(x, logP), 'logP() returns wrong type'
-    assert x.lp == np.log(0.25), 'logP() returns wrong value'
-    print x
-    #assert str(x) == '0.25', 'FAIL'
-    
-    #################################
-    #
-    #  test addition for logP() scalar
-    #
-    z = x + y
-    assert isinstance(z,logP), 'logP() __add__ returns wrong type'
-    
-    logsum = np.log(0.25 + 0.25)
-    
-    fs = 'logP() __add__    FAIL'
-    assert abs(z.lp-logsum) < epsilon, fs
-    assert abs((x+y).lp-logsum) < epsilon, fs
-    
-    print 'logP classes          PASS'
-     
-    ####################################################################
-    #
-    #  logP for vectors 
-    #
-    x = logPv([e, e*e, e*e*e])
-    y = logPv([e*e, e, 1/e])
-    
-    fs = 'logPv returns wrong type'
-    assert isinstance(x[0], logP), fs
-    assert isinstance(y[2], logP), fs
-    
-    print '---'
-    print x
-    print y
-    print '----'
-    
-    fs = 'logPv() instantiation'
-    assert abs(y.v[0].lp -  2.0) < epsilon, fs + FAIL
-    assert abs(y.v[1].lp -  1.0) < epsilon, fs + FAIL
-    assert abs(y.v[2].lp - -1.0) < epsilon, fs + FAIL
-    print fs + PASS
-    
-    ############# 
-    #  test addition of logP() vectors
-    #
-    z = x + y
-    assert isinstance(z[0],logP), 'logPv() __add__ returns wrong type'
-    print 'Z;', z, type(z)
-    print '' 
-    
-    assert z.v[0].lp != 0, 'addition fail'
-    
-    v = np.ones(3)
-    for i,x in enumerate(z.v):
-        v[i] = np.exp(x.lp)
-        
-    print 'v; ', v
-    
-    #m = EEv(v)  # let's exponentiate sums and check them
-    m = v
-    print 'm;',m
-    fs = 'logPv  addition' 
-    print z[0].lp, np.log(e+e*e)
-    assert abs(z.v[0].lp - np.log(e+e*e)) < epsilon, fs + FAIL
-    assert abs(z.v[1].lp - np.log(e+e*e)) < epsilon, fs + FAIL
-    assert abs(z.v[2].lp - np.log(e*e*e + 1/e)) < epsilon, fs + FAIL
-    print fs + PASS
-    
-    print fs + PASS
-    
-   
-    fs = 'logPv() vector * vector multiply'
-    
-    x = logPv([e, e*e, e*e*e])
-    y = logPv([e*e, e, 1/e])
-    
-    t = x*y
-    print t, type(t)
-    assert t.v[0].lp == 3.0, fs + FAIL
-    assert t.v[1].lp == 3.0, fs + FAIL
-    assert t.v[2].lp == 2.0, fs + FAIL
-    
-    
-    print 'logPv() tests            PASS'    
-    
-    
-    #######################################
-    #
-    #   test logPm  - matrix version
-    #
-     #  logP for matrices 
-    x = logPm(np.array([
-        [e, e*e, e*e*e],
-        [e, e*e, e*e*e],
-        [e, e*e, e*e*e]  ]))
-    y = logPm(np.array([
-        [e*e, e, 1/e],
-        [e*e, e, 1/e],
-        [e*e, e, 1/e]  ]))
-    
-    fs = 'logPm return type'
-    print fs, ':',type(x[0,0])
-    assert isinstance(x[0,0], logP), fs + FAIL
-    assert isinstance(y[2,1], logP), fs + FAIL
-    print fs+PASS
-    
-    print '---'
-    print x
-    print y
-    print '----'
-    
-    fs = 'logPm() instantiation'
-    print '>>', y[1,0].lp, 2.0
-    assert abs(y[1,0].lp - 2.0) < epsilon, fs + FAIL
-    
-    print '>>', y[2,1].lp, 0.0
-    assert abs(y[2,1].lp - 1.0) < epsilon, fs + FAIL
-    assert abs(y[1,2].lp - -1.0) < epsilon, fs + FAIL
-    
-    print fs + PASS
-    
-    
-    z = x + y
-    print 'Z;',z 
-    print ''
-    
-    assert isinstance(z,logPm), ' logPm() __add__ returns wrong type'
-    m = np.ones(3)
-    r = 0
-    for c in range(3):
-        m[c] = z[r,c].lp  # first row of z
-    
-    print 'm;',m
-    fs = 'logPm  addition '
-    print m[0], logP(e+e*e).lp
-    assert abs(m[0] - np.log(e+e*e)) < epsilon, fs + FAIL
-    assert abs(m[1] - np.log(e+e*e)) < epsilon, fs + FAIL
-    assert abs(m[2] - np.log(e*e*e + 1/e)) < epsilon, fs + FAIL
-    
-    print fs + PASS    
-    
-    
-    print '\n\n      All LogPx() tests     PASSED \n\n'
-    
-    
-    
-    #########################################################################
-    #########################################################################
-    
+         
     ###################################
     # hmm class tests 
     
@@ -520,7 +351,7 @@ if __name__ == '__main__':
     
     A10 = np.zeros((10,10))
     
-    nsim_samples = 14
+    nsim_samples = 15
     nsim_rollouts = 1
     
     for r in range(10):
