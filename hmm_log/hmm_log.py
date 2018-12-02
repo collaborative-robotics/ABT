@@ -145,13 +145,9 @@ class hmm():
         delta = logPm(np.ones((T,self.N)))
         for j in range(self.N):
             delta[0,j] = logP(self.Pi[j]) * logB[j,Obs[0]]
-        #print 'self.Pi:', self.Pi
-        #print 'logBj[0,Obs[0]:',  logB[0,Obs[0]]
-        #print 'init delta: ',delta[0,:]       
         chi = np.zeros((T,self.N)).astype(int)    # note: NOT a logPx()
             
         #Recursion                   (33)  
-        #v = logPv(np.zeros(self.N))
         d = logPv(np.zeros(self.N))
         for t in range(1,T):    #emission loop
             for j in range(self.N):   # state loop time t
@@ -159,16 +155,12 @@ class hmm():
                     d[i] = delta[t-1,i]*logA[i,j]
                 #print 'd: ',d
                 argmax, lpmax = d.maxlv()
-                #print 'j,am, lpmax:',j, argmax, lpmax
                 delta[t,j] = lpmax * logB[j,Obs[t]] 
                 chi[t,j] = argmax
-                
-            #print 'del:', delta[t,:], ' obs: ', t,Obs[t]
                     
         #Termination      
        
         tmp = logPv(np.ones(self.N))
-        print 'delta term:', delta[T-1,:]
         for i,lpv in enumerate(tmp):
             tmp[i] = delta[T-1,i] 
         qam, pstar = tmp.maxlv()  # most likely terminal state
@@ -176,13 +168,9 @@ class hmm():
         qstar[T-1] = qam
         
         # State Seq. backtracking        (35)
-        print 'Vit state backtracking:'
         for i in range(0,T-2):
             t = T-2-i
-            #print 't:', t
-            print 't,q*[x]:',t,qstar[t], qstar[t+1]
-            qstar[t] = chi[t,qstar[t+1]]
-        
+            qstar[t] = chi[t+1,qstar[t+1]]
         self.VitVis(Obs,qstar,delta,chi)
         return qstar
      
@@ -193,9 +181,9 @@ class hmm():
             for t in range(len(Obs)):
                 c = ' '
                 if not np.isnan(delta[t,j].lp):
-                    c = '.'
+                    c = '.'  # non-zero prob for state j
                 if j == qstar[t]:
-                    c = '*'
+                    c = '*'  # optimal selection
                     if np.isnan(delta[t,j].lp):
                         c = 'X'  # this shouldn't be 
                 lj += c
@@ -205,6 +193,9 @@ class hmm():
         for j in range(self.N):
             print j, '  ['+lines[j]+']'
         print '\n\n'
+        
+        
+        
     # 
     #  gamma term
     #
@@ -411,13 +402,20 @@ if __name__ == '__main__':
         print '\nBackward Algorithm:'
         print m.backwardSL(em)
      
-        print '\n\nViterbi Algorithm:'
+        print '\n\n Test Viterbi Algorithm:'
         print 'st:',st
         print 'em:',em
         #print m.emissionprob_
+        stseq =  [0, 0, 1, 1, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4]
+        em = [6, 3, 6, 6, 8, 12, 14, 10, 15, 14, 14, 15, 12, 13, 16]
         
-         
+        est_correct = [0,0,1,1,2,3,3,3,3,3,3,3,3,4,4]
+        
+        assert len(em) == len(est_correct), 'test setup problem'
         qs = m.Viterbi(em)
-        for i,q in enumerate(st):
-            print '   ',q,'--->', em[i], '->estim->',qs[i]
+        fs = 'Vitermi state estimation tests'
+        for i,q in enumerate(qs):
+            assert q==est_correct[i], fs+FAIL
+        print fs+PASS
+            
             
