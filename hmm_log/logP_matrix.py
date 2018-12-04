@@ -20,11 +20,9 @@ STRICT = True
 class logPm():
     def __init__(self, Pm):
         rc,cc = np.shape(Pm)
-        #print Pm
         if STRICT:
             fs = 'LogPm() wrong shape:'
             assert isinstance(Pm, np.ndarray),fs
-            #isinstance(y, (np.ndarray, np.generic) )
             assert len(np.shape(Pm)) == 2, fs
         self.m = np.zeros((rc,cc))
         fs = 'bad input to logPm()'
@@ -32,38 +30,18 @@ class logPm():
             for c in range(cc):
                 p = Pm[r,c]
                 assert isinstance(p,numbers.Number), fs
-                #print 'logPm: placing: ', r,c,p, type(p)
                 self.m[r,c] = logP(p)
-                #print '       placed:  ', self.m[r,c]
-        #self.lp = np.array(map(logP, map(logP, Pm)))
-        #self.lp = np.array(map(logP, map(logP, Pm)))
-        #print '-- init Pm'
-        #print np.shape(Pm) , '--->',np.shape(self.lp)
         
     def __getitem__(self,tpl):
-        #print '========'
-        #print self.lp
-        #print np.shape(self.lp)
-        #print t, self.lp[t] 
         t = logP(0.5)
         t.set_val(self.m[tpl])
         return t
     
-                #def __str__(self):
-                    #stmp = ''
-                    #for x in self.v:
-                        ##print 'str: ', x
-                        #stmp += '{:10s} '.format(x)
-                    #return stmp
         
     def __setitem__(self,t,p):
-        #print '========'
-        #print self.lp
-        #print i
         self.m[t] = p
         
     def __str__(self):
-        ############3    How to output matrix as string?????/
         rc = np.shape(self.m)[0]
         cc = np.shape(self.m)[1]
         stmp = '[ \n['
@@ -73,14 +51,6 @@ class logPm():
             stmp += ' ]\n'
         return stmp + ' ]'
         
-                    
-                    #def __add__(self, P):
-                        #t = logPv(np.ones(len(self.v)))
-                        #print 'logPv add/t: ', t
-                        #for i,p in enumerate(P.v):
-                            #t.v[i] = self[i] + p
-                        #return t
-    
     
     def __add__(self, P):
         sp = np.shape(P.m)
@@ -105,13 +75,10 @@ EEv = np.vectorize(EE)
 #    this should be a list of logP() instances
 class logPv():
     def __init__(self, Pv):
-        #assert insinstance(Pv, numbers.Number), 'logPv() bad input vector'
         if False:
             if len(np.shape(Pv)) != 1:
                 print 'LogPv() wrong shape'
                 quit()
-        #self.lp = np.zeros(np.shape(Pv))
-        #v = np.ones(len(Pv))
         self.v = []
         for i,p in enumerate(Pv):
             fs = 'bad input to logPv()'

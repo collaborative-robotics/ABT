@@ -2,6 +2,13 @@
 #
 #   Class and functions for log probability math
 #
+#  inspired by: Numerically Stable Hidden Markov Model Implementation
+#           Tobias P. Mann
+#         February 21, 2006
+#  (pdf available online)
+#
+#
+#   to test:    >python test_logP   log
 
 import numpy as np
 import numbers  
@@ -13,14 +20,9 @@ LZ = np.nan   # our log of zero value
 
 #  extended natural log
 def EL(x):
-    #print 'EL(x) rcvd: ', x, type(x)
-    #if np.isnan(x):
-        #return LZ
     assert isinstance(x,numbers.Number), 'EL (log) wrong data type'
-    #print 'EL arg:', x
     if x < 0.0:
         print 'log problem: ', x
-    #print 'EL(x): got', x
     assert x >= 0.0,  'log arg < 0.0 - stopping'
     if (x == 0.0):
         y = LZ
