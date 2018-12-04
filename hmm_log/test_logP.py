@@ -4,8 +4,33 @@
 #
 
 import numpy as np
-import numbers 
-from logP import *
+import numbers
+import sys as sys
+
+FAIL = 'FAIL'
+PASS = 'PASS'
+epsilon = 1.0E-06
+
+if len(sys.argv) != 2:
+    print ''' Usage:
+       >python  test_logP.py  [log|scale]
+       
+    log = use logP_log
+    scale = use logP_scale
+    '''
+    quit()
+
+a = sys.argv[1]
+if a == 'log':
+    from logP_log import *
+elif a == 'scale':
+    from logP_scale import logP
+else:
+    print 'illegal cmd line option: '+a
+    quit()
+    
+from logP_matrix import *
+
 
 print '\n\n  Testing logP() class and related ...\n\n'
 
@@ -50,6 +75,7 @@ y = logP(0.25)
 #print 'x: ', type(x)
 assert isinstance(x, logP), 'logP() returns wrong type'
 assert x.lp == np.log(0.25), 'logP() returns wrong value'
+assert abs(x.test_val() - (0.25))< epsilon, 'logP() returns wrong value'
 
 ##############################
 #
@@ -149,7 +175,7 @@ i, l = v.maxlv()
 fs = 'logPv() maxlv()  '
 assert i==3, fs + FAIL
 print l, l.lp
-assert l.lp == np.log(4), fs + FAIL
+assert abs(l.lp - np.log(4))<epsilon, fs + FAIL
 print fs + PASS
 
 

@@ -12,16 +12,25 @@ from tqdm import tqdm
 import os
 import sys
 
-
-PASS = '        PASS'
-FAIL = '        FAIL'
-epsilon = 1.0E-4
-
-
+ 
+#  Class for scaled probabilities
+#
+#  Algorithms for scaled HMM prob computations
+#    'super floating point' class
+#
+#    usage:  x = logP(0.5)
+#       yields x = ln(0.5) etc.
+#       this is for scalars
+# 
+#    (overload * and + )
 class logP:
     def __init__(self,x):
         self.exp = np.int64(0)
         self.mant = np.float64(x)
+        if self.mant == 0:
+            self.lp = np.nan
+        else:
+            self.lp = self.exp + np.log(self.mant)
         #print 'init: ', self.mant, self.exp
         
     def __mul__(self,y):  
@@ -51,12 +60,23 @@ class logP:
         return z
     
     def norm(self):
-        mexp = int(np.log10(self.mant))
+        if self.mant != 0:
+            mexp = int(np.log10(self.mant))
+        else:
+            mexp = np.nan
         m2 = self.mant/10**mexp
         #print 'norm: ', m2, mexp+self.exp
         self.mant = m2
         self.exp = mexp+self.exp
- 
+        if self.mant == 0:
+            self.lp = np.nan
+        else:
+            self.lp = self.exp + np.log(self.mant)
+            
+    def test_val(self):  # return a float64 for testing
+        f = np.float64(self.mant*10**self.exp)
+        return f
+    
     def __str__(self):
         self.norm()
         return '{:f}x10^{:d}'.format(self.mant,int(self.exp))
