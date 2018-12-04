@@ -6,6 +6,7 @@
 import numpy as np
 import numbers  
 
+SMALLEST_LOG = -1.0E306
 NSYMBOLS = 20
 STRICT = True 
 LZ = np.nan   # our log of zero value 
@@ -55,12 +56,20 @@ class logP():
         assert p >= 0.00, fs
         self.lp = EL(p) 
         
-    def P(self):
-        return EE(self.lp)
+    #def P(self):
+        #return EE(self.lp)
     
     def test_val(self):  # return a float64 for testing
-        f = np.float64(EE(self.lp))
-        return f
+        if np.isnan(self.lp):
+            return 0.0
+        return np.float64(EE(self.lp))
+    
+    def set_val(self,x):
+        self.__init__(x)
+        
+    def norm(self):
+        pass
+        return
     
     def __str__(self):
         #return '{:8.2s}'.format(self.lp)

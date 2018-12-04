@@ -8,8 +8,10 @@ import numbers
 from logP_log import *
 from logP_scale import *
 
+SMALLEST_LOG = -1.0E306
 NSYMBOLS = 20
-STRICT = True 
+STRICT = True
+
     
 ###########
 #
@@ -17,12 +19,22 @@ STRICT = True
 #
 class logPm():
     def __init__(self, Pm):
+        rc,cc = np.shape(Pm)
+        #print Pm
         if STRICT:
             fs = 'LogPm() wrong shape:'
+            assert isinstance(Pm, np.ndarray),fs
+            #isinstance(y, (np.ndarray, np.generic) )
             assert len(np.shape(Pm)) == 2, fs
-        self.m = np.zeros(np.shape(Pm))
-        for (i,j),p in np.ndenumerate(Pm):
-            self.m[i,j] = logP(p)
+        self.m = np.zeros((rc,cc))
+        fs = 'bad input to logPm()'
+        for r in range(rc):
+            for c in range(cc):
+                p = Pm[r,c]
+                assert isinstance(p,numbers.Number), fs
+                #print 'logPm: placing: ', r,c,p, type(p)
+                self.m[r,c] = logP(p)
+                #print '       placed:  ', self.m[r,c]
         #self.lp = np.array(map(logP, map(logP, Pm)))
         #self.lp = np.array(map(logP, map(logP, Pm)))
         #print '-- init Pm'
@@ -33,9 +45,8 @@ class logPm():
         #print self.lp
         #print np.shape(self.lp)
         #print t, self.lp[t] 
-    
         t = logP(0.5)
-        t.lp = self.m[tpl]
+        t.set_val(self.m[tpl])
         return t
     
                 #def __str__(self):
@@ -109,22 +120,15 @@ class logPv():
         
     # return argmax, max for a logP vector
     def maxlv(self):
-        SMALLEST_LOG = -1.0E306
-        max = SMALLEST_LOG
-        
+        vmax = SMALLEST_LOG
         imax = -1
         for i,x in enumerate(self.v):
-            #print 'i,x:', i,x
-            if not np.isnan(x.lp): 
-                if x.lp > max:
-                    max = x.lp
-                    imax = i
-        t = logP(0.5)
-        t.lp = max
-        if  imax < 0:
-            # we saw all nan's 
-            #print 'all nans in maxlv()'
-            return 0,logP(0)
+            print 'maxlv: ', i,x.test_val(), vmax
+            if x.test_val() > vmax:
+                vmax = x.test_val()
+                imax = i
+        assert not np.isnan(vmax), 'maxlv() Somethings wrong!'
+        t = logP(vmax)
         assert imax >= 0, 'maxlv() Somethings wrong!'
         return imax, t
     

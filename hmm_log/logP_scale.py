@@ -12,6 +12,9 @@ from tqdm import tqdm
 import os
 import sys
 
+
+SMALLEST_LOG = -1.0E306
+
  
 #  Class for scaled probabilities
 #
@@ -27,10 +30,6 @@ class logP:
     def __init__(self,x):
         self.exp = np.int64(0)
         self.mant = np.float64(x)
-        if self.mant == 0:
-            self.lp = np.nan
-        else:
-            self.lp = self.exp + np.log(self.mant)
         #print 'init: ', self.mant, self.exp
         
     def __mul__(self,y):  
@@ -60,22 +59,24 @@ class logP:
         return z
     
     def norm(self):
-        if self.mant != 0:
-            mexp = int(np.log10(self.mant))
+        if self.mant == 0.0:
+            mexp = 0.0
+            m2 = 0.0
         else:
-            mexp = np.nan
-        m2 = self.mant/10**mexp
+            mexp = int(np.log10(self.mant))
+            m2 = self.mant/10**mexp
         #print 'norm: ', m2, mexp+self.exp
         self.mant = m2
         self.exp = mexp+self.exp
-        if self.mant == 0:
-            self.lp = np.nan
-        else:
-            self.lp = self.exp + np.log(self.mant)
-            
+        
+    def __float__(self):
+        return self.test_val()
+    
+    def set_val(self,x):
+        self.__init__(x)
+    
     def test_val(self):  # return a float64 for testing
-        f = np.float64(self.mant*10**self.exp)
-        return f
+        return np.float64(self.mant*10**self.exp)
     
     def __str__(self):
         self.norm()
