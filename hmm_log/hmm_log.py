@@ -174,6 +174,7 @@ class hmm():
         self.VitVis(Obs,qstar,delta,chi)
         return qstar
      
+    # visualize viterbi backtracking for debugging
     def VitVis(self,Obs,qstar,delta,chi):
         lines = []
         for j in range(self.N):
@@ -197,10 +198,59 @@ class hmm():
         
         
     # 
-    #  gamma term
+    #  Baum Welch Algorithm
     #
-    #def gamma(alpha, beta)
+    def fit(self,Obs):
+        alpha = self.forwardSL()
+        beta  = self.backwardSL()
+        T = len(Obs)
+        N = self.N
+        xi = logPm(np.zeros((T,N,N)))       #    (37)
+        for i in range(N):
+            for j in range(N):
+                s1 += alpha[t-1,i]*self.transma_[i,j]*self.emissionprob_[j,t]*beta[t,j]
+        for t in range(1,T):
+            for i in range(N):
+                for j in range(N):                
+                    xi[t,i,j] = alpha[t-1,i]*self.transma_[i,j]*self.emissionprob_[j,t]*beta[t,j]
+        gam = logPm(np.zeros((T,N)))     #       (38)
+        for t in range(T):
+            for j in range(N):
+                gam[t,j] +=xi[t,i,j]
+        
+        gam_v = logPv(np.zeros((N)))      #       (39a)
+        for i in range(N):
+            for t in range(T-2):
+                gam_v[i] += gam[t,i] 
+
+        xi_m = logPm(np.zeros((N,N)))     #       (39b)
+        for i in range(N):
+            for j in range(N):
+                for t in range(T-2):
+                    xi_m[i,j] += xi[t,i,j]
+                    
+        a_hat = logPm(np.zeros((N,N)))   #       (40b)
+        for i in range(N):
+            for j in range(N):
+                a_hat[i,j] = xi_m[i,j]/gam_v[i]
+                
+        b_hat = logPm(np.zeros((N,NSYMBOLS)))  #   (40c)
+        for k in range(NSYMBOLS):
+            for j in range(N):
+                sum = logP( 0.0 )
+                num = logP( 0.0 )
+                for t in range(T):
+                    if Obs[t] == k:
+                        num+=gam[t,j]
+                    sum += gam[t,j]
+                b_hat[j,k] = num/sum
+                
+        print '-------------  Ahat  --------------'
+        print a_hat
     
+                
+        
+            
     
     # Log-based forward algorithm for multiple runouts
     '''
@@ -418,4 +468,8 @@ if __name__ == '__main__':
             assert q==est_correct[i], fs+FAIL
         print fs+PASS
             
+        #
+        #   Let's try the Baum Welch!
+        #
+        m.fit(em)
             
