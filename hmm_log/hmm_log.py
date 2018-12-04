@@ -200,37 +200,53 @@ class hmm():
     # 
     #  Baum Welch Algorithm
     #
-    def fit():
+    def fit(self,Obs):
         alpha = self.forwardSL()
         beta  = self.backwardSL()
-        T = np.shape(beta)[0]
+        T = len(Obs)
         N = self.N
         xi = logPm(np.zeros((T,N,N)))       #    (37)
         for i in range(N):
             for j in range(N):
                 s1 += alpha[t-1,i]*self.transma_[i,j]*self.emissionprob_[j,t]*beta[t,j]
-        for t in range(1:T):
+        for t in range(1,T):
             for i in range(N):
                 for j in range(N):                
                     xi[t,i,j] = alpha[t-1,i]*self.transma_[i,j]*self.emissionprob_[j,t]*beta[t,j]
-        gam = logPm(np.zeros((T,N)))            #     (38)
+        gam = logPm(np.zeros((T,N)))     #       (38)
         for t in range(T):
             for j in range(N):
                 gam[t,j] +=xi[t,i,j]
         
-        a_hat = logPm(np.zeros((N,N)))
-        gam_v = logPv(np.zeros((N))     #      [39]
-        for i in range(N)
-            for t in range(T-2):
-                gam_v[i] += gam[t,i]
+        gam_v = logPv(np.zeros((N)))      #       (39a)
         for i in range(N):
-            for j in range(N):
-        xi_m = logPm(np.zeros((N,N))     #       (39b)
+            for t in range(T-2):
+                gam_v[i] += gam[t,i] 
+
+        xi_m = logPm(np.zeros((N,N)))     #       (39b)
         for i in range(N):
             for j in range(N):
                 for t in range(T-2):
                     xi_m[i,j] += xi[t,i,j]
                     
+        a_hat = logPm(np.zeros((N,N)))   #       (40b)
+        for i in range(N):
+            for j in range(N):
+                a_hat[i,j] = xi_m[i,j]/gam_v[i]
+                
+        b_hat = logPm(np.zeros((N,NSYMBOLS)))  #   (40c)
+        for k in range(NSYMBOLS):
+            for j in range(N):
+                sum = logP( 0.0 )
+                num = logP( 0.0 )
+                for t in range(T):
+                    if Obs[t] == k:
+                        num+=gam[t,j]
+                    sum += gam[t,j]
+                b_hat[j,k] = num/sum
+                
+        print '-------------  Ahat  --------------'
+        print a_hat
     
                 
         
@@ -452,4 +468,8 @@ if __name__ == '__main__':
             assert q==est_correct[i], fs+FAIL
         print fs+PASS
             
+        #
+        #   Let's try the Baum Welch!
+        #
+        m.fit(em)
             
