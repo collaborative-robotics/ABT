@@ -11,32 +11,24 @@ FAIL = 'FAIL'
 PASS = 'PASS'
 epsilon = 1.0E-06
 
-if len(sys.argv) != 2:
-    print ''' Usage:
-       >python  test_logP.py  [log|scale]
-       
-    log = use logP_log
-    scale = use logP_scale
-    '''
-    quit()
-
-a = sys.argv[1]
-print '\n\n'
-if a == 'log':
-    from logP_log import *
-    print '        Using logP_log.py'
-elif a == 'scale':
-    from logP_scale import logP
-    print '        Using logP_scale.py'
-else:
-    print 'illegal cmd line option: '+a
-    quit()
-
-#  tell the logP module which logP to import
+from logP import *
 from logP_matrix import *
-logP_Matrix_init(a)
 
-print '\n\n  Testing logP() class and related ...\n\n'
+##
+#    Important:  use scripts:   set_log_test and set_scale_test prior to this 
+#             command.   These scripts choose the desired version of logP() class
+#
+#    set_log_test: cp logP_log.py logP.py
+#        etc/
+#
+#
+
+print '\n\n  Testing logP() class and related ...\n'
+
+p = logP(0.5)
+a = p.id()  # figure out what type of logP()
+
+print '            Using: ', a,'\n\n'
 
 e = np.exp(1) 
 
@@ -214,10 +206,9 @@ x = logPv([e, e*e, e*e*e])
 y = logPv([e*e, e, 1/e])
 
 t = x*y
-print t, type(t)
-assert abs(t.v[0].test_val() - e*e*e)<epsilon, fs + FAIL
-assert abs(t.v[1].test_val() - e**3) , fs + FAIL
-assert abs(t.v[2].test_val() - e*e), fs + FAIL
+assert abs(t.v[0].test_val() - e*e*e) < epsilon, fs + FAIL
+assert abs(t.v[1].test_val() - e*e*e) < epsilon , fs + FAIL
+assert abs(t.v[2].test_val() - e*e) < epsilon, fs + FAIL
 
 
 
@@ -238,7 +229,10 @@ y = logPm(np.array([
         [e*e, e, 1/e],
         [e*e, e, 1/e]  ]))
 
-print y[1,0],  e*e
+#print '--------------------------'
+#print y
+#print y[1,0].test_val(),  e*e
+#print '--------------------------'
 
 fs = 'logPm returns wrong type'
 assert np.shape(x.m) == (3,3), fs
@@ -249,7 +243,7 @@ assert isinstance(y[2,1], logP), fs
  
 fs = 'logPm() instantiation'
 
-print y[1,0],  e*e
+#print y[1,0],  e*e
 
 assert abs(y[1,0].test_val() - e*e)  < epsilon, fs + FAIL
 assert abs(y[2,1].test_val() - e)  < epsilon, fs + FAIL
@@ -257,6 +251,33 @@ assert abs(y[1,2].test_val() - 1.0/e) < epsilon, fs + FAIL
 
 print fs + PASS
 
+################################################################   TODO:
+#
+#     Tests for 3D logPm() instances
+#
+
+y3 = logPm(np.array(
+        [ [
+        [e*e, e, 1/e],
+        [e*e, e, 1/e],
+        [e*e, e, 1/e] ],
+        [
+        [e*e, e, 1/e],
+        [e*e, e, 1/e],
+        [e*e, e, 1/e] ],
+        [
+        [e*e, e, 1/e],
+        [e*e, e, 1/e],
+        [e*e, e, 1/e] ],
+        [
+        [e*e, e, 1/e],
+        [e*e, e, 1/e],
+        [e*e, e, 1/e] ]  ] )
+    )
+     
+###########    add some assertions here
+
+###########   also test math with 3D matrices  
 
     
 print 'Setitem tests'

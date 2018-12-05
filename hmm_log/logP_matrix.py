@@ -13,45 +13,36 @@ from logP import *
 SMALLEST_LOG = -1.0E306
 NSYMBOLS = 20
 STRICT = True
-
-
-#######################   Two modules to support the LogP() api
-##
-##
-#global logP
-#def logP_Matrix_init(str):
-    #global logP
-    #if str=='log':
-        ##from logP_log import *
-        #importlib.import_module('logP_log')
-    #elif str=='scale':
-        ##from logP_scale import *
-        #importlib.import_module('logP_scale')
-    #else:
-        #print 'unknown logP module ... quitting'
-        #quit()
-    #return
     
 ###########
 #
 #  a matrix of logP() instances
 #
 class logPm():
-    global logP
     def __init__(self, Pm):
-        rc,cc = np.shape(Pm)
         if STRICT:
             fs = 'LogPm() wrong shape or type (should be np.array((n,n))):'
             assert isinstance(Pm, np.ndarray),fs
             s = np.shape(Pm)
-            assert len(s) == 2, fs
-        self.m = np.ndarray((rc,cc))
+            assert len(s) == 2 or len(s) == 3, fs
         fs = 'bad input to logPm()'
-        for r in range(rc):
-            for c in range(cc):
-                p = Pm[r,c]
-                assert isinstance(p,numbers.Number), fs
-                self.m[r,c] = logP(p)
+        if len(s) ==2:
+            rc,cc = np.shape(Pm)
+            self.m = np.ndarray((rc,cc))
+            for r in range(rc):
+                for c in range(cc):
+                    p = Pm[r,c]
+                    assert isinstance(p,numbers.Number), fs
+                    self.m[r,c] = logP(p)
+        if len(s) == 3:
+            tc,rc,cc = np.shape(Pm)
+            self.m = np.ndarray((tc,rc,cc))
+            for t in range(tc):
+                for r in range(rc):
+                    for c in range(cc):
+                        p = Pm[t,r,c]
+                        assert isinstance(p,numbers.Number), fs
+                        self.m[t,r,c] = logP(p)
         
     def __getitem__(self,tpl):
         t = logP(0.5)
@@ -59,20 +50,25 @@ class logPm():
         return t
         
     def __setitem__(self,t,p):
-        # t = indext tuple (row, col)
+        # t = index tuple (row, col)
         # p = logP() instance
         assert isinstance(p,logP), 'bad input to logPm.setitem'
         self.m[t] = p
         
     def __str__(self):
-        rc = np.shape(self.m)[0]
-        cc = np.shape(self.m)[1]
-        stmp = '[* \n['
-        for r in range(rc): 
-            for c in range(cc):
-                stmp += str(self.m[r,c]) + ' '
-            stmp += ' ]\n'
-        return stmp + ' ]'
+        s = np.shape(self.m)
+        if len(s) == 2:
+            rc = s[0]
+            cc = s[1]        
+            stmp = '[* \n['
+            for r in range(rc): 
+                for c in range(cc):
+                    stmp += str(self.m[r,c]) + ' '
+                stmp += ' ]\n'
+            return stmp + ' ]'
+        else:
+            print 'logPm(): I dont know how to str 3D array'
+            quit()
         
     
     def __add__(self, P):
