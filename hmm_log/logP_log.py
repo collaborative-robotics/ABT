@@ -57,35 +57,38 @@ EEv = np.vectorize(EE)
 #      vectors and mats.
 class logP():
     def __init__(self,p):
-        fs = 'logP() __init__ bad input'
-        #print 'logP init: ', p
-        #assert p <= 1.00, fs
+        fs = 'logP() __init__ bad input' 
+        assert isinstance(p,numbers.Number), fs
         assert p >= 0.00, fs
-        self.lp = EL(p) 
+        self.lp = EL(p)
         
-    #def P(self):
-        #return EE(self.lp)
-    
-    def test_val(self):  # return a float64 of prob. for testing
-        if np.isnan(self.lp):
-            return 0.0
-        return np.float64(EE(self.lp))
-    
-    def set_val(self,x):
-        self.__init__(x)
-        
+
     def norm(self):
         pass
         return
+
+
+
+    def id(self):
+        return 'log'
+        
+    
+    def __float__(self):
+        #return 5
+        return self.test_val()
     
     def __str__(self):
         #return '{:8.2s}'.format(self.lp)
         return str(self.lp)
     
-    def __float__(self):
-        return float(self.lp)
-
-    
+    def set_val(self,x):
+        self.__init__(x)
+        
+    def test_val(self):  # return a float64 of prob. for testing
+        if np.isnan(self.lp):
+            return np.float64(0.0)
+        return np.float64(np.exp(self.lp))
+        
     def __mul__(self, lp2):
         if np.isnan(self.lp) or np.isnan(lp2.lp):
             t = logP(0)

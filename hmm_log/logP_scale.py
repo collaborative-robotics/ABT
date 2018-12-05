@@ -26,6 +26,33 @@ class logP:
         self.exp = np.int64(0)
         self.mant = np.float64(x)
         
+    def norm(self):
+        if self.mant == 0.0:
+            mexp = 0.0
+            m2 = 0.0
+        else:
+            mexp = int(np.log10(self.mant))
+            m2 = self.mant/10**mexp
+        self.mant = m2
+        self.exp = mexp+self.exp
+        
+    def id(self):
+        return 'scale'
+    
+    def __float__(self):
+        #return 5
+        return self.test_val()
+    
+    def __str__(self):
+        self.norm()
+        return '{:f}x10^{:d}'.format(self.mant,int(self.exp))
+        
+    def set_val(self,x):
+        self.__init__(x)
+    
+    def test_val(self):  # return a float64 for testing
+        return np.float64(self.mant*10**self.exp)
+    
     def __mul__(self,y):  
         assert isinstance(y,logP), 'logP().__mul__:  wrong data type'
 
@@ -47,30 +74,6 @@ class logP:
         z.mant = zm
         z.exp = ze
         return z
-    
-    def norm(self):
-        if self.mant == 0.0:
-            mexp = 0.0
-            m2 = 0.0
-        else:
-            mexp = int(np.log10(self.mant))
-            m2 = self.mant/10**mexp
-        self.mant = m2
-        self.exp = mexp+self.exp
-        
-    def __float__(self):
-        #return 5
-        return self.test_val()
-    
-    def set_val(self,x):
-        self.__init__(x)
-    
-    def test_val(self):  # return a float64 for testing
-        return np.float64(self.mant*10**self.exp)
-    
-    def __str__(self):
-        self.norm()
-        return '{:f}x10^{:d}'.format(self.mant,int(self.exp))
     
     def __add__(self,b):
         self.norm

@@ -8,27 +8,29 @@ import numbers
 import importlib
 #
 
+from logP import *
+
 SMALLEST_LOG = -1.0E306
 NSYMBOLS = 20
 STRICT = True
 
 
-######################   Two modules to support the LogP() api
-#
-#
-global logP
-def logP_Matrix_init(str):
-    global logP
-    if str=='log':
-        #from logP_log import *
-        importlib.import_module('logP_log')
-    elif str=='scale':
-        #from logP_scale import *
-        importlib.import_module('logP_scale')
-    else:
-        print 'unknown logP module ... quitting'
-        quit()
-    return
+#######################   Two modules to support the LogP() api
+##
+##
+#global logP
+#def logP_Matrix_init(str):
+    #global logP
+    #if str=='log':
+        ##from logP_log import *
+        #importlib.import_module('logP_log')
+    #elif str=='scale':
+        ##from logP_scale import *
+        #importlib.import_module('logP_scale')
+    #else:
+        #print 'unknown logP module ... quitting'
+        #quit()
+    #return
     
 ###########
 #
@@ -39,10 +41,11 @@ class logPm():
     def __init__(self, Pm):
         rc,cc = np.shape(Pm)
         if STRICT:
-            fs = 'LogPm() wrong shape:'
+            fs = 'LogPm() wrong shape or type (should be np.array((n,n))):'
             assert isinstance(Pm, np.ndarray),fs
-            assert len(np.shape(Pm)) == 2, fs
-        self.m = np.zeros((rc,cc))
+            s = np.shape(Pm)
+            assert len(s) == 2, fs
+        self.m = np.ndarray((rc,cc))
         fs = 'bad input to logPm()'
         for r in range(rc):
             for c in range(cc):
@@ -54,15 +57,17 @@ class logPm():
         t = logP(0.5)
         t.set_val(self.m[tpl])
         return t
-    
         
     def __setitem__(self,t,p):
+        # t = indext tuple (row, col)
+        # p = logP() instance
+        assert isinstance(p,logP), 'bad input to logPm.setitem'
         self.m[t] = p
         
     def __str__(self):
         rc = np.shape(self.m)[0]
         cc = np.shape(self.m)[1]
-        stmp = '[ \n['
+        stmp = '[* \n['
         for r in range(rc): 
             for c in range(cc):
                 stmp += str(self.m[r,c]) + ' '
@@ -104,7 +109,7 @@ class logPv():
         vmax = SMALLEST_LOG
         imax = -1
         for i,x in enumerate(self.v):
-            print 'maxlv: ', i,x.test_val(), vmax
+            #print 'maxlv: ', i,x.test_val(), vmax
             if x.test_val() > vmax:
                 vmax = x.test_val()
                 imax = i
