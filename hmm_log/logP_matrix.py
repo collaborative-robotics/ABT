@@ -5,19 +5,37 @@
 
 import numpy as np
 import numbers
-from logP_log import *
-from logP_scale import *
+import importlib
+#
 
 SMALLEST_LOG = -1.0E306
 NSYMBOLS = 20
 STRICT = True
 
+
+######################   Two modules to support the LogP() api
+#
+#
+global logP
+def logP_Matrix_init(str):
+    global logP
+    if str=='log':
+        #from logP_log import *
+        importlib.import_module('logP_log')
+    elif str=='scale':
+        #from logP_scale import *
+        importlib.import_module('logP_scale')
+    else:
+        print 'unknown logP module ... quitting'
+        quit()
+    return
     
 ###########
 #
 #  a matrix of logP() instances
 #
 class logPm():
+    global logP
     def __init__(self, Pm):
         rc,cc = np.shape(Pm)
         if STRICT:
@@ -66,14 +84,10 @@ class logPm():
     def __shape__(self):
         return np.shape(self.m)
     
-
-ELv = np.vectorize(EL)
-EEv = np.vectorize(EE)
-
-    
 #    LogP vectors
 #    this should be a list of logP() instances
 class logPv():
+    global logP
     def __init__(self, Pv):
         if False:
             if len(np.shape(Pv)) != 1:

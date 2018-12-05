@@ -39,6 +39,11 @@ def EE(x):
         y = np.exp(x)
     return y
 
+# vectorized versions of EE and EL
+ELv = np.vectorize(EL)
+EEv = np.vectorize(EE)
+
+    
 #  Class for log probabilities
 #
 #  Algorithms from hmm_scaling_revised.pdf 
@@ -61,7 +66,7 @@ class logP():
     #def P(self):
         #return EE(self.lp)
     
-    def test_val(self):  # return a float64 for testing
+    def test_val(self):  # return a float64 of prob. for testing
         if np.isnan(self.lp):
             return 0.0
         return np.float64(EE(self.lp))
@@ -99,8 +104,8 @@ class logP():
                 return self
         else:
             if self.lp > lp2.lp:
-                t.lp = self.lp + ELv(1+np.exp(lp2.lp-self.lp))
+                t.lp = self.lp + EL(1+np.exp(lp2.lp-self.lp))
             else:
-                t.lp =  lp2.lp + ELv(1+np.exp(self.lp-lp2.lp))
+                t.lp =  lp2.lp + EL(1+np.exp(self.lp-lp2.lp))
         return t
      

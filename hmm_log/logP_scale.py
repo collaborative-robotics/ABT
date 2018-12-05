@@ -59,6 +59,7 @@ class logP:
         self.exp = mexp+self.exp
         
     def __float__(self):
+        #return 5
         return self.test_val()
     
     def set_val(self,x):

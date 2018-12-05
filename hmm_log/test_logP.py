@@ -31,43 +31,46 @@ elif a == 'scale':
 else:
     print 'illegal cmd line option: '+a
     quit()
-    
-from logP_matrix import *
 
+#  tell the logP module which logP to import
+from logP_matrix import *
+logP_Matrix_init(a)
 
 print '\n\n  Testing logP() class and related ...\n\n'
 
-#####################################
-# test basic log functions
-e = np.exp(1)
+e = np.exp(1) 
 
-y = ELv([e, e*e, 0, np.sqrt(e)])
+if (a == 'log'):
+    #####################################
+    # test basic log functions
 
-assert isinstance(y[0], float), 'ELv returns wrong type'
-#print y
-fs = ' elog() test FAIL'
-assert abs(y[0] - 1.0) < epsilon, fs
-assert abs(y[1] - 2.0) < epsilon, fs
-assert np.isnan(y[2]), fs
-assert abs(y[3] - 0.5) < epsilon, fs
-assert abs(ELv(e*e)-2.0) < epsilon, fs
-print ' elog() tests    PASSED'
+    y = ELv([e, e*e, 0, np.sqrt(e)])
 
-# eexp()
-fs = ' eexp() test  FAIL'
-assert  abs(EEv(1)-e) < epsilon, fs
-y = EEv([2, 0, LZ, -1])
-#print y
-assert abs(y[0]-e*e) < epsilon, fs
-assert abs(y[1]-1.0) < epsilon, fs
-assert abs(y[2]-0.0) < epsilon, fs
-assert abs(y[3]-1/e) < epsilon, fs
+    assert isinstance(y[0], float), 'ELv returns wrong type'
+    #print y
+    fs = ' elog() test FAIL'
+    assert abs(y[0] - 1.0) < epsilon, fs
+    assert abs(y[1] - 2.0) < epsilon, fs
+    assert np.isnan(y[2]), fs
+    assert abs(y[3] - 0.5) < epsilon, fs
+    assert abs(ELv(e*e)-2.0) < epsilon, fs
+    print ' elog() tests    PASSED'
 
-assert abs(EEv(1) - e) < epsilon, fs
+    # eexp()
+    fs = ' eexp() test  FAIL'
+    assert  abs(EEv(1)-e) < epsilon, fs
+    y = EEv([2, 0, LZ, -1])
+    #print y
+    assert abs(y[0]-e*e) < epsilon, fs
+    assert abs(y[1]-1.0) < epsilon, fs
+    assert abs(y[2]-0.0) < epsilon, fs
+    assert abs(y[3]-1/e) < epsilon, fs
 
-y = EEv([[e, 0],[LZ, 1]])
-assert abs(y[1,1]-e) < epsilon, fs
-print ' eexp() tests    PASSED'
+    assert abs(EEv(1) - e) < epsilon, fs
+
+    y = EEv([[e, 0],[LZ, 1]])
+    assert abs(y[1,1]-e) < epsilon, fs
+    print ' eexp() tests    PASSED'
 
 ###################################
 # test logP classes and operator overlays
@@ -212,9 +215,9 @@ y = logPv([e*e, e, 1/e])
 
 t = x*y
 print t, type(t)
-assert t.v[0].test_val() == e*e*e, fs + FAIL
-assert t.v[1].test_val() == e**3 , fs + FAIL
-assert t.v[2].test_val() == e*e, fs + FAIL
+assert abs(t.v[0].test_val() - e*e*e)<epsilon, fs + FAIL
+assert abs(t.v[1].test_val() - e**3) , fs + FAIL
+assert abs(t.v[2].test_val() - e*e), fs + FAIL
 
 
 
@@ -235,7 +238,7 @@ y = logPm(np.array([
         [e*e, e, 1/e],
         [e*e, e, 1/e]  ]))
 
-print y[1,0], y[1,0].mant, e*e
+print y[1,0],  e*e
 
 fs = 'logPm returns wrong type'
 assert np.shape(x.m) == (3,3), fs
@@ -246,7 +249,8 @@ assert isinstance(y[2,1], logP), fs
  
 fs = 'logPm() instantiation'
 
-print y[1,0].test_val(), y[1,0].mant, e*e
+print y[1,0],  e*e
+
 assert abs(y[1,0].test_val() - e*e)  < epsilon, fs + FAIL
 assert abs(y[2,1].test_val() - e)  < epsilon, fs + FAIL
 assert abs(y[1,2].test_val() - 1.0/e) < epsilon, fs + FAIL
