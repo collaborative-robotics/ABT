@@ -13,6 +13,7 @@ import os
 import sys
 
 from logP import *
+from logP_matrix import *
 
 #sudo pip install scikit-learn  # dep for hmmlearn
 #pip install -U --user hmmlearn
@@ -76,7 +77,7 @@ class hmm():
         #'''
         #alpha = logPv(self.Pi)
         if alpha is None:
-            alpha = logPm(np.ones((len(Y), self.N)))
+            alpha = logPm(np.ones((len(Y), self.N)))          #       (19)
             for j in range(self.N):
                 alpha[0,j] = logP(self.Pi[j]) * logP(self.emissionprob_[j,Y[0]])
                                                   
@@ -88,7 +89,7 @@ class hmm():
         for y in Y[1:]:  # emission sequence
             tmpsum = logP(0)
             for st in range(self.N):
-                for prev_st in range(self.N):
+                for prev_st in range(self.N):                #       (20)
                     a = logA[prev_st,st] 
                     b = alpha[ai-1,prev_st]
                     #print 'a: ', np.shape(a), type(a), a.lp
@@ -97,11 +98,11 @@ class hmm():
                     #print 'tmpsum: ',tmpsum.lp
                 c = logB[st,y] 
                 #print 'c: ', np.shape(c), type(c), c
-                alpha[ai,st] = c * tmpsum
+                alpha[ai,st] = c * tmpsum 
                 prev_st = st
             ai += 1 
         v = np.ones((len(Y),self.N))
-        for i in range(len(Y)):
+        for i in range(len(Y)):                              #   
             for j in range(self.N):
                 v[i,j] = np.exp(alpha.m[i,j])
         return v, alpha
@@ -111,10 +112,11 @@ class hmm():
     #
     def backwardSL(self, Y):
         T = len(Y)
+        N = self.N
         #print Y
         logA =  logPm(self.transmat_)
         logB =  logPm(self.emissionprob_)
-        beta = logPv(np.ones(self.N))
+        beta = logPm(np.zeros((T,N)))
         print len(Y)
         for k in range(1,T):
             t = T-k-1
@@ -125,9 +127,8 @@ class hmm():
                     a1 = logA[i,j] 
                     a2 = logB[j,Y[t+1]]
                     a3 = beta[j]
-                    b += logA[i,j]*logB[j,Y[t+1]]*beta[j]
-                beta[i] = b
-            print beta    
+                    b += logA[i,j]*logB[j,Y[t+1]]*beta[k,j]
+                beta[k,i] = b
         return beta
     
     
@@ -181,11 +182,15 @@ class hmm():
             lj = ''
             for t in range(len(Obs)):
                 c = ' '
-                if not np.isnan(delta[t,j].lp):
+                d = '_'
+                if abs(delta[t,j].test_val()== 0.0):
+                    d = '0'
+                print 't,j, delta:', t,j,delta[t,j], d
+                if not (delta[t,j].test_val()==0):   # fix: test for zero
                     c = '.'  # non-zero prob for state j
                 if j == qstar[t]:
                     c = '*'  # optimal selection
-                    if np.isnan(delta[t,j].lp):
+                    if (delta[t,j].test_val()==0):
                         c = 'X'  # this shouldn't be 
                 lj += c
             lines.append(lj)
@@ -201,18 +206,26 @@ class hmm():
     #  Baum Welch Algorithm
     #
     def fit(self,Obs):
-        alpha = self.forwardSL()
-        beta  = self.backwardSL()
+        v,alpha = self.forwardSL(Obs)
+        beta  = self.backwardSL(Obs)
         T = len(Obs)
         N = self.N
-        xi = logPm(np.zeros((T,N,N)))       #    (37)
-        for i in range(N):
-            for j in range(N):
-                s1 += alpha[t-1,i]*self.transma_[i,j]*self.emissionprob_[j,t]*beta[t,j]
+        xi = logPm(np.zeros((T,N,N)))       #    (37)  Rab-->python: t+1 --> t,   t--> t-1 
+        s1 = logPv(np.zeros(T))
+        #denominator
+        for t in range(T):
+            for i in range(N):
+                for j in range(N):
+                    a = alpha[t-1,i]
+                    b = self.transmat_[i,j]
+                    c = self.emissionprob_[j,t]
+                    d = beta[t,j]
+                    s1[t] += alpha[t-1,i]*self.transmat_[i,j]*self.emissionprob_[j,t]*beta[t,j]
+        #numerator
         for t in range(1,T):
             for i in range(N):
                 for j in range(N):                
-                    xi[t,i,j] = alpha[t-1,i]*self.transma_[i,j]*self.emissionprob_[j,t]*beta[t,j]
+                    xi[t,i,j] = alpha[t-1,i]*self.transmat_[i,j]*self.emissionprob_[j,t]*beta[t,j] / s1[t-1]
         gam = logPm(np.zeros((T,N)))     #       (38)
         for t in range(T):
             for j in range(N):
