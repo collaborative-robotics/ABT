@@ -103,6 +103,25 @@ class logP():
             t.lp = self.lp + lp2.lp
             return t
     
+        
+    def __div__(self, lp2):
+        if isinstance(lp2,numbers.Number):
+            t = logP(0.5)
+            t.lp = self.lp - np.log(lp2)
+            return t
+        if np.isnan(self.lp):
+            t = logP(0)
+            return t
+        if np.isnan(lp2.lp):
+            print 'LogP:   DIVIDE BY ZERO'
+            t = logP(0)
+            t.lp = np.Inf
+            return t
+        else:
+            t = logP(0.5)
+            t.lp = self.lp - lp2.lp
+            return t
+    
     def __add__(self, lp2):
         t = logP(.5)
         if np.isnan(self.lp) or np.isnan(lp2.lp):

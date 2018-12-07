@@ -107,11 +107,12 @@ assert abs(z.test_val()-0.500) < epsilon, fs+FAIL
 assert abs((x+y).test_val()-0.500) < epsilon, fs+FAIL
 print fs+PASS
 
-##############################
+##############################          Multiplication 
 #
 #  logP __mull__()
 #
 #   Testing logP() * logp()
+print '   Testing Multiplication of logP'
 x = logP(0.25)
 y = logP(0.25)
 z = x * y
@@ -141,6 +142,41 @@ assert abs((x*y).test_val()-prod) < epsilon, fs+FAIL
 print fs+PASS
 
 print '      Multiplication tests '  + PASS 
+
+
+##############################          Division 
+#
+#  logP __Div__()
+#
+#   Testing logP() / logp()
+print '   Testing Division of logP'
+x = logP(0.5)
+y = logP(3.0)
+z = x / y
+assert isinstance(z,logP), 'logP() __div__ returns wrong type'
+ans  = 0.5/3.0
+logans = np.log(ans)
+
+fs = 'logP() / logP() __div__ '
+assert abs(z.test_val()-ans) < epsilon, fs+FAIL
+assert abs((x/y).test_val()-ans) < epsilon, fs+FAIL
+print fs+PASS
+
+
+#   Testing logP() / float
+x = logP(0.25)
+y = 4.0
+z = x / y
+assert isinstance(z,logP), 'logP() / float __div__ returns wrong type'
+ans = 0.25/4.0
+logans = np.log(ans)
+
+fs = 'logP() / float __div__ '
+assert abs(z.test_val()-ans) < epsilon, fs+FAIL
+assert abs((x/y).test_val()-ans) < epsilon, fs+FAIL 
+print fs+PASS
+
+print '      Division tests '  + PASS 
 
 #############################
 #

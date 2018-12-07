@@ -53,6 +53,55 @@ class logP:
     def test_val(self):  # return a float64 for testing
         return np.float64(self.mant*10**self.exp)
     
+    
+    #def __div__(self, lp2):
+        #if isinstance(lp2,numbers.Number):
+            #t = logP(0.5)
+            #t.lp = self.lp - np.log(lp2)
+            #return t
+        #if np.isnan(self.lp):
+            #t = logP(0)
+            #return t
+        #if np.isnan(lp2.lp):
+            #print 'LogP:   DIVIDE BY ZERO'
+            #t = logP(0)
+            #t.lp = np.Inf
+            #return t
+        #else:
+            #t = logP(0.5)
+            #t.lp = self.lp - lp2.lp
+            #return t
+    
+    def __div__(self,y):  
+        DEBUG = True
+        if isinstance(y,numbers.Number):  # case of logP * float
+            yval = y
+            ye = 0
+        else:                             # case of logP * logP
+            assert isinstance(y,logP), 'logP().__mul__:  wrong data type'
+            yval = y.mant
+            ye = y.exp
+        
+        np.seterr(under='raise')
+        try:
+            zm = self.mant / yval
+        except: 
+            if DEBUG:
+                print 'I caught exception'
+                print 'x = ', self.mant, 'x10^',self.exp
+                print 'y = ', y.mant, 'x10^',y.exp
+            self.exp += (-200)
+            ap = self.mant
+            a = np.float64(ap) * np.float64(1.0E200)
+            b = yval
+            zm = logP(a/b).mant
+        
+        ze = self.exp - ye
+        z = logP(zm) # return value
+        z.mant = zm
+        z.exp = ze
+        return z
+    
     def __mul__(self,y):  
         DEBUG = True
         if isinstance(y,numbers.Number):  # case of logP * float
@@ -74,7 +123,7 @@ class logP:
             self.exp += (-200)
             ap = self.mant
             a = np.float64(ap) * np.float64(1.0E200)
-            b = y.mant
+            b = yval
             zm = logP(a*b).mant
         
         ze = self.exp + ye
