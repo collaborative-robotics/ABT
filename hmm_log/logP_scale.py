@@ -54,22 +54,30 @@ class logP:
         return np.float64(self.mant*10**self.exp)
     
     def __mul__(self,y):  
-        assert isinstance(y,logP), 'logP().__mul__:  wrong data type'
-
+        DEBUG = True
+        if isinstance(y,numbers.Number):  # case of logP * float
+            yval = y
+            ye = 0
+        else:                             # case of logP * logP
+            assert isinstance(y,logP), 'logP().__mul__:  wrong data type'
+            yval = y.mant
+            ye = y.exp
+        
         np.seterr(under='raise')
         try:
-            zm = self.mant * y.mant
+            zm = self.mant * yval
         except: 
-            print 'I caught exception'
-            print 'x = ', self.mant, 'x10^',self.exp
-            print 'y = ', y.mant, 'x10^',y.exp
+            if DEBUG:
+                print 'I caught exception'
+                print 'x = ', self.mant, 'x10^',self.exp
+                print 'y = ', y.mant, 'x10^',y.exp
             self.exp += (-200)
             ap = self.mant
             a = np.float64(ap) * np.float64(1.0E200)
             b = y.mant
             zm = logP(a*b).mant
         
-        ze = self.exp + y.exp
+        ze = self.exp + ye
         z = logP(zm) # return value
         z.mant = zm
         z.exp = ze

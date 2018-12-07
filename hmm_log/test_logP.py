@@ -110,6 +110,8 @@ print fs+PASS
 ##############################
 #
 #  logP __mull__()
+#
+#   Testing logP() * logp()
 x = logP(0.25)
 y = logP(0.25)
 z = x * y
@@ -117,12 +119,28 @@ assert isinstance(z,logP), 'logP() __mul__ returns wrong type'
 prod = 0.25*0.25
 logprod = np.log(prod)
 
-fs = 'logP() __mul__ '
+fs = 'logP()*logP() __mul__ '
 assert abs(z.test_val()-prod) < epsilon, fs+FAIL
 assert abs((x*y).test_val()-prod) < epsilon, fs+FAIL
 z = x * logP(0)
 assert z.test_val() == 0, fs+FAIL
 print fs+PASS
+
+
+#   Testing logP() * float
+x = logP(0.25)
+y = 4.0
+z = x * y
+assert isinstance(z,logP), 'logP() * float __mul__ returns wrong type'
+prod = 1.0
+logprod = np.log(prod)
+
+fs = 'logP()*float __mul__ '
+assert abs(z.test_val()-prod) < epsilon, fs+FAIL
+assert abs((x*y).test_val()-prod) < epsilon, fs+FAIL 
+print fs+PASS
+
+print '      Multiplication tests '  + PASS 
 
 #############################
 #

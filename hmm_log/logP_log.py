@@ -91,6 +91,10 @@ class logP():
         return np.float64(np.exp(self.lp))
         
     def __mul__(self, lp2):
+        if isinstance(lp2,numbers.Number):
+            t = logP(0.5)
+            t.lp = self.lp + np.log(lp2)
+            return t
         if np.isnan(self.lp) or np.isnan(lp2.lp):
             t = logP(0)
             return t
