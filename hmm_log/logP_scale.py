@@ -30,6 +30,9 @@ class logP:
         if self.mant == 0.0:
             mexp = 0.0
             m2 = 0.0
+        elif self.mant == np.Inf:
+            mexp = np.Inf
+            m2 = np.Inf
         else:
             mexp = int(np.log10(self.mant))
             m2 = self.mant/10**mexp
@@ -45,7 +48,10 @@ class logP:
     
     def __str__(self):
         self.norm()
-        return '{:f}x10^{:d}'.format(self.mant,int(self.exp))
+        if self.mant == np.Inf:
+            return 'Inf'
+        else:
+            return '{:f}x10^{:d}'.format(self.mant,int(self.exp))
         
     def set_val(self,x):
         self.__init__(x)
@@ -75,6 +81,8 @@ class logP:
     def __div__(self,y):  
         DEBUG = True
         if isinstance(y,numbers.Number):  # case of logP * float
+            if np.log(y) < SMALLEST_LOG:
+                return logP(np.Inf)
             yval = y
             ye = 0
         else:                             # case of logP * logP
@@ -84,6 +92,7 @@ class logP:
         
         np.seterr(under='raise')
         try:
+            #print 'self.mant, yval', self.mant, yval
             zm = self.mant / yval
         except: 
             if DEBUG:
@@ -91,13 +100,11 @@ class logP:
                 print 'x = ', self.mant, 'x10^',self.exp
                 print 'y = ', y.mant, 'x10^',y.exp
             self.exp += (-200)
-            ap = self.mant
-            a = np.float64(ap) * np.float64(1.0E200)
+            a = np.float64(self.mant) * np.float64(1.0E200)
             b = yval
-            zm = logP(a/b).mant
-        
-        ze = self.exp - ye
-        z = logP(zm) # return value
+            zm = logP(a/b).mant        
+        ze = self.exp - ye       # logarithmic division
+        z = logP(0.5) # return value
         z.mant = zm
         z.exp = ze
         return z

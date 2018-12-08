@@ -176,6 +176,14 @@ assert abs(z.test_val()-ans) < epsilon, fs+FAIL
 assert abs((x/y).test_val()-ans) < epsilon, fs+FAIL 
 print fs+PASS
 
+#    Testing divide by 0
+z = logP(0.25)/0.0
+print z, z.test_val()
+fs = 'logP() divide by zero '
+assert isinstance(z,logP), 'logP() / float __div__ returns wrong type'
+assert (z.test_val()==np.Inf), fs+FAIL
+print fs+PASS
+
 print '      Division tests '  + PASS 
 
 #############################

@@ -120,13 +120,12 @@ class hmm():
         print len(Y)
         for k in range(1,T):
             t = T-k-1
-            print 't: ', t, Y[t]
             for i in range(self.N):
                 b = logP(0)
                 for j in range(self.N):
                     a1 = logA[i,j] 
                     a2 = logB[j,Y[t+1]]
-                    a3 = beta[j]
+                    a3 = beta[t,j]
                     b += logA[i,j]*logB[j,Y[t+1]]*beta[k,j]
                 beta[k,i] = b
         return beta
@@ -185,7 +184,7 @@ class hmm():
                 d = '_'
                 if abs(delta[t,j].test_val()== 0.0):
                     d = '0'
-                print 't,j, delta:', t,j,delta[t,j], d
+                #print 't,j, delta:', t,j,delta[t,j], d
                 if not (delta[t,j].test_val()==0):   # fix: test for zero
                     c = '.'  # non-zero prob for state j
                 if j == qstar[t]:
@@ -220,16 +219,30 @@ class hmm():
                     b = self.transmat_[i,j]
                     c = self.emissionprob_[j,t]
                     d = beta[t,j]
+                    assert isinstance(a,logP)
+                    #assert isinstance(b,logP)
+                    #assert isinstance(c,logP)
+                    assert isinstance(d,logP)
+                    s1[t] = a*b*c*d
                     s1[t] += alpha[t-1,i]*self.transmat_[i,j]*self.emissionprob_[j,t]*beta[t,j]
         #numerator
         for t in range(1,T):
             for i in range(N):
-                for j in range(N):                
+                for j in range(N):
+                    print '------'
+                    print '    - ', alpha[t-1,i]
+                    print '    - ', self.transmat_[i,j]
+                    print '    - ', self.emissionprob_[j,t]
+                    print '    - ', beta[t,j]
+                    print '    - ', s1[t-1]
+                    print '    - '
                     xi[t,i,j] = alpha[t-1,i]*self.transmat_[i,j]*self.emissionprob_[j,t]*beta[t,j] / s1[t-1]
+            print 'xi[]', xi[t,2,2]
         gam = logPm(np.zeros((T,N)))     #       (38)
         for t in range(T):
             for j in range(N):
                 gam[t,j] +=xi[t,i,j]
+            print 'gam[]', gam[t,2]
         
         gam_v = logPv(np.zeros((N)))      #       (39a)
         for i in range(N):
@@ -245,6 +258,7 @@ class hmm():
         a_hat = logPm(np.zeros((N,N)))   #       (40b)
         for i in range(N):
             for j in range(N):
+                print 'x[], gam_v[]', xi_m[i,j],gam_v[i]
                 a_hat[i,j] = xi_m[i,j]/gam_v[i]
                 
         b_hat = logPm(np.zeros((N,NSYMBOLS)))  #   (40c)

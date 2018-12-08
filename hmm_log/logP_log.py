@@ -92,6 +92,8 @@ class logP():
         
     def __mul__(self, lp2):
         if isinstance(lp2,numbers.Number):
+            if lp2 == 0.0:
+                return logP(0)
             t = logP(0.5)
             t.lp = self.lp + np.log(lp2)
             return t
