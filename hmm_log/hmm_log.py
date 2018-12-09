@@ -72,40 +72,36 @@ class hmm():
             
     # Log-based forward algorithm for a single runout
     def forwardSL(self, Y, alpha=None): 
-        #'''       Y = all observations concatenated
+        '''       Y = all observations concatenated
                 #alpha = starting LOG probability of each state
-        #'''
-        #alpha = logPv(self.Pi)
+                
+        Returns:   alpha = 
+        '''
+        # initialization
+        T = len(Y)
+        N = self.N
         if alpha is None:
-            alpha = logPm(np.ones((len(Y), self.N)))          #       (19)
-            for j in range(self.N):
-                alpha[0,j] = logP(self.Pi[j]) * logP(self.emissionprob_[j,Y[0]])
-                                                  
-        #print 'forwardSL debug:'
-        #print '  alpha', alpha
+            alpha = logPm(np.ones((T,N)))          #       (19)
+            for j in range(N):
+                alpha[0,j] = logP(self.Pi[j] * self.emissionprob_[j,Y[0]])
         logA =  logPm(self.transmat_)
         logB =  logPm(self.emissionprob_)
-        ai = 1
-        for y in Y[1:]:  # emission sequence
+        #for y in Y[1:]:  # emission sequence
+        for t in range(T):
             tmpsum = logP(0)
             for st in range(self.N):
                 for prev_st in range(self.N):                #       (20)
                     a = logA[prev_st,st] 
-                    b = alpha[ai-1,prev_st]
+                    b = alpha[t-1,prev_st]
                     #print 'a: ', np.shape(a), type(a), a.lp
                     #print 'b: ', np.shape(b), type(b), b
                     tmpsum +=  a * b
                     #print 'tmpsum: ',tmpsum.lp
-                c = logB[st,y] 
+                c = logB[st,Y[t]] 
                 #print 'c: ', np.shape(c), type(c), c
-                alpha[ai,st] = c * tmpsum 
+                alpha[t,st] = c * tmpsum 
                 prev_st = st
-            ai += 1 
-        v = np.ones((len(Y),self.N))
-        for i in range(len(Y)):                              #   
-            for j in range(self.N):
-                v[i,j] = np.exp(alpha.m[i,j])
-        return v, alpha
+        return alpha
             
             
     #  Backward Algorithm
@@ -470,11 +466,16 @@ if __name__ == '__main__':
         
         print '\nForward Algorithm:'
 
-        print 'state estimate: '
-        print '       forwardS()   (regular math)'
-        print m.forwardS(em)
-        print '       forwardSL()  (log math)'
-        print '         (v-matrix)'
+        #print 'state estimate: '
+        #print '       forwardS()   (regular math)'
+        #print m.forwardS(em)        
+        #print '       forwardSL()  (log math)'
+        #print '         (v-matrix)'
+        
+        
+        print '\n     Test    Forward Algorithm:'
+        stseq =  [0, 0, 1, 1, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4]
+        em = [6, 3, 6, 6, 8, 12, 14, 10, 15, 14, 14, 15, 12, 13, 16]
         print m.forwardSL(em)[0]
         
         
