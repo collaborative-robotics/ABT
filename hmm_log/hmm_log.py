@@ -110,24 +110,25 @@ class hmm():
             
     #  Backward Algorithm
     #
-    def backwardSL(self, Y):
+    def backwardSL(self, Y):   #  See Rabiner
         T = len(Y)
         N = self.N
-        #print Y
+        print Y
         logA =  logPm(self.transmat_)
         logB =  logPm(self.emissionprob_)
-        beta = logPm(np.zeros((T,N)))
+        #initialization                                 (24)
+        beta = logPm(np.ones((T,N)))
         print len(Y)
-        for k in range(1,T):
-            t = T-k-1
+        for k in range(1,T):             #              (25)
+            t = T-2 - k
             for i in range(self.N):
-                b = logP(0)
-                for j in range(self.N):
+                bi = logP(0)
+                for j in range(N):
                     a1 = logA[i,j] 
                     a2 = logB[j,Y[t+1]]
                     a3 = beta[t,j]
-                    b += logA[i,j]*logB[j,Y[t+1]]*beta[k,j]
-                beta[k,i] = b
+                    bi += logA[i,j]*logB[j,Y[t+1]]*beta[t+2,j]
+                beta[t+1,i] = bi
         return beta
     
     
@@ -229,13 +230,13 @@ class hmm():
         for t in range(1,T):
             for i in range(N):
                 for j in range(N):
-                    print '------'
-                    print '    - ', alpha[t-1,i]
-                    print '    - ', self.transmat_[i,j]
-                    print '    - ', self.emissionprob_[j,t]
-                    print '    - ', beta[t,j]
-                    print '    - ', s1[t-1]
-                    print '    - '
+                    #print '------'
+                    #print '    - ', alpha[t-1,i]
+                    #print '    - ', self.transmat_[i,j]
+                    #print '    - ', self.emissionprob_[j,t]
+                    #print '    - ', beta[t,j]
+                    #print '    - ', s1[t-1]
+                    #print '    - '
                     xi[t,i,j] = alpha[t-1,i]*self.transmat_[i,j]*self.emissionprob_[j,t]*beta[t,j] / s1[t-1]
             print 'xi[]', xi[t,2,2]
         gam = logPm(np.zeros((T,N)))     #       (38)
@@ -258,7 +259,7 @@ class hmm():
         a_hat = logPm(np.zeros((N,N)))   #       (40b)
         for i in range(N):
             for j in range(N):
-                print 'x[], gam_v[]', xi_m[i,j],gam_v[i]
+                #print 'x[], gam_v[]', xi_m[i,j],gam_v[i]
                 a_hat[i,j] = xi_m[i,j]/gam_v[i]
                 
         b_hat = logPm(np.zeros((N,NSYMBOLS)))  #   (40c)
@@ -476,9 +477,18 @@ if __name__ == '__main__':
         print '         (v-matrix)'
         print m.forwardSL(em)[0]
         
-        print '\nBackward Algorithm:'
-        print m.backwardSL(em)
-     
+        
+        print '\n     Test    Backward Algorithm:'
+        stseq =  [0, 0, 1, 1, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4]
+        em = [6, 3, 6, 6, 8, 12, 14, 10, 15, 14, 14, 15, 12, 13, 16]
+          
+        beta_test =  m.backwardSL(em)
+        fs = '    backwards algorithm backwardSL(em) '
+        assert abs(beta_test[13,3].test_val()-0.1666666666667)<epsilon, fs+FAIL
+        assert abs(beta_test[ 3,0].test_val()-9.57396964103e-11) < 1.0E-20, fs+FAIL
+        print fs+PASS
+    
+        
         print '\n\n Test Viterbi Algorithm:'
         print 'st:',st
         print 'em:',em
