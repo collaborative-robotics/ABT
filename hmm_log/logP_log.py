@@ -132,6 +132,8 @@ class logP():
                 return lp2
             else:
                 return self
+        if (self.lp == np.Inf and lp2.lp == np.Inf):
+            return logP(np.Inf)
         else:
             if self.lp > lp2.lp:
                 t.lp = self.lp + EL(1+np.exp(lp2.lp-self.lp))

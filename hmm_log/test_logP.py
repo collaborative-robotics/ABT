@@ -105,6 +105,21 @@ logsum = np.log(0.25 + 0.25)
 fs = 'logP() __add__'
 assert abs(z.test_val()-0.500) < epsilon, fs+FAIL
 assert abs((x+y).test_val()-0.500) < epsilon, fs+FAIL
+
+
+#  infinity tests 
+z = x + logP(np.Inf)
+assert isinstance(z, logP), fs+FAIL
+assert (z.test_val() == np.Inf), fs+FAIL
+
+z = logP(np.Inf) + logP(0.25)
+assert isinstance(z, logP), fs+FAIL
+assert (z.test_val() == np.Inf), fs+FAIL
+
+z = logP(np.Inf) + logP(np.Inf)
+assert isinstance(z, logP), fs+FAIL
+assert (z.test_val() == np.Inf), fs+FAIL
+
 print fs+PASS
 
 ##############################          Multiplication 
@@ -372,6 +387,7 @@ fs = 'logPm  __add__() '
 assert abs(z[0,0].test_val() - (e+e*e)) < epsilon, fs + 'FAIL'
 assert abs(z[0,1].test_val() - (e+e*e)) < epsilon, fs + 'FAIL'
 assert abs(z[0,2].test_val() - (e*e*e + 1/e)) < epsilon, fs + 'FAIL'
+
 print fs + '         PASS'
 
 
