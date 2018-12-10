@@ -208,22 +208,24 @@ class hmm():
         N = self.N
         xi = logPm(np.zeros((T,N,N)))       #    (37)  Rab-->python: t+1 --> t,   t--> t-1 
         s1 = logPv(np.zeros(T))
-        #denominator
-        for t in range(T):
+        for t in range(1,T):
+            #denominator of (37)
+            denom = 0.0
+            #numerator
+            nslice = logPm(np.zeros((N,N)))
             for i in range(N):
                 for j in range(N):
                     a = alpha[t-1,i]
                     b = self.transmat_[i,j]
                     c = self.emissionprob_[j,t]
                     d = beta[t,j]
-                    assert isinstance(a,logP)
+                    #assert isinstance(a,logP)
                     #assert isinstance(b,logP)
                     #assert isinstance(c,logP)
                     assert isinstance(d,logP)
-                    s1[t] = a*b*c*d
-                    s1[t] += alpha[t-1,i]*self.transmat_[i,j]*self.emissionprob_[j,t]*beta[t,j]
-        #numerator
-        for t in range(1,T):
+                    nslice[i,j] = a*b*c*d
+                    denom += nslice[i,j].test_val()
+                    #denom += alpha[t-1,i]*self.transmat_[i,j]*self.emissionprob_[j,t]*beta[t,j]
             for i in range(N):
                 for j in range(N):
                     #print '------'
@@ -231,11 +233,15 @@ class hmm():
                     #print '    - ', self.transmat_[i,j]
                     #print '    - ', self.emissionprob_[j,t]
                     #print '    - ', beta[t,j]
-                    #print '    - ', s1[t-1]
+                    #print '    - ', denom
                     #print '    - '
-                    xi[t,i,j] = alpha[t-1,i]*self.transmat_[i,j]*self.emissionprob_[j,t]*beta[t,j] / s1[t-1]
+                    #xi[t,i,j] = alpha[t-1,i]*self.transmat_[i,j]*self.emissionprob_[j,t]*beta[t,j] / denom
+                    assert denom > epsilon, ' (Almost) divide by zero '
+                    xi[t,i,j] = nslice[i,j]/denom
                     assert xi[t,i,j].test_val() >= 0.0, ' Help!!'
+                    assert xi[t,i,j] != np.Inf, ' Help!! (inf)'
             print 'xi[]', xi[t,2,2]
+
         gam = logPm(np.zeros((T,N)))     #       (38)
         for t in range(T):
             for j in range(N):
