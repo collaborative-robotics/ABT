@@ -202,7 +202,7 @@ class hmm():
     #  Baum Welch Algorithm
     #
     def fit(self,Obs):
-        v,alpha = self.forwardSL(Obs)
+        alpha = self.forwardSL(Obs)
         beta  = self.backwardSL(Obs)
         T = len(Obs)
         N = self.N
@@ -234,6 +234,7 @@ class hmm():
                     #print '    - ', s1[t-1]
                     #print '    - '
                     xi[t,i,j] = alpha[t-1,i]*self.transmat_[i,j]*self.emissionprob_[j,t]*beta[t,j] / s1[t-1]
+                    assert xi[t,i,j].test_val() >= 0.0, ' Help!!'
             print 'xi[]', xi[t,2,2]
         gam = logPm(np.zeros((T,N)))     #       (38)
         for t in range(T):
@@ -472,13 +473,19 @@ if __name__ == '__main__':
         #print '       forwardSL()  (log math)'
         #print '         (v-matrix)'
         
+        TINY_EPSILON = 1.0E-20
         
         print '\n     Test    Forward Algorithm:'
+        fs = '   forward algorithm, forwardSL(em) '
         stseq =  [0, 0, 1, 1, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4]
         em = [6, 3, 6, 6, 8, 12, 14, 10, 15, 14, 14, 15, 12, 13, 16]
-        print m.forwardSL(em)[0]
-        
-        
+        alpha =  m.forwardSL(em)
+        #print alpha[14,4].test_val()
+        #print 'assert: ',abs(alpha[14,4].test_val()-9.35945852879e-13)
+        assert abs(alpha[14,4].test_val()-9.35945852879e-13) < TINY_EPSILON, fs+FAIL
+        assert abs(alpha[ 2,0].test_val()-0.000578703703704) < epsilon, fs+FAIL
+        print fs+PASS
+               
         print '\n     Test    Backward Algorithm:'
         stseq =  [0, 0, 1, 1, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4]
         em = [6, 3, 6, 6, 8, 12, 14, 10, 15, 14, 14, 15, 12, 13, 16]
@@ -486,7 +493,7 @@ if __name__ == '__main__':
         beta_test =  m.backwardSL(em)
         fs = '    backwards algorithm backwardSL(em) '
         assert abs(beta_test[13,3].test_val()-0.1666666666667)<epsilon, fs+FAIL
-        assert abs(beta_test[ 3,0].test_val()-9.57396964103e-11) < 1.0E-20, fs+FAIL
+        assert abs(beta_test[ 3,0].test_val()-9.57396964103e-11) < TINY_EPSILON , fs+FAIL
         print fs+PASS
     
         
@@ -509,5 +516,6 @@ if __name__ == '__main__':
         #
         #   Let's try the Baum Welch!
         #
+        print  '\n\n   Test Baum Welch fit() method'
         m.fit(em)
             

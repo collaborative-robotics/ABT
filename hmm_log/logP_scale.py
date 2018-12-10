@@ -22,9 +22,12 @@ SMALLEST_LOG = -1.0E306
 # 
 #    (overload * and + )
 class logP:
-    def __init__(self,x):
+    def __init__(self,p): 
+        fs = 'logP_scale() __init__ bad input' 
+        assert isinstance(p,numbers.Number), fs
+        assert p >= 0.00, fs
         self.exp = np.int64(0)
-        self.mant = np.float64(x)
+        self.mant = np.float64(p)
         
     def norm(self):
         if self.mant == 0.0:
@@ -58,25 +61,7 @@ class logP:
     
     def test_val(self):  # return a float64 for testing
         return np.float64(self.mant*10**self.exp)
-    
-    
-    #def __div__(self, lp2):
-        #if isinstance(lp2,numbers.Number):
-            #t = logP(0.5)
-            #t.lp = self.lp - np.log(lp2)
-            #return t
-        #if np.isnan(self.lp):
-            #t = logP(0)
-            #return t
-        #if np.isnan(lp2.lp):
-            #print 'LogP:   DIVIDE BY ZERO'
-            #t = logP(0)
-            #t.lp = np.Inf
-            #return t
-        #else:
-            #t = logP(0.5)
-            #t.lp = self.lp - lp2.lp
-            #return t
+
     
     def __div__(self,y):  
         DEBUG = True
