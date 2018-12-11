@@ -57,6 +57,9 @@ EEv = np.vectorize(EE)
 #      vectors and mats.
 class logP():
     def __init__(self,p):
+        if isinstance(p,logP):
+            self = p
+            return
         fs = 'logP_log() __init__ bad input' 
         assert isinstance(p,numbers.Number), fs
         assert p >= 0.00, fs

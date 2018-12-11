@@ -75,7 +75,10 @@ assert isinstance(x, logP), 'logP() returns wrong type'
 assert abs(x.test_val() - (0.25))< epsilon, 'logP() returns wrong value'
 assert abs(x.test_val() - (0.25))< epsilon, 'logP() returns wrong value'
 
+#  test self initialization
+z = logP(x)  # i.e. init with one of its own as argument
 
+assert isinstance(z,logP), 'logP_log: Problem with self initialization'
 
 ##################################
 #

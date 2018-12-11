@@ -23,6 +23,9 @@ SMALLEST_LOG = -1.0E306
 #    (overload * and + )
 class logP:
     def __init__(self,p): 
+        if isinstance(p,logP):
+            self = p
+            return
         fs = 'logP_scale() __init__ bad input' 
         assert isinstance(p,numbers.Number), fs
         assert p >= 0.00, fs
