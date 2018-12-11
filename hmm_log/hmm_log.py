@@ -210,22 +210,26 @@ class hmm():
         s1 = logPv(np.zeros(T))
         for t in range(1,T):
             #denominator of (37)
-            denom = 0.0
+            denom = logP(0.0)
             #numerator
             nslice = logPm(np.zeros((N,N)))
             for i in range(N):
+                a = alpha[t-1,i]
                 for j in range(N):
-                    a = alpha[t-1,i]
                     b = self.transmat_[i,j]
-                    c = self.emissionprob_[j,t]
+                    c = self.emissionprob_[j,Obs[t]]
                     d = beta[t,j]
                     #assert isinstance(a,logP)
                     #assert isinstance(b,logP)
                     #assert isinstance(c,logP)
                     assert isinstance(d,logP)
                     nslice[i,j] = a*b*c*d
-                    denom += nslice[i,j].test_val()
+                    print 'nslice: i,j,val:',i,j,nslice[i,j]
+                    denom = denom +  nslice[i,j]
                     #denom += alpha[t-1,i]*self.transmat_[i,j]*self.emissionprob_[j,t]*beta[t,j]
+            print denom.test_val()
+            assert denom.test_val() > TINY_EPSILON, ' (Almost) divide by zero '
+            denlogP = denom
             for i in range(N):
                 for j in range(N):
                     #print '------'
@@ -236,10 +240,9 @@ class hmm():
                     #print '    - ', denom
                     #print '    - '
                     #xi[t,i,j] = alpha[t-1,i]*self.transmat_[i,j]*self.emissionprob_[j,t]*beta[t,j] / denom
-                    assert denom > epsilon, ' (Almost) divide by zero '
-                    xi[t,i,j] = nslice[i,j]/denom
+                    xi[t,i,j] = nslice[i,j]/denlogP
                     assert xi[t,i,j].test_val() >= 0.0, ' Help!!'
-                    assert xi[t,i,j] != np.Inf, ' Help!! (inf)'
+                    assert xi[t,i,j].test_val() != np.Inf, ' Help!! (inf)'
             print 'xi[]', xi[t,2,2]
 
         gam = logPm(np.zeros((T,N)))     #       (38)
