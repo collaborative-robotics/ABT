@@ -224,12 +224,12 @@ class hmm():
                     #assert isinstance(c,logP)
                     assert isinstance(d,logP)
                     nslice[i,j] = a*b*c*d
-                    print 'nslice: i,j,val:',i,j,nslice[i,j]
+                    #print 'nslice: i,j,val:',i,j,nslice[i,j]
                     denom = denom +  nslice[i,j]
                     #denom += alpha[t-1,i]*self.transmat_[i,j]*self.emissionprob_[j,t]*beta[t,j]
-            print denom.test_val()
+            #print denom.test_val()
             assert denom.test_val() > TINY_EPSILON, ' (Almost) divide by zero '
-            denlogP = denom
+            #denlogP = denom
             for i in range(N):
                 for j in range(N):
                     #print '------'
@@ -240,26 +240,45 @@ class hmm():
                     #print '    - ', denom
                     #print '    - '
                     #xi[t,i,j] = alpha[t-1,i]*self.transmat_[i,j]*self.emissionprob_[j,t]*beta[t,j] / denom
-                    xi[t,i,j] = nslice[i,j]/denlogP
-                    assert xi[t,i,j].test_val() >= 0.0, ' Help!!'
-                    assert xi[t,i,j].test_val() != np.Inf, ' Help!! (inf)'
-            print 'xi[]', xi[t,2,2]
+                    xi[t-1,i,j] = nslice[i,j]/denom
+                    assert xi[t-1,i,j].test_val() >= 0.0, ' Help!!'
+                    assert xi[t-1,i,j].test_val() != np.Inf, ' Help!! (inf)'
+            #print 'xi[]', xi[t-1,2,2]
 
+        #print '------------xi[2]------'
+        #t = 2
+        #for i in range(N):
+            #for j in range(N):
+                #print xi[t,i,j],
+            #print ''
+        #print '------------xi[5]------'
+        #t = 5
+        #for i in range(N):
+            #for j in range(N):
+                #print xi[t,i,j],
+            #print ''
+        #print '------------xi[10]------'
+        #t = 10
+        #for i in range(N):
+            #for j in range(N):
+                #print xi[t,i,j],
+            #print ''
+            
         gam = logPm(np.zeros((T,N)))     #       (38)
         for t in range(T):
-            for j in range(N):
-                gam[t,j] +=xi[t,i,j]
-            print 'gam[]', gam[t,2]
+            for i in range(N):
+                for j in range(N):
+                    gam[t,i] += xi[t,i,j]
         
         gam_v = logPv(np.zeros((N)))      #       (39a)
         for i in range(N):
-            for t in range(T-2):
+            for t in range(T-1):
                 gam_v[i] += gam[t,i] 
 
         xi_m = logPm(np.zeros((N,N)))     #       (39b)
         for i in range(N):
             for j in range(N):
-                for t in range(T-2):
+                for t in range(T-1):      # sum all values except last one
                     xi_m[i,j] += xi[t,i,j]
                     
         a_hat = logPm(np.zeros((N,N)))   #       (40b)
