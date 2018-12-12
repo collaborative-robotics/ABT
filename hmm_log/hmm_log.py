@@ -202,6 +202,12 @@ class hmm():
     #  Baum Welch Algorithm
     #
     def fit(self,Obs):
+        print '-------------  A (starting self.transmat_) --------------'
+        print self.transmat_
+    
+        print '-------------  B (starting self.emissionprob_) --------------'
+        print self.emissionprob_
+    
         alpha = self.forwardSL(Obs)
         beta  = self.backwardSL(Obs)
         T = len(Obs)
@@ -222,12 +228,15 @@ class hmm():
                     #assert isinstance(a,logP)
                     #assert isinstance(b,logP)
                     #assert isinstance(c,logP)
-                    assert isinstance(d,logP)
+                    #assert isinstance(d,logP)
                     nslice[i,j] = a*b*c*d
-                    #print 'nslice: i,j,val:',i,j,nslice[i,j]
+                    #print 'nslice: i,j,val:',i,j,nslice[i,j].test_val()
                     denom = denom +  nslice[i,j]
+                    
+                    #print '           denom: ', denom.test_val()
                     #denom += alpha[t-1,i]*self.transmat_[i,j]*self.emissionprob_[j,t]*beta[t,j]
-            #print denom.test_val()
+            print 't, denom: ',t,denom.test_val()
+            assert denom.test_val() >= 0.0, 'negative denominator'
             assert denom.test_val() > TINY_EPSILON, ' (Almost) divide by zero '
             #denlogP = denom
             for i in range(N):
@@ -285,21 +294,27 @@ class hmm():
         for i in range(N):
             for j in range(N):
                 #print 'x[], gam_v[]', xi_m[i,j],gam_v[i]
-                a_hat[i,j] = xi_m[i,j]/gam_v[i]
+                self.transmat_[i,j] = (xi_m[i,j]/gam_v[i]).test_val()
                 
         b_hat = logPm(np.zeros((N,NSYMBOLS)))  #   (40c)
+                 
+        dsum = logPv(np.zeros((N)))
+        for t in range(T):           #  comp denominator term
+            for j in range(N):
+                dsum[j] += gam[t,j]
         for k in range(NSYMBOLS):
             for j in range(N):
-                sum = logP( 0.0 )
-                num = logP( 0.0 )
+                nsum = logP( 0.0 ) # numerator
                 for t in range(T):
                     if Obs[t] == k:
-                        num+=gam[t,j]
-                    sum += gam[t,j]
-                b_hat[j,k] = num/sum
+                        nsum+=gam[t,j]
+                self.emissionprob_[j,k] = (nsum/dsum[j]).test_val()
                 
-        print '-------------  Ahat  --------------'
-        print a_hat
+        print '-------------  Ahat (new self.transmat_) --------------'
+        print self.transmat_
+    
+        print '-------------  Bhat (new self.emissionprob_) --------------'
+        print self.emissionprob_
     
                 
         
@@ -545,5 +560,13 @@ if __name__ == '__main__':
         #   Let's try the Baum Welch!
         #
         print  '\n\n   Test Baum Welch fit() method'
+        m.fit(em)
+        print '\n     Test    Forward Algorithm:'
+        fs = '   forward algorithm, forwardSL(em) '
+        stseq =  [0, 0, 1, 1, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4]
+        em = [6, 3, 6, 6, 8, 12, 14, 10, 15, 14, 14, 15, 12, 13, 16]
+        alpha =  m.forwardSL(em)
+        print '    completed fwd alg \n          begin second BW'
+        m.fit(em)
         m.fit(em)
             
