@@ -82,11 +82,8 @@ class hmm():
         N = self.N
         if alpha is None:
             alpha = logPm(np.ones((T,N)))          #       (19)
-            print 'starting alpha[0,j]'
             for j in range(N):
                 alpha[0,j] = logP(self.Pi[j] * self.emissionprob_[j,Y[0]])
-                print alpha[0,j],
-        print''
         logA =  logPm(self.transmat_)
         logB =  logPm(self.emissionprob_)
         #for y in Y[1:]:  # emission sequence
@@ -96,12 +93,8 @@ class hmm():
                 for i in range(self.N):                #       (20)
                     a = logA[i,j] 
                     b = alpha[t-1,i]
-                    #print 'a: ', np.shape(a), type(a), a.lp
-                    #print 'b: ', np.shape(b), type(b), b
                     tmpsum +=  a * b
-                    #print 'tmpsum: ',tmpsum.lp
-                c = logB[j,Y[t]] 
-                #print 'c: ', np.shape(c), type(c), c
+                c = logB[j,Y[t]]
                 alpha[t,j] = c * tmpsum 
         return alpha
             
@@ -220,53 +213,15 @@ class hmm():
                 for j in range(N):
                     b = self.transmat_[i,j]
                     c = self.emissionprob_[j,Obs[t]]
-                    d = beta[t,j]
-                    if t == 0:
-                        print 'a,b,c,d: ', a,b,c,d
-                    #assert isinstance(a,logP)
-                    #assert isinstance(b,logP)
-                    #assert isinstance(c,logP)
-                    #assert isinstance(d,logP)
-                    nslice[i,j] = a*b*c*d
-                    #print 'nslice: i,j,val:',i,j,nslice[i,j]
-                    denom = denom +  nslice[i,j]
-                    #denom += alpha[t-1,i]*self.transmat_[i,j]*self.emissionprob_[j,t]*beta[t,j]
-            print 't,d:',t,denom.test_val()
-            assert denom.test_val() > TINY_EPSILON, ' (Almost) divide by zero '
-            #denlogP = denom
+                    d = beta[t,j] 
+                    nslice[i,j] = a*b*c*d 
+                    denom = denom +  nslice[i,j] 
+            assert denom.test_val() > TINY_EPSILON, ' (Almost) divide by zero ' 
             for i in range(N):
                 for j in range(N):
-                    #print '------'
-                    #print '    - ', alpha[t-1,i]
-                    #print '    - ', self.transmat_[i,j]
-                    #print '    - ', self.emissionprob_[j,t]
-                    #print '    - ', beta[t,j]
-                    #print '    - ', denom
-                    #print '    - '
-                    #xi[t,i,j] = alpha[t-1,i]*self.transmat_[i,j]*self.emissionprob_[j,t]*beta[t,j] / denom
                     xi[t-1,i,j] = nslice[i,j]/denom
                     assert xi[t-1,i,j].test_val() >= 0.0, ' Help!!'
                     assert xi[t-1,i,j].test_val() != np.Inf, ' Help!! (inf)'
-            #print 'xi[]', xi[t-1,2,2]
-
-        #print '------------xi[2]------'
-        #t = 2
-        #for i in range(N):
-            #for j in range(N):
-                #print xi[t,i,j],
-            #print ''
-        #print '------------xi[5]------'
-        #t = 5
-        #for i in range(N):
-            #for j in range(N):
-                #print xi[t,i,j],
-            #print ''
-        #print '------------xi[10]------'
-        #t = 10
-        #for i in range(N):
-            #for j in range(N):
-                #print xi[t,i,j],
-            #print ''
             
         gam = logPm(np.zeros((T,N)))     #       (38)
         for t in range(T):
@@ -303,33 +258,13 @@ class hmm():
                 b_hat[j,k] = (num/sum).test_val()
                 
         self.transmat_ = a_hat
-        print '-----------new transmat_ -----------'
-        print self.transmat_
-        self.emissionprob_ = b_hat
-        print '-----------new emissionprob_ -----------'
-        print self.emissionprob_
+        #print '-----------new transmat_ -----------'
+        #print self.transmat_
+        #self.emissionprob_ = b_hat
+        #print '-----------new emissionprob_ -----------'
+        #print self.emissionprob_
         
-            
-    
-    # Log-based forward algorithm for multiple runouts
-    '''
-    
-     !!!  not reallly a useful computation  !!!
-       #Y = all observations concatenated
-       #L = list of runout lengths.
-       
-       #returns:  v = vector of probabilities for each state 
-                 #alpha = vector of log probabilities for each state
-    '''
-    def forwardNSL(self, Y,L):
-        i = 0 
-        alpha = logPv(self.Pi) * logPv(self.emissionprob_[:,Y[0]])
-        for l in L:
-            y = Y[i:i+l]
-            v, alpha = self.forwardSL(y,alpha)  #  update alpha from each sequence
-            i = i+l+1 
-        return v,alpha
-    
+             
     def sample(self,T): 
         states = []
         emissions = []
@@ -540,12 +475,16 @@ if __name__ == '__main__':
         print 'st:',st
         print 'em:',em
         #print m.emissionprob_
-        stseq =  [0, 0, 1, 1, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4]
-        em = [6, 3, 6, 6, 8, 12, 14, 10, 15, 14, 14, 15, 12, 13, 16]
+        stseq =  [0, 0, 1, 1, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4,4,4]
+        #  NOTE: for BW testing w/ non stationary model, last state must be
+        #        occupied more than once!
+        em = [6, 3, 6, 6, 8, 12, 14, 10, 15, 14, 14, 15, 12, 13, 16,16,16]
         
-        est_correct = [0,0,1,1,2,3,3,3,3,3,3,3,3,4,4]
-        
-        assert len(em) == len(est_correct), 'test setup problem'
+        est_correct = [0,0,1,1,2,3,3,3,3,3,3,3,3,4,4,4,4]
+        fs = 'test setup problem - data length mismatch'
+        assert len(em) == len(stseq), fs
+        assert len(em) == len(est_correct), fs
+
         qs = m.Viterbi(em)
         fs = 'Vitermi state estimation tests'
         for i,q in enumerate(qs):
