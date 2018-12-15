@@ -63,7 +63,7 @@ class logP:
         self.__init__(x)
     
     def test_val(self):  # return a float64 for testing
-        return np.float64(self.mant*10**self.exp)
+        return np.float64(self.mant*10.00**self.exp)
 
     
     def __div__(self,y):  
