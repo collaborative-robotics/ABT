@@ -109,6 +109,11 @@ fs = 'logP() __add__'
 assert abs(z.test_val()-0.500) < epsilon, fs+FAIL
 assert abs((x+y).test_val()-0.500) < epsilon, fs+FAIL
 
+# add a scalar
+
+z = logP(0.25) + 0.5
+assert abs(z.test_val()-0.750) < epsilon, fs+FAIL
+
 
 #  infinity tests 
 z = x + logP(np.Inf)

@@ -130,6 +130,8 @@ class logP():
     def __add__(self, lp2):
         #print 'add: ',self.test_val(), lp2.test_val()
         t = logP(.5)
+        if not isinstance(lp2,logP):
+            lp2 = logP(lp2)
         if np.isnan(self.lp) or np.isnan(lp2.lp):
             if np.isnan(self.lp):
                 return lp2
