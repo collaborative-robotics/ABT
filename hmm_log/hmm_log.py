@@ -87,7 +87,7 @@ class hmm():
         logA =  logPm(self.transmat_)
         logB =  logPm(self.emissionprob_)
         #for y in Y[1:]:  # emission sequence
-        for t in range(1,T-1):
+        for t in range(1,T):         #    Rab t+1 ->  t,  t --> t-1
             tmpsum = logP(0)
             for j in range(self.N):
                 for i in range(self.N):                #       (20)
@@ -96,9 +96,18 @@ class hmm():
                     tmpsum +=  a * b
                 c = logB[j,Y[t]]
                 alpha[t,j] = c * tmpsum 
+        print '------------ alpha ----------------'
+        print alpha
         return alpha
             
-            
+    def POlambda(self, Y):
+        al = self.forwardSL(Y)
+        T = len(Y)-1
+        a = logP(0.0)
+        for j in range(self.N):
+            a += al[T,j].test_val()
+        return a
+    
     #  Backward Algorithm
     #
     def backwardSL(self, Y):   #  See Rabiner
@@ -216,17 +225,18 @@ class hmm():
                     d = beta[t,j] 
                     nslice[i,j] = a*b*c*d 
                     denom = denom +  nslice[i,j] 
-            assert denom.test_val() > TINY_EPSILON, ' (Almost) divide by zero ' 
+            #assert denom.test_val() > TINY_EPSILON, ' (Almost) divide by zero ' 
             for i in range(N):
                 for j in range(N):
                     xi[t-1,i,j] = nslice[i,j]/denom
-                    assert xi[t-1,i,j].test_val() >= 0.0, ' Help!!'
-                    assert xi[t-1,i,j].test_val() != np.Inf, ' Help!! (inf)'
+                    #assert xi[t-1,i,j].test_val() >= 0.0, ' Help!!'
+                    #assert xi[t-1,i,j].test_val() != np.Inf, ' Help!! (inf)'
             
         gam = logPm(np.zeros((T,N)))     #       (38)
-        for t in range(T):
+        for t in range(T-1):
             for i in range(N):
                 for j in range(N):
+                    print 'xi: ',  t,i,j,xi[t,i,j].test_val()
                     gam[t,i] += xi[t,i,j]
         
         gam_v = logPv(np.zeros((N)))      #       (39a)
@@ -495,10 +505,20 @@ if __name__ == '__main__':
         #   Let's try the Baum Welch!
         #
         print  '\n\n   Test Baum Welch fit() method'
+        p0 = m.POlambda(em)
         m.fit(em)
+        p1 = m.POlambda(em)
         r = raw_input('<cr>')
         m.fit(em)
+        p2 = m.POlambda(em)
         r = raw_input('<cr>')
         m.fit(em)
-
+        p3 = m.POlambda(em)
+        
+        print "    Change in PO-lambda: "
+        print p0
+        print p1
+        print p2
+        print p3
+        
             
