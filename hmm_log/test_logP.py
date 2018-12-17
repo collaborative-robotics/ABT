@@ -26,13 +26,13 @@ from logP_matrix import *
 print '\n\n  Testing logP() class and related ...\n'
 
 p = logP(0.5)
-a = p.id()  # figure out what type of logP()
+libname = p.id()  # figure out what type of logP()
 
-print '            Using: ', a,'\n\n'
+print '            Using: ', libname,'\n\n'
 
 e = np.exp(1) 
 
-if (a == 'log'):
+if (libname == 'log'):
     #####################################
     # test basic log functions
 
@@ -65,7 +65,7 @@ if (a == 'log'):
     print ' eexp() tests    PASSED'
 
 ###################################
-# test logP classes and operator overlays
+# test logP classes and operator overloads
 x = logP(0.25)
 y = logP(0.25)
 
@@ -127,6 +127,7 @@ assert (z.test_val() == np.Inf), fs+FAIL
 z = logP(np.Inf) + logP(np.Inf)
 assert isinstance(z, logP), fs+FAIL
 assert (z.test_val() == np.Inf), fs+FAIL
+
 
 print fs+PASS
 
@@ -266,7 +267,28 @@ assert abs(m[0] - (e+e*e)) < epsilon, fs + 'FAIL'
 assert abs(m[1] - (e+e*e)) < epsilon, fs + 'FAIL'
 assert abs(m[2] - (e*e*e + 1/e)) < epsilon, fs + 'FAIL'
 
-print fs + '         PASS'
+#  logPv add the elements:
+x = np.array([[1,2,3,4,5],
+              [1,2,3,4,5],
+              [1,2,3,4,5],
+              [1,2,3,4,5],
+              [1,2,3,4,5]   ])
+al = logPm(x/10.0)
+
+T = 4
+a = logP(0.0) 
+print ' adding alph'
+for j in range(5):
+    x = al[T,j]
+    print '        ',al[T,j], al[T,j].test_val(), x, x.test_val()
+    a = a + x
+
+print a.test_val()
+assert a.test_val() == 1.5, fs + libname
+
+
+print fs + libname+ '         PASS'
+quit()
 
 ###############################################3
 #   maxlv() test 
@@ -434,6 +456,6 @@ assert (t.test_val()-0.0)<epsilon, fs+FAIL
 print fs+PASS
 
 
-print '\n\n           logPx() --  ALL TESTS PASS \n\n'
+print '\n\n           logPx() --  ALL TESTS PASS  with '+ libname+'\n\n'
 
     
