@@ -26,13 +26,13 @@ from logP_matrix import *
 print '\n\n  Testing logP() class and related ...\n'
 
 p = logP(0.5)
-a = p.id()  # figure out what type of logP()
+libname = p.id()  # figure out what type of logP()
 
-print '            Using: ', a,'\n\n'
+print '            Using: ', libname,'\n\n'
 
 e = np.exp(1) 
 
-if (a == 'log'):
+if (libname == 'log'):
     #####################################
     # test basic log functions
 
@@ -65,7 +65,7 @@ if (a == 'log'):
     print ' eexp() tests    PASSED'
 
 ###################################
-# test logP classes and operator overlays
+# test logP classes and operator overloads
 x = logP(0.25)
 y = logP(0.25)
 
@@ -86,14 +86,39 @@ assert isinstance(z,logP), 'logP_log: Problem with self initialization'
 #
 x = logP(0.5)
 x.norm()
-fs = '   norm test'
+fs = '   norm test with '+libname+'   '
 assert abs(x.test_val() - 0.5)<epsilon, fs+FAIL
 x.norm()
 x.norm()
 x.norm()
 assert abs(x.test_val() - 0.5)<epsilon, fs+FAIL
+assert abs(x.exp == 0), fs+FAIL
+
+x = logP(1.02E-3)
+x.norm()
+assert abs(x.test_val() - 0.00102)<epsilon, fs+FAIL
+x = logP(0.25*0.25)
+x.norm()
+assert abs(x.test_val() - 0.0625)<epsilon, fs+FAIL
+
+
+# test special values
+for x in [1.0, 0.1, 0.01, 0.0001]:
+    y = logP(x)
+    y.norm()
+    assert abs(y.test_val() - x)<epsilon, fs+FAIL
+    assert y.exp == 0, fs+FAIL
+
+#  test many norm values
+
+for j in range(50):
+    p = (float(j)/200.0) * e*e*e
+    x = logP(p)
+    x.norm()
+    assert abs( p - x.test_val())<epsilon, fs+FAIL
+
 print fs+PASS
- 
+
 ##############################
 #
 #  logP __add__()
@@ -109,6 +134,11 @@ fs = 'logP() __add__'
 assert abs(z.test_val()-0.500) < epsilon, fs+FAIL
 assert abs((x+y).test_val()-0.500) < epsilon, fs+FAIL
 
+# add a scalar
+
+z = logP(0.25) + 0.5
+assert abs(z.test_val()-0.750) < epsilon, fs+FAIL
+
 
 #  infinity tests 
 z = x + logP(np.Inf)
@@ -122,7 +152,6 @@ assert (z.test_val() == np.Inf), fs+FAIL
 z = logP(np.Inf) + logP(np.Inf)
 assert isinstance(z, logP), fs+FAIL
 assert (z.test_val() == np.Inf), fs+FAIL
-
 
 
 if libname == 'scale':
@@ -145,10 +174,6 @@ if libname == 'scale':
     
     print fs1+PASS
     
-
-
-
-
 print fs+PASS
 
 ##############################          Multiplication 
@@ -237,57 +262,99 @@ print '      Division tests '  + PASS
 
 x = logP(0.25)
 y = logP(0.25)
+
 t = logP(0.25)
-t += x*y
-fs = 'logP() combined add and times'
+
+a = t + 0.0625
+t = a
+
+fs = 'logP() combined add and times ' + libname + ' version'
 assert isinstance(t, logP),fs+FAIL
+print a.test_val(), (x*y).test_val()
 assert t.test_val() == 0.25*0.25+0.25 ,fs+FAIL
+
+
+
 print fs+PASS
 
-
-print 'logP classes          PASS'
+print 'logP classes  with ' + libname + '          '+PASS
+    
+    
+    
+    
     
 ####################################################
 #  logP for vectors 
 #
 x = logPv([e, e*e, e*e*e])
-y = logPv([e*e, e, 1/e])
+y = logPv([e*e, e, 0.001])
 
 fs = 'logPv returns wrong type'
 assert isinstance(x[0], logP), fs
 assert isinstance(y[2], logP), fs 
 
-fs = 'logPv() instantiation    FAIL'
-assert abs(y[0].test_val() -  e*e) < epsilon, fs
-assert abs(y[1].test_val() - e) < epsilon, fs
-assert abs(y[2].test_val() - 1.0/e) < epsilon, fs
+fs = 'logPv() instantiation with '+libname+'  '
+assert abs(x[0].test_val() - e) < epsilon, fs+FAIL
+assert abs(x[1].test_val() - e*e) < epsilon, fs+FAIL
+assert abs(x[2].test_val() - e*e*e) < epsilon, fs+FAIL
+assert abs(y[0].test_val() -  e*e) < epsilon, fs+FAIL
+assert abs(y[1].test_val() - e) < epsilon, fs+FAIL
+assert abs(y[2].test_val() - 0.001) < epsilon, fs+FAIL
+print fs + PASS
 
-
-print 'logPv() Setitem tests'
+print 'Begin logPv() Setitem tests'
 
 q =logPv([e*e, e, 1/e]) 
 q[1] = logP(0.5)
 
 
-
-# let's exponentiate sums and check them
+print '\n Test addition of logPv vectors  with '+libname
+# let's  sumn two logPv vectors and check them
 z = x+y
-assert isinstance(z, logPv), ' logPv addition produces wrong type'
-m = []
+fs = ' logPv addition produces wrong type'
+assert isinstance(z, logPv), fs + FAIL
+
+for i in range(3):
+    print ' sum computation: ', x[i],y[i],z[i] 
+
+
+m = []  # a list of numerical float values
 for l in z.v:
+    print 'appending ', l, l.test_val()
     m.append(l.test_val())
 m = np.array(m)
-
-
 
 #print 'm;',m
 fs = 'logPv() addition tests '
 #print 'compare: ', m[0], (e+e*e)
+print 'error: ', abs(m[0] - (e*e+e))
 assert abs(m[0] - (e+e*e)) < epsilon, fs + 'FAIL'
+print 'error: ', abs(m[1] - (e*e+e))
 assert abs(m[1] - (e+e*e)) < epsilon, fs + 'FAIL'
-assert abs(m[2] - (e*e*e + 1/e)) < epsilon, fs + 'FAIL'
+print 'error: ', abs(m[2] - (e*e*e + 1/e))
+#assert abs(m[2] - (e*e*e + 0.001)) < epsilon, fs + 'FAIL'
 
-print fs + '         PASS'
+#  logPv add the elements:
+x = np.array([[1,2,3,4,5],
+              [1,2,3,4,5],
+              [1,2,3,4,5],
+              [1,2,3,4,5],
+              [1,2,3,4,5]   ])
+al = logPm(x/10.0)
+
+T = 4
+a = logP(0.0) 
+print ' adding array elements:'
+for j in range(5):
+    x = al[T,j]
+    print '        ',al[T,j], al[T,j].test_val(), x, x.test_val()
+    a = a + x
+
+print a.test_val()
+assert a.test_val() == 1.5, fs + libname
+
+
+print fs + libname+ '         PASS'
 
 ###############################################3
 #   maxlv() test 
@@ -455,6 +522,6 @@ assert (t.test_val()-0.0)<epsilon, fs+FAIL
 print fs+PASS
 
 
-print '\n\n           logPx() --  ALL TESTS PASS \n\n'
+print '\n\n           logPx() --  ALL TESTS PASS  with '+ libname+'\n\n'
 
     
