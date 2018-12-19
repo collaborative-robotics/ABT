@@ -123,6 +123,32 @@ z = logP(np.Inf) + logP(np.Inf)
 assert isinstance(z, logP), fs+FAIL
 assert (z.test_val() == np.Inf), fs+FAIL
 
+
+
+if libname == 'scale':
+    fs1 = 'logP norm, special cases for scale'
+
+    # test some special cases
+
+    a = logP(0.5)
+    b = logP(0.5)
+    a.exp = -200
+    a.mant = 1.7E-05
+    b.exp = -400
+    b.mant 3.2E06
+    a,b = lPnorm2(a,b)
+    
+    assert (a.exp == -200), fs1 + FAIL
+    assert (a.mant - 1.7E-05)<epsilon, fs1 + FAIL
+    assert (b.exp == -200), fs1 + FAIL
+    assert (b.mant = 3.2E-194)< epsilon, fs1+FAIL
+    
+    print fs1+PASS
+    
+
+
+
+
 print fs+PASS
 
 ##############################          Multiplication 

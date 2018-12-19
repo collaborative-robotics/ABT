@@ -132,4 +132,19 @@ class logP:
         b.norm
         c = logP(self.mant+b.mant)
         return c
+    
+def lPnorm2(a,b):
+    ''' two argument norm for addition operator with superfloats
+    '''
+    ea = a.exp + np.log10(a.mant)
+    eb = b.exp + np.log10(b.mant)
+    ediff = a.exp-b.exp
+    if ediff > 0:
+        b.exp += ediff
+        b.mant = b.mant / (10.0**ediff)
+    elif ediff < 0:
+        a.exp -= ediff
+        a.mant *= (10.0**ediff)
+    # if adiff == 0 do nothing
+    return
 
