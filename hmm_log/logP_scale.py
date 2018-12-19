@@ -146,5 +146,5 @@ def lPnorm2(a,b):
         a.exp -= ediff
         a.mant *= (10.0**ediff)
     # if adiff == 0 do nothing
-    return
+    return a,b
 
