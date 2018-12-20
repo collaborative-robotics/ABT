@@ -80,43 +80,64 @@ z = logP(x)  # i.e. init with one of its own as argument
 
 assert isinstance(z,logP), 'logP_log: Problem with self initialization'
 
-##################################
-#
-#  test logP_norm()
-#
-x = logP(0.5)
-x.norm()
-fs = '   norm test with '+libname+'   '
-assert abs(x.test_val() - 0.5)<epsilon, fs+FAIL
-x.norm()
-x.norm()
-x.norm()
-assert abs(x.test_val() - 0.5)<epsilon, fs+FAIL
-assert abs(x.exp == 0), fs+FAIL
-
-x = logP(1.02E-3)
-x.norm()
-assert abs(x.test_val() - 0.00102)<epsilon, fs+FAIL
-x = logP(0.25*0.25)
-x.norm()
-assert abs(x.test_val() - 0.0625)<epsilon, fs+FAIL
-
-
-# test special values
-for x in [1.0, 0.1, 0.01, 0.0001]:
-    y = logP(x)
-    y.norm()
-    assert abs(y.test_val() - x)<epsilon, fs+FAIL
-    assert y.exp == 0, fs+FAIL
-
-#  test many norm values
-
-for j in range(50):
-    p = (float(j)/200.0) * e*e*e
-    x = logP(p)
+if libname=='scale':
+    ##################################
+    #
+    #  test logP_norm()
+    #
+    x = logP(0.5)
     x.norm()
-    assert abs( p - x.test_val())<epsilon, fs+FAIL
+    fs = '   norm test with '+libname+'   '
+    assert abs(x.test_val() - 0.5)<epsilon, fs+FAIL
+    x.norm()
+    x.norm()
+    x.norm()
+    assert abs(x.test_val() - 0.5)<epsilon, fs+FAIL
+    assert abs(x.exp == 0), fs+FAIL
 
+    x = logP(1.02E-3)
+    x.norm()
+    assert abs(x.test_val() - 0.00102)<epsilon, fs+FAIL
+    x = logP(0.25*0.25)
+    x.norm()
+    assert abs(x.test_val() - 0.0625)<epsilon, fs+FAIL
+
+    #  test many norm values
+
+    for j in range(50):
+        p = (float(j)/200.0) * e*e*e
+        x = logP(p)
+        x.norm()
+        assert abs( p - x.test_val())<epsilon, fs+FAIL
+
+    # test special values
+    for x in [1.0, 0.1, 0.01, 0.0001]:
+        y = logP(x)
+        
+        print 'before: ', y.mant, y.exp
+        
+        y.norm()
+        print '  after: ', y.mant, y.exp    
+        assert abs(y.test_val() - x)<epsilon, fs+FAIL
+
+    fs1 = 'logP norm, special cases for scale'
+
+    # test some special cases
+
+    a = logP(0.5)
+    b = logP(0.5)
+    a.exp = -200
+    a.mant = 1.7E-05
+    b.exp = -400
+    b.mant = 3.2E06
+    a,b = lPnorm2(a,b)
+    
+    assert (a.exp == -200), fs1 + FAIL
+    assert (a.mant - 1.7E-05)<epsilon, fs1 + FAIL
+    assert (b.exp == -200), fs1 + FAIL
+    assert (b.mant - 3.2E-194)< epsilon, fs1+FAIL
+    
+    print fs1+PASS
 print fs+PASS
 
 ##############################
@@ -152,27 +173,6 @@ assert (z.test_val() == np.Inf), fs+FAIL
 z = logP(np.Inf) + logP(np.Inf)
 assert isinstance(z, logP), fs+FAIL
 assert (z.test_val() == np.Inf), fs+FAIL
-
-
-if libname == 'scale':
-    fs1 = 'logP norm, special cases for scale'
-
-    # test some special cases
-
-    a = logP(0.5)
-    b = logP(0.5)
-    a.exp = -200
-    a.mant = 1.7E-05
-    b.exp = -400
-    b.mant 3.2E06
-    a,b = lPnorm2(a,b)
-    
-    assert (a.exp == -200), fs1 + FAIL
-    assert (a.mant - 1.7E-05)<epsilon, fs1 + FAIL
-    assert (b.exp == -200), fs1 + FAIL
-    assert (b.mant = 3.2E-194)< epsilon, fs1+FAIL
-    
-    print fs1+PASS
     
 print fs+PASS
 

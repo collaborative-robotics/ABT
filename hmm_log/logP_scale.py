@@ -128,13 +128,19 @@ class logP:
         return z
     
     def __add__(self,b):
-        self.norm
-        b.norm
-        c = logP(self.mant+b.mant)
+        c = logP(0.5)
+        if isinstance(b,logP):
+            a,b = lPnorm2(self, b)   # make sure both have same exponent (== to biggest)
+            c.exp = a.exp
+            c.mant = a.mant+b.mant
+        else:
+            c.exp = self.exp
+            c.mant = self.mant + b
         return c
     
 def lPnorm2(a,b):
     ''' two argument norm for addition operator with superfloats
+        normalize smaller value to have same exp as bigger value.
     '''
     ea = a.exp + np.log10(a.mant)
     eb = b.exp + np.log10(b.mant)
