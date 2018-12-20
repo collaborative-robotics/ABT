@@ -105,7 +105,8 @@ class hmm():
         T = len(Y)-1
         a = logP(0.0)
         for j in range(self.N):
-            a += al[T,j].test_val()
+            b = al[T,j].test_val()
+            a = a + b 
         return a
     
     #  Backward Algorithm
@@ -242,7 +243,7 @@ class hmm():
         for t in range(T-1):
             for i in range(N):
                 for j in range(N):
-                    print 'xi: ',  t,i,j,xi[t,i,j].test_val()
+                    #print 'xi: ',  t,i,j,xi[t,i,j].test_val()
                     gam[t,i] += xi[t,i,j]
         
         gam_v = logPv(np.zeros((N)))      #       (39a)
@@ -265,12 +266,13 @@ class hmm():
         b_hat = np.zeros((N,NSYMBOLS))  #   (40c)
         for k in range(NSYMBOLS):
             for j in range(N):
-                nsum = logP( 0.0 ) # numerator
+                dsum = logP(0.0)  # denominator
+                nsum = logP(0.0) # numerator
                 for t in range(T):
                     if Obs[t] == k:
-                        num+=gam[t,j]
-                    sum += gam[t,j]
-                b_hat[j,k] = (num/sum).test_val()
+                        nsum+=gam[t,j]
+                    dsum += gam[t,j]
+                b_hat[j,k] = (nsum/dsum).test_val()
                 
         self.transmat_ = a_hat
         #print '-----------new transmat_ -----------'
