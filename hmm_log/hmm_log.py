@@ -309,8 +309,8 @@ class hmm():
                     Ok = Obs[range(ptr,olen)]
                     ptr += olen
                     iter += 1
-                    alphak = self.forwardSL(Ok])
-                    betak  = self.backwardSL(Ok])
+                    alphak = self.forwardSL(Ok)
+                    betak  = self.backwardSL(Ok)
                     Pk = POlambda(Ok)
                     Tk = olen
                     assert Tk == len(alphak)
@@ -323,7 +323,6 @@ class hmm():
                             a = alphak[t,i]
                             b = self.transmat_[i,j]
                             c = self.emissionprob_[j,Ok[t+1]]
-                            if Ok[t] == 
                             d = beta[t+1,j] 
                             numk = numk + a*b*c*d
                             # now work on demoninator of (109)
@@ -347,8 +346,8 @@ class hmm():
                     Ok = Obs[range(ptr,olen)]
                     ptr += olen
                     iter += 1
-                    alphak = self.forwardSL(Ok])
-                    betak  = self.backwardSL(Ok])
+                    alphak = self.forwardSL(Ok)
+                    betak  = self.backwardSL(Ok)
                     Pk = POlambda(Ok)
                     Tk = olen
                     assert Tk == len(alphak)
@@ -357,10 +356,11 @@ class hmm():
                     numk = logP(0.0)
                     denk = logP(0.0)
                     for t in range(Tk-1):
-                        #numerator of (110)
+                        #                             numerator of (110)
                         tmp = alphak[t,j]*betak[t,j]
                         if(Ok[t]==l):
                             numk = numk + tmp
+                        #                             denominator of (110)
                         denk = denk + tmp
                     nsum = nsum + numk / Pk
                     dsum = dsum + denk / Pk
@@ -512,6 +512,7 @@ if __name__ == '__main__':
         else:
             m.transmat_ = A10.copy()
         
+        #   set up emission probabilities with width of 'w' symbols
         w = 6
         for i in range(m.N):
             mu = 0.5*w*(i+1)
@@ -607,10 +608,10 @@ if __name__ == '__main__':
         p0 = m.POlambda(em)
         m.fit(em)
         p1 = m.POlambda(em)
-        r = raw_input('<cr>')
+        #r = raw_input('<cr>')
         m.fit(em)
         p2 = m.POlambda(em)
-        r = raw_input('<cr>')
+        #r = raw_input('<cr>')
         m.fit(em)
         p3 = m.POlambda(em)
         
@@ -619,4 +620,26 @@ if __name__ == '__main__':
         print p1
         print p2
         print p3
+            
+        print '\n\n        -- --  --   Multiple Runout HMM.fit()  -- -- -- \n\n\n'
+        
+        
+        ###################################################################
+        #
+        #    Generate the data
+        #
+        
+        Obs = []
+        Sts = []   # true state sequences
+        Ls  = []
+        nrunout = 3
+        for rn in range(nrunout):
+            #    Simulate the HMM
+            st, em = m.sample(nsim_samples)
+            Obs.append(em)
+            Sts.append(st)
+            Ls.append(len(st))
+        m.fitMultiple(Obs,Ls)
+        
+            
             
