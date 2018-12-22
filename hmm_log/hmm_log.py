@@ -207,11 +207,13 @@ class hmm():
     #  Baum Welch Algorithm
     #
     def fit(self,Obs):
-        print '-------------  A (starting self.transmat_) --------------'
-        print self.transmat_
+        '''     For a single runout / observation sequence
+        '''
+        #print '-------------  A (starting self.transmat_) --------------'
+        #print self.transmat_
     
-        print '-------------  B (starting self.emissionprob_) --------------'
-        print self.emissionprob_
+        #print '-------------  B (starting self.emissionprob_) --------------'
+        #print self.emissionprob_
     
         alpha = self.forwardSL(Obs)
         beta  = self.backwardSL(Obs)
@@ -264,20 +266,110 @@ class hmm():
                 a_hat[i,j] = (xi_m[i,j]/gam_v[i]).test_val()
                 
         b_hat = np.zeros((N,NSYMBOLS))  #   (40c)
-        for k in range(NSYMBOLS):
+        for sym in range(NSYMBOLS):
             for j in range(N):
                 dsum = logP(0.0)  # denominator
                 nsum = logP(0.0) # numerator
                 for t in range(T):
-                    if Obs[t] == k:
+                    if Obs[t] == sym:
                         nsum+=gam[t,j]
                     dsum += gam[t,j]
-                b_hat[j,k] = (nsum/dsum).test_val()
+                b_hat[j,sym] = (nsum/dsum).test_val()
                 
         self.transmat_ = a_hat
         #print '-----------new transmat_ -----------'
         #print self.transmat_
-        #self.emissionprob_ = b_hat
+        self.emissionprob_ = b_hat
+        #print '-----------new emissionprob_ -----------'
+        #print self.emissionprob_
+        
+               # 
+    #  Baum Welch Algorithm
+    #
+    def fitMultiple(self,Obs, Ls):
+        '''   based on Rabiner, eqns 109, 110
+              Obs --  concatenated multiple runout observation sequences
+              Ls  --  list of lengths of each sequene such that  Ls.sum == len Obs
+        '''
+        #print '-------------  A (starting self.transmat_) --------------'
+        #print self.transmat_
+    
+        #print '-------------  B (starting self.emissionprob_) --------------'
+        #print self.emissionprob_
+       
+        ptr = 0
+        iter = 0
+        for i in range(N):
+            for j in range(N):
+                nsum = logP(0.0)
+                nbsum = logP(0.0)        # numerator of (109)
+                dsum = logP(0.0)
+                for k in range(len(Ls)):     # go through the obs sequences
+                    olen = Ls[iter]
+                    Ok = Obs[range(ptr,olen)]
+                    ptr += olen
+                    iter += 1
+                    alphak = self.forwardSL(Ok])
+                    betak  = self.backwardSL(Ok])
+                    Pk = POlambda(Ok)
+                    Tk = olen
+                    assert Tk == len(alphak)
+                    assert Tk == len(betak)
+                    N = self.N
+                    numk = logP(0.0)
+                    denk = logP(0.0)
+                    for t in range(Tk-1):
+                            #numerator of (109)
+                            a = alphak[t,i]
+                            b = self.transmat_[i,j]
+                            c = self.emissionprob_[j,Ok[t+1]]
+                            if Ok[t] == 
+                            d = beta[t+1,j] 
+                            numk = numk + a*b*c*d
+                            # now work on demoninator of (109)
+                            d = betak[t,i]
+                            denk = denk + a*d
+                    # summing over k
+                    nsum = nsum + numk / Pk
+                    dsum = dsum + denk / Pk
+                a_hat[i,j] = nsum/dsum
+                
+                
+        #  b_hat                              eqn 110
+        ptr = 0
+        iter = 0
+        for i in range(N):
+            for l in range(NSYMBOLS):
+                nsum = logP(0.0)
+                dsum = logP(0.0)
+                for k in range(len(Ls)):     # go through the obs sequences
+                    olen = Ls[iter]
+                    Ok = Obs[range(ptr,olen)]
+                    ptr += olen
+                    iter += 1
+                    alphak = self.forwardSL(Ok])
+                    betak  = self.backwardSL(Ok])
+                    Pk = POlambda(Ok)
+                    Tk = olen
+                    assert Tk == len(alphak)
+                    assert Tk == len(betak)
+                    N = self.N
+                    numk = logP(0.0)
+                    denk = logP(0.0)
+                    for t in range(Tk-1):
+                        #numerator of (110)
+                        tmp = alphak[t,j]*betak[t,j]
+                        if(Ok[t]==l):
+                            numk = numk + tmp
+                        denk = denk + tmp
+                    nsum = nsum + numk / Pk
+                    dsum = dsum + denk / Pk
+                b_hat[i,l] = nsum/dsum
+        
+        self.transmat_ = a_hat
+        #print '-----------new transmat_ -----------'
+        #print self.transmat_
+        self.emissionprob_ = b_hat
         #print '-----------new emissionprob_ -----------'
         #print self.emissionprob_
         
