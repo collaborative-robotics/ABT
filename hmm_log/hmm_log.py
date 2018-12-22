@@ -96,8 +96,8 @@ class hmm():
                     tmpsum +=  a * b
                 c = logB[j,Y[t]]
                 alpha[t,j] = c * tmpsum 
-        print '------------ alpha ----------------'
-        print alpha
+        #print '------------ alpha ----------------'
+        #print alpha
         return alpha
             
     def POlambda(self, Y):
@@ -114,7 +114,6 @@ class hmm():
     def backwardSL(self, Y):   #  See Rabiner
         T = len(Y)
         N = self.N
-        print Y
         logA =  logPm(self.transmat_)
         logB =  logPm(self.emissionprob_)
         #initialization                                 (24)
@@ -296,25 +295,28 @@ class hmm():
     
         #print '-------------  B (starting self.emissionprob_) --------------'
         #print self.emissionprob_
-       
-        ptr = 0
-        iter = 0
+        print 'fitM: ', Obs, '\n', Ls
+        N = self.N
+        a_hat = np.zeros((N,N))
+        b_hat=np.zeros((N,NSYMBOLS))
         for i in range(N):
             for j in range(N):
                 nsum = logP(0.0)
                 nbsum = logP(0.0)        # numerator of (109)
                 dsum = logP(0.0)
+                ptr = 0                  # point to the start of each seqeuence
                 for k in range(len(Ls)):     # go through the obs sequences
-                    olen = Ls[iter]
-                    Ok = Obs[range(ptr,olen)]
-                    ptr += olen
-                    iter += 1
+                    olen = Ls[k]
+                    #print 'ptrs: ', ptr, ptr+olen
+                    Ok = Obs[ptr:ptr+olen]
+                    ptr += olen 
+                    #print 'starting alk,bek:', olen, Ok
                     alphak = self.forwardSL(Ok)
                     betak  = self.backwardSL(Ok)
-                    Pk = POlambda(Ok)
+                    Pk = self.POlambda(Ok)
                     Tk = olen
-                    assert Tk == len(alphak)
-                    assert Tk == len(betak)
+                    assert Tk == np.shape(alphak.m)[0]
+                    assert Tk == np.shape(betak.m)[0]
                     N = self.N
                     numk = logP(0.0)
                     denk = logP(0.0)
@@ -323,7 +325,7 @@ class hmm():
                             a = alphak[t,i]
                             b = self.transmat_[i,j]
                             c = self.emissionprob_[j,Ok[t+1]]
-                            d = beta[t+1,j] 
+                            d = betak[t+1,j] 
                             numk = numk + a*b*c*d
                             # now work on demoninator of (109)
                             d = betak[t,i]
@@ -331,27 +333,23 @@ class hmm():
                     # summing over k
                     nsum = nsum + numk / Pk
                     dsum = dsum + denk / Pk
-                a_hat[i,j] = nsum/dsum
+                a_hat[i,j] = (nsum/dsum).test_val()
                 
                 
         #  b_hat                              eqn 110
-        ptr = 0
-        iter = 0
         for i in range(N):
             for l in range(NSYMBOLS):
                 nsum = logP(0.0)
                 dsum = logP(0.0)
+                ptr = 0
                 for k in range(len(Ls)):     # go through the obs sequences
-                    olen = Ls[iter]
-                    Ok = Obs[range(ptr,olen)]
+                    olen = Ls[k]
+                    Ok = Obs[ptr:ptr+olen]
                     ptr += olen
-                    iter += 1
                     alphak = self.forwardSL(Ok)
                     betak  = self.backwardSL(Ok)
-                    Pk = POlambda(Ok)
+                    Pk = self.POlambda(Ok)
                     Tk = olen
-                    assert Tk == len(alphak)
-                    assert Tk == len(betak)
                     N = self.N
                     numk = logP(0.0)
                     denk = logP(0.0)
@@ -364,7 +362,7 @@ class hmm():
                         denk = denk + tmp
                     nsum = nsum + numk / Pk
                     dsum = dsum + denk / Pk
-                b_hat[i,l] = nsum/dsum
+                b_hat[i,l] = (nsum/dsum).test_val()
         
         self.transmat_ = a_hat
         #print '-----------new transmat_ -----------'
@@ -380,7 +378,7 @@ class hmm():
         # initial starting state
         state, p = self.pick_from_vec(self.Pi)
         states.append(state)
-        print 'initial state: ',state
+        #print 'initial state: ',state
         # main loop
         for i in range(T-1):
             # generate emission
@@ -560,11 +558,11 @@ if __name__ == '__main__':
         em = [6, 3, 6, 6, 8, 12, 14, 10, 15, 14, 14, 15, 12, 13, 16]
         alpha =  m.forwardSL(em)
         
-        print '------------alpha-------------'
-        print alpha
+        #print '------------alpha-------------'
+        #print alpha
         
         
-        print alpha[14,4].test_val()
+        #print alpha[14,4].test_val()
         #assert abs(alpha[14,4].test_val()-9.35945852879e-13) < TINY_EPSILON, fs+FAIL
         #assert abs(alpha[ 2,0].test_val()-0.000578703703704) < epsilon, fs+FAIL
         print fs+PASS
@@ -607,19 +605,19 @@ if __name__ == '__main__':
         print  '\n\n   Test Baum Welch fit() method'
         p0 = m.POlambda(em)
         m.fit(em)
-        p1 = m.POlambda(em)
-        #r = raw_input('<cr>')
-        m.fit(em)
-        p2 = m.POlambda(em)
-        #r = raw_input('<cr>')
-        m.fit(em)
-        p3 = m.POlambda(em)
+        #p1 = m.POlambda(em)
+        ##r = raw_input('<cr>')
+        #m.fit(em)
+        #p2 = m.POlambda(em)
+        ##r = raw_input('<cr>')
+        #m.fit(em)
+        #p3 = m.POlambda(em)
         
         print "    Change in PO-lambda: "
         print p0
-        print p1
-        print p2
-        print p3
+        #print p1
+        #print p2
+        #print p3
             
         print '\n\n        -- --  --   Multiple Runout HMM.fit()  -- -- -- \n\n\n'
         
@@ -636,10 +634,10 @@ if __name__ == '__main__':
         for rn in range(nrunout):
             #    Simulate the HMM
             st, em = m.sample(nsim_samples)
-            Obs.append(em)
-            Sts.append(st)
+            Obs.extend(em)
+            Sts.extend(st)
             Ls.append(len(st))
         m.fitMultiple(Obs,Ls)
         
-            
+        print ' \n\n               Completed  Test Runs  of hmm_log package   \n\n'
             
