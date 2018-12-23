@@ -213,7 +213,7 @@ class hmm():
     
         #print '-------------  B (starting self.emissionprob_) --------------'
         #print self.emissionprob_
-    
+        lp0 = logP(0.0)
         alpha = self.forwardSL(Obs)
         beta  = self.backwardSL(Obs)
         T = len(Obs)
@@ -221,11 +221,10 @@ class hmm():
         xi = logPm(np.zeros((T,N,N)))       #    (37)  Rab-->python: t+1 --> t,   t--> t-1 
         s1 = logPv(np.zeros(T))
         for t in range(T-1):
-            #denominator of (37)
-            denom = logP(0.0)
-            #numerator
+            denom = lp0              #denominator of (37)
             nslice = logPm(np.zeros((N,N)))
             for i in range(N):
+                assert (t-1)>= 0, 'fit(): index error'
                 a = alpha[t-1,i]
                 for j in range(N):
                     b = self.transmat_[i,j]
@@ -236,6 +235,7 @@ class hmm():
             #assert denom.test_val() > TINY_EPSILON, ' (Almost) divide by zero ' 
             for i in range(N):
                 for j in range(N):
+                    assert (t-1)>= 0, 'fit(): index error'
                     xi[t-1,i,j] = nslice[i,j]/denom
                     #assert xi[t-1,i,j].test_val() >= 0.0, ' Help!!'
                     #assert xi[t-1,i,j].test_val() != np.Inf, ' Help!! (inf)'
@@ -267,8 +267,8 @@ class hmm():
         b_hat = np.zeros((N,NSYMBOLS))  #   (40c)
         for sym in range(NSYMBOLS):
             for j in range(N):
-                dsum = logP(0.0)  # denominator
-                nsum = logP(0.0) # numerator
+                dsum = lp0  # denominator
+                nsum = lp0 # numerator
                 for t in range(T):
                     if Obs[t] == sym:
                         nsum+=gam[t,j]
@@ -296,15 +296,15 @@ class hmm():
         #print '-------------  B (starting self.emissionprob_) --------------'
         #print self.emissionprob_
         print 'fitM: ', Obs, '\n', Ls
+        lp0 = logP(0.0)
         N = self.N
         a_hat = np.zeros((N,N))
         b_hat=np.zeros((N,NSYMBOLS))
         for i in range(N):
             for j in range(N):
-                nsum = logP(0.0)
-                nbsum = logP(0.0)        # numerator of (109)
-                dsum = logP(0.0)
-                ptr = 0                  # point to the start of each seqeuence
+                nsum = lp0              # numerator of (109)
+                dsum = lp0
+                ptr = 0                 # point to the start of each seqeuence
                 for k in range(len(Ls)):     # go through the obs sequences
                     olen = Ls[k]
                     #print 'ptrs: ', ptr, ptr+olen
@@ -318,8 +318,8 @@ class hmm():
                     assert Tk == np.shape(alphak.m)[0]
                     assert Tk == np.shape(betak.m)[0]
                     N = self.N
-                    numk = logP(0.0)
-                    denk = logP(0.0)
+                    numk = lp0
+                    denk = lp0
                     for t in range(Tk-1):
                             #numerator of (109)
                             a = alphak[t,i]
@@ -339,8 +339,8 @@ class hmm():
         #  b_hat                              eqn 110
         for i in range(N):
             for l in range(NSYMBOLS):
-                nsum = logP(0.0)
-                dsum = logP(0.0)
+                nsum = lp0
+                dsum = lp0
                 ptr = 0
                 for k in range(len(Ls)):     # go through the obs sequences
                     olen = Ls[k]
@@ -351,8 +351,8 @@ class hmm():
                     Pk = self.POlambda(Ok)
                     Tk = olen
                     N = self.N
-                    numk = logP(0.0)
-                    denk = logP(0.0)
+                    numk = lp0
+                    denk = lp0
                     for t in range(Tk-1):
                         #                             numerator of (110)
                         tmp = alphak[t,j]*betak[t,j]
@@ -630,14 +630,19 @@ if __name__ == '__main__':
         Obs = []
         Sts = []   # true state sequences
         Ls  = []
+        Obsll = []
         nrunout = 3
         for rn in range(nrunout):
             #    Simulate the HMM
             st, em = m.sample(nsim_samples)
             Obs.extend(em)
+            Obsll.append(em)  # as list of lists
             Sts.extend(st)
             Ls.append(len(st))
+
+        print 'Initial Prob: ', m.POlambda(Obsll[1]) 
         m.fitMultiple(Obs,Ls)
+        print 'Final Prob:   ', m.POlambda(Obsll[1]) 
         
         print ' \n\n               Completed  Test Runs  of hmm_log package   \n\n'
             
