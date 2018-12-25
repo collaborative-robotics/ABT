@@ -218,25 +218,23 @@ class hmm():
         beta  = self.backwardSL(Obs)
         T = len(Obs)
         N = self.N
-        xi = logPm(np.zeros((T,N,N)))       #    (37)  Rab-->python: t+1 --> t,   t--> t-1 
+        xi = logPm(np.zeros((T,N,N)))       #    (37) 
         s1 = logPv(np.zeros(T))
         for t in range(T-1):
             denom = lp0              #denominator of (37)
             nslice = logPm(np.zeros((N,N)))
             for i in range(N):
-                assert (t-1)>= 0, 'fit(): index error'
-                a = alpha[t-1,i]
+                a = alpha[t,i]
                 for j in range(N):
                     b = self.transmat_[i,j]
-                    c = self.emissionprob_[j,Obs[t]] 
-                    d = beta[t,j] 
+                    c = self.emissionprob_[j,Obs[t+1]] 
+                    d = beta[t+1,j] 
                     nslice[i,j] = a*b*c*d 
                     denom = denom +  nslice[i,j] 
             #assert denom.test_val() > TINY_EPSILON, ' (Almost) divide by zero ' 
             for i in range(N):
                 for j in range(N):
-                    assert (t-1)>= 0, 'fit(): index error'
-                    xi[t-1,i,j] = nslice[i,j]/denom
+                    xi[t,i,j] = nslice[i,j]/denom
                     #assert xi[t-1,i,j].test_val() >= 0.0, ' Help!!'
                     #assert xi[t-1,i,j].test_val() != np.Inf, ' Help!! (inf)'
             
@@ -283,7 +281,8 @@ class hmm():
         #print self.emissionprob_
         
                # 
-    #  Baum Welch Algorithm
+    #  Baum Welch Algorithm for multiple observation sequences
+    #       (ideally for non-stationary models)
     #
     def fitMultiple(self,Obs, Ls):
         '''   based on Rabiner, eqns 109, 110
@@ -296,43 +295,49 @@ class hmm():
         #print '-------------  B (starting self.emissionprob_) --------------'
         #print self.emissionprob_
         print 'fitM: ', Obs, '\n', Ls
-        lp0 = logP(0.0)
+        lp0 = logP(0.0)  # quicker to keep this around for intializing
         N = self.N
         a_hat = np.zeros((N,N))
         b_hat=np.zeros((N,NSYMBOLS))
+        obsl = []
+        alphak = []
+        betak = []
+        Pk = []
+        ptr = 0                 # point to the start of each seqeuence
+        # first go through seqs and eval alpha & beta 
+        for k in range(len(Ls)):     # go through the obs sequences
+            olen = Ls[k]
+            #print 'ptrs: ', ptr, ptr+olen
+            Ok = Obs[ptr:ptr+olen] # the current obs sequence
+            ptr += olen 
+            #print 'starting alk,bek:', olen, Ok
+            alphak.append(self.forwardSL(Ok))
+            betak.append(self.backwardSL(Ok))
+            Pk.append(self.POlambda(Ok))
+            obsl.append(Ok)
         for i in range(N):
             for j in range(N):
                 nsum = lp0              # numerator of (109)
                 dsum = lp0
-                ptr = 0                 # point to the start of each seqeuence
-                for k in range(len(Ls)):     # go through the obs sequences
-                    olen = Ls[k]
-                    #print 'ptrs: ', ptr, ptr+olen
-                    Ok = Obs[ptr:ptr+olen]
-                    ptr += olen 
-                    #print 'starting alk,bek:', olen, Ok
-                    alphak = self.forwardSL(Ok)
-                    betak  = self.backwardSL(Ok)
-                    Pk = self.POlambda(Ok)
-                    Tk = olen
-                    assert Tk == np.shape(alphak.m)[0]
-                    assert Tk == np.shape(betak.m)[0]
-                    N = self.N
+                # now go through seqs and compute num and denom (109)
+                for k in range(len(Ls)):
+                    Tk = Ls[k]
                     numk = lp0
                     denk = lp0
+                    Ok = obsl[k]
                     for t in range(Tk-1):
                             #numerator of (109)
-                            a = alphak[t,i]
+                            a = alphak[k][t,i]
                             b = self.transmat_[i,j]
                             c = self.emissionprob_[j,Ok[t+1]]
-                            d = betak[t+1,j] 
+                            d = betak[k][t+1,j] 
                             numk = numk + a*b*c*d
                             # now work on demoninator of (109)
-                            d = betak[t,i]
+                            d = betak[k][t,i]
                             denk = denk + a*d
                     # summing over k
-                    nsum = nsum + numk / Pk
-                    dsum = dsum + denk / Pk
+                    nsum = nsum + numk / Pk[k]
+                    dsum = dsum + denk / Pk[k]
                 a_hat[i,j] = (nsum/dsum).test_val()
                 
                 
@@ -343,25 +348,19 @@ class hmm():
                 dsum = lp0
                 ptr = 0
                 for k in range(len(Ls)):     # go through the obs sequences
-                    olen = Ls[k]
-                    Ok = Obs[ptr:ptr+olen]
-                    ptr += olen
-                    alphak = self.forwardSL(Ok)
-                    betak  = self.backwardSL(Ok)
-                    Pk = self.POlambda(Ok)
-                    Tk = olen
-                    N = self.N
+                    Tk = Ls[k]
+                    Ok = obsl[k]
                     numk = lp0
                     denk = lp0
                     for t in range(Tk-1):
                         #                             numerator of (110)
-                        tmp = alphak[t,j]*betak[t,j]
+                        tmp = alphak[k][t,j]*betak[k][t,j]
                         if(Ok[t]==l):
                             numk = numk + tmp
                         #                             denominator of (110)
                         denk = denk + tmp
-                    nsum = nsum + numk / Pk
-                    dsum = dsum + denk / Pk
+                    nsum = nsum + numk / Pk[k]
+                    dsum = dsum + denk / Pk[k]
                 b_hat[i,l] = (nsum/dsum).test_val()
         
         self.transmat_ = a_hat
