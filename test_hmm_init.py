@@ -74,23 +74,69 @@ modelT.statenos = statenos
 modelT.names = names
 modelT.sigma = sig
 
-
+test_eps = 0.00000001   # test epsilon
 nasserts = 0
 
 M = HMM_setup(modelT)   #   set up the HMM
+
+        
 fs = 'Failed to properly initialize '
 # compare A matrices
+
+assert M.n_components == modelT.n
+nasserts += 1
+
 assert A.all() == M.transmat_.all(), fs + 'A matrix'
 nasserts += 1
 
-# compare output means
-for n in names:
-    i = statenos[n]
-    o = outputs[n]
-    #print 'comparing ', n, M.means_[i-1], o
-    assert M.covars_[i-1] == modelT.sigma, fs + ' covariance = sigma ' + str(i)
-    nasserts += 1
-    assert M.means_[i-1] == o, fs + 'Output mean ' + str(i)
+
+########## B -matrix
+ 
+if M.typestring == 'MultinomialHMM':     
+    #########################
+    sig = 2.0  # HACK!!!
+    #############################   Multinomial emissions
+    #   setup discrete model.B for MultinomialHMM()
+    #print np.shape(M.emissionprob_)
+    assert np.shape(M.emissionprob_)[0] == M.n_components
+    assert (M.emissionprob_ != 0).all(), 'An emission Probability (B) == 0'
+    assert (M.emissionprob_  > 0).all(), 'An emission Probability (B) < 0'
+    assert (M.emissionprob_ < 1.0).all(), 'An emission Probability (B) > 1.0'
+    nasserts += 4
+
+    # Sum should be == number of states (eg 1xM.n_components
+    assert np.sum(M.emissionprob_) - M.n_components < M.n_components*test_eps,  'Emmision Probabilities Sum != 1.0)'
     nasserts += 1
 
+    for i,n in enumerate(modelT.names):
+        tmp_leaf = abtc.aug_leaf(0.500)  # dummy leaf to use SetObsDensity() method
+        ##perturb the mean by bdelta before generating the emission probs.
+        ## No perturbation for this testing script: test_hmm_init.py
+        bdelta = 0.0
+        newmean = modelT.outputs[n] + randsign() * bdelta
+        ##print 'Setting mean for state ',i, 'from ' , model.outputs[n], ' to ', newmean
+        tmp_leaf.set_Obs_Density(newmean, sig)
+        ## TEST: do the HMM emissionprob_ 's match this?
+        for j in range(NSYMBOLS):
+            assert modelT.B[i,j] == tmp_leaf.Obs[j], 'mismatch of observation output probs (B[i,j])'    # set up correctly?
+            nasserts += 1
+
+    #M.emissionprob_ = np.array(modelT.B.copy())  # docs unclear on this name!!!!   
+
+elif M.typestring == 'GaussianHMM':
+    # compare output means
+    for n in names:
+        i = statenos[n]
+        o = outputs[n]
+        #print 'comparing ', n, M.means_[i-1], o
+        assert M.covars_[i-1] == modelT.sigma, fs + ' covariance = sigma ' + str(i)
+        nasserts += 1
+        assert M.means_[i-1] == o, fs + 'Output mean ' + str(i)
+        nasserts += 1
+ 
+else:
+    print 'Unknown model typestring'
+    quit() 
+    
+print 'Testing HMM setup for ', M.typestring
 print 'HMM_setup PASSED all ', nasserts, ' assertions'

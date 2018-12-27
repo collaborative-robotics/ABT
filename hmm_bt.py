@@ -51,13 +51,41 @@ def A_row_test(A,of):
             r += A[i,j]
         #print  'assertion:', i,r
         assert abs(r-1.0) < eps, 'Assert Problem: a row sum of A-matrix is != 1.0, sum = '+str(r)
+<<<<<<< HEAD
 
 def HMM_setup(model, toler=0.01, maxiter=20):     #  New: setup model.B:  discrete emission probs.
+=======
+        
+#def A_non_zero(A):
+    #'''
+    #make sure trans matrix has no 0.0 elements 
+    #'''
+    #eps = 1.0E-5        # min value 
+    ##print 'A-matrix row test'
+    #for i in range(A.shape[0]):
+        #for j in range(A.shape[1]):
+            #if(A[i,j] < eps):
+                #A[i,j] = eps 
+        #sum = 0.0
+        #for j in range(A.shape[1]):
+            #sum += A[i,j]
+        #for j in range(A.shape[1]):
+            #A[i,j] /= sum
+
+        
+def HMM_setup(model, toler=0.01, maxiter=20):     #  New: setup model.B:  discrete emission probs. 
+>>>>>>> UWmaster2
     #print 'Size: A: ', A.shape
     l = model.A.shape[0]
     #print 'len(Pi): ', len(Pi), l
     #M = hmm.GaussianHMM(n_components=l, covariance_type='diag', n_iter=maxiter, tol=toler, init_params='')
-    M = hmm.MultinomialHMM(n_components=l, n_iter=maxiter,  init_params='')
+    #M.typestring = 'GaussianHMM'
+    #   fit all params:  params='ste'
+    #   fit only A matrix:  params='t'
+    
+    M = hmm.MultinomialHMM(n_components=l, n_iter=maxiter, params='t', init_params='')
+    M.typestring = 'MultinomialHMM'
+    
     #M.n_features = 1
     M.startprob_ = model.Pi
     M.transmat_ = model.A
@@ -85,11 +113,10 @@ def HMM_setup(model, toler=0.01, maxiter=20):     #  New: setup model.B:  discre
     for i,n in enumerate(model.names):
         tmp_leaf = abtc.aug_leaf(0.500)  # dummy leaf to use SetObsDensity() method
         tmp_leaf.set_Obs_Density(model.outputs[n], sig)
+        #print 'mean: ', model.outputs[n]
         for j in range(NSYMBOLS):
             model.B[i,j] = tmp_leaf.Obs[j]    # guarantees same P's as ABT(!)
     M.emissionprob_ = np.array(model.B.copy())  # docs unclear on this name!!!!
-    #print 'covars shape:', M.covars_.shape
-    #quit()
     return M
 
 
@@ -159,16 +186,22 @@ def HMM_fully_random(model):
 #    NEW: if d > 5  initialize A matrix to RANDOM values
 #
 
-def HMM_perturb(M, d):
-      # A matrix
+def HMM_perturb(M, d, model=abtc.model(1)):
+    ''' M = an hmmlearn HMM object
+        d = perturbation (0 < d < 1.0)
+        model = model parameters
+        '''
+    assert len(model.names) > 1, 'HMM_perturb() [in hmm_bt.py] must be called with a model (2nd argument)'    
     A = M.transmat_
     #np.save("M_trans",M.transmat_)
     #np.save("Means",M.means_)
     [r1, c1] = A.shape
     r1 -= 2    # don't perturb for Os and Of states
-    for r in range(r1):
+    for r in range(r1):  # go through the rows
         flag = -1
+        rowcnt = 0   # how many non-zero elements in this row?
         for c in range(c1):
+<<<<<<< HEAD
             # second non-zero element of row
             #print 'looking at element: ',r,c
             #print 'flag = ', flag
@@ -227,6 +260,94 @@ def HMM_perturb(M, d):
     #     B[i] += randsign() * bdelta
     # M.means_ = B
 
+=======
+            if A[r][c] > 0.0000001:
+                rowcnt += 1
+        assert rowcnt > 1, 'only 1 non-zero element should not occur - quitting'
+        if rowcnt == 2:    # ABT type models and SLR models
+            for c in range(c1):
+                # second non-zero element of row
+                #print 'looking at element: ',r,c
+                #print 'flag = ', flag
+                if flag > 0  and A[r][c] > 0:
+                    A[r][c] = 1.0 - flag
+                    #print 'setting second element to', 1.0 - flag
+                # first non-zero element of row
+                elif A[r][c] > 0.0000001:
+                    if abs(A[r][c] - 1.0) < 0.000001: # don't mess with 1.0 transitions
+                        continue
+                    change =  randsign() * d
+                    #print 'Applying change 1.0 + ',change
+                    pbef = A[r][c]
+                    A[r][c] *= (1.0 + change)
+                    paft =  A[r][c]
+                    #print 'Actual Change: ', (paft-pbef)/pbef
+                    if A[r][c] >  0.9999:
+                        A[r][c] = 0.9999  # don't allow going to 1.0 or above
+                    if A[r][c] < 0.0000001:  # don't allow negative
+                        A[r][c] = 0.0000001
+                    flag = A[r][c]      # store value (for use above) 
+        elif rowcnt == 3:     #ABT + duration type models
+            flag = 0
+            for c in range(c1):
+                 if c > r: # only above diagonal (don't change A[r,r]
+                     if flag > 0 and A[r][c] > 0:
+                        # we've found the second transition to one of two next states
+                        A[r][c] = (1.0-A[r][r]) - flag  # keep sum == 1.0
+                     elif A[r][c] > 0.0000001:
+                        if abs(A[r][c] - 1.0) < 0.000001: # don't mess with 1.0 transitions
+                            continue
+                        # we've found the first transition to one of two next states
+                        change =  randsign() * d
+                        #print 'Applying change 1.0 + ',change
+                        pbef = A[r][c]
+                        A[r][c] *= (1.0 + change)
+                        paft =  A[r][c]
+                        #print 'Actual Change: ', (paft-pbef)/pbef
+                        if A[r][c] >  0.9999:
+                            A[r][c] = 0.9999  # don't allow going to 1.0 or above
+                        if A[r][c] < 0.0000001:  # don't allow negative
+                            A[r][c] = 0.0000001
+                        flag = A[r][c]      # store value (for use above) 
+                         
+        else: 
+             print 'I dont know how to perturb ', rowcnt, ' non-zero values in a row'
+             quit()
+             
+    # Perturb B matrix means.  Each mean must be perturbed by same amount, not by a 1+delta as above
+    #    because before, some states had bigger probability errors than others. 
+    sigma = 2.0    #  HACK
+    bdelta = 2 * d * sigma    # factor of 2 just feels better(!)  
+    #
+    #  New coding for Multinomial - explicit probs over the symbol integers
+    #   (some kind of "shift"??)  or just regenerate. 
+    #
+    if M.typestring == 'GaussianHMM':
+        B = M.means_
+        for i,b in enumerate(B):
+            #B[i] = int(0.5 + b * (1.0 +  randsign() * d))
+            B[i] += randsign() * bdelta
+        M.means_ = B
+    elif M.typestring == 'MultinomialHMM':     
+        #########################
+        sig = 2.0  # HACK!!!
+        #############################   Multinomial emissions
+        #   setup discrete model.B for MultinomialHMM()
+        for i,n in enumerate(model.names):
+            tmp_leaf = abtc.aug_leaf(0.500)  # dummy leaf to use SetObsDensity() method
+            #perturb the mean by bdelta before generating the emission probs.
+            newmean = model.outputs[n] + randsign() * bdelta
+            #print 'Setting mean for state ',i, 'from ' , model.outputs[n], ' to ', newmean
+            tmp_leaf.set_Obs_Density(newmean, sig)
+            for j in range(NSYMBOLS):
+                model.B[i,j] = tmp_leaf.Obs[j]    # guarantees same P's as ABT(!)
+        M.emissionprob_ = np.array(model.B.copy())  # docs unclear on this name!!!!    
+    else:
+        print 'Unknown model typestring'
+        quit()
+    return
+    
+>>>>>>> UWmaster2
 def randsign():
     a = random.random()
     if a > 0.500:
@@ -267,9 +388,9 @@ def read_obs_seqs(logf):
 def Adiff_Report(A1,A2,names,of=sys.stdout):
     [e,e2,em,N2,im,jm,anoms,erasures] = Adiff(A1, A2, names)
 
-
-    print >> of, 'Avg abs A-matrix error: {:.3f}'.format(e)
-    print >> of, 'Avg abs A-matrix error: {:.8f} ({:d} non zero elements)'.format(e2,N2)
+    N = len(names)
+    print >> of, 'RMS A-matrix error: {:.3f}'.format(e)
+    print >> of, 'RMS A-matrix error: {:.8f} (only the {:d}/{:d} non zero elements)'.format(e2,N2,N*N)
     print >> of, 'Max abs A-matrix error: {:.3f} (at {:d} to {:d})'.format(em,im,jm)
     if len(anoms) == 0:
         anoms = 'None'
@@ -286,6 +407,8 @@ def Adiff(A1,A2,names):    # from 8/28
     e2 = 0   # avg error of NON ZERO elements
     N = A1.shape[0]
     assert A1.shape == A2.shape, 'Adiff: A-matrix size mismatch!'
+    assert not np.isnan(A1).all(), 'A-matrix contains nan'
+    assert not np.isnan(A2).all(), 'A-matrix contains nan'
     #print 'Adiff: A shape: ', A1.shape
     #print "A1: "
     #print A1
@@ -293,10 +416,10 @@ def Adiff(A1,A2,names):    # from 8/28
     #print A2
 
     N2 = 0   # count the non-zero Aij entries
-            #  should be 2(l+2) of course
+            #  should be 2(l+2) for ABT-based matrices
     anoms = [] #identification
     erasures = []
-    for i in range(N-2): # skip last two rows which are 1.000
+    for i in range(N):
         for j in range(N):
             e1 = (A1[i,j]-A2[i,j])**2
             #print 'error: ', e1,i,j
@@ -310,12 +433,12 @@ def Adiff(A1,A2,names):    # from 8/28
                 e2 += e1
                 N2 += 1
             e += e1
-            if(A1[i,j]==0.0 and A2[i,j]>0.0):
+            if(A1[i,j]==0.0 and A2[i,j]>0.0):    # for regular but not random perturbations
                 anoms.append([i,j])
             if(A1[i,j]>0.0 and A2[i,j] < 0.0000001):
                 erasures.append([names[i],names[j]])
     e  = np.sqrt(e/(N*N))  # div total number of Aij elements
-    e2 = np.sqrt(e2/N2)  # RMS error of NON zero Aij
+    e2 = np.sqrt(e2/N2)  # RMS error of NON zero A[1]ij
     em = np.sqrt(em)     # Max error
     #print 'imax, jmax; ', imax, jmax
     return [e,e2,em,N2,imax,jmax,anoms,erasures]

@@ -182,7 +182,8 @@ modelT.A = A.copy()
 M = HMM_setup(modelT)
 
 Aref = A.copy()  #original transition matrix.
-B = M.means_  # output observation means
+if M.typestring == 'GaussianHMM':
+    B = M.means_  # output observation means
 
 outputAmat(M.transmat_,"Initial A Matrix",names,of)
 print '\n\n ------------------------------  ',len(names),' state model perturbation tests -----------------------'
@@ -190,7 +191,7 @@ print >>of, '\n\n ------------------------------  ',len(names),' state model per
 print 'See more detail at: > more HMM_test_rep.txt'
 print 'Perturbing by ', str(Pdelta)
 #########################################################################
-HMM_perturb(M, Pdelta)  
+HMM_perturb(M, Pdelta,modelT)  
 #########################################################################
 outputAmat(M.transmat_, "Perturbed A Matrix", names, of)
 
@@ -281,17 +282,22 @@ print '-------------------------- Testing B-matrix perturbation (output means)  
 
 testeps = 0.001
 
-print 'M.means_:', M.means_
-print 'size:    ', M.means_.size
-print 'M.means_[3]:', M.means_[3][0]
+if M.typestring == 'GaussianHMM':
 
-for i in range(M.means_.size):
-    print '   ',i
-    d = abs(M.means_[i][0]-B[i])
-    print 'testing: ', i, m, B[i]
-    assert (d/B[i] - Pdelta) < testeps, 'Wrong B-matrix perturbed value'
+    print 'M.means_:', M.means_
+    print 'size:    ', M.means_.size
+    print 'M.means_[3]:', M.means_[3][0]
+
+    for i in range(M.means_.size):
+        print '   ',i
+        d = abs(M.means_[i][0]-B[i])
+        print 'testing: ', i, m, B[i]
+        assert (d/B[i] - Pdelta) < testeps, 'Wrong B-matrix perturbed value'
+        
+    print 'Passed B-matrix perturb tests'
     
-print 'Passed B-matrix perturb tests'
+elif M.typestring == 'MultinomialHMM':
+    print '\n\n    no tests yet for Multinomial perturbations \n\n'
  
 
 print '\n\n'
@@ -314,7 +320,7 @@ M1 = HMM_setup(modelT1)
 Aref = A1.copy()
 #outputAmat(A,"Initial A Matrix",names,of)
 print 'Perturbing by 0.25'
-HMM_perturb(M1, 0.25)  
+HMM_perturb(M1, 0.25,modelT1)  
 #outputAmat(M.transmat_, "Perturbed A Matrix", names, of)
  
 A_row_test(M1.transmat_, of)
@@ -328,7 +334,7 @@ M1 = HMM_setup(modelT1)
 Aref = A1.copy()
 #outputAmat(A,"Initial A Matrix",names,of)
 print 'Perturbing by 0.25'
-M1.transmat_ = HMM_fully_random(Aref)
+M1.transmat_, B = HMM_fully_random(modelT1)
 print 'Applied FULLY RANDOM Matrix Perturbation: '
 #outputAmat(M1.transmat_, 'RANDOM a-mat', names) 
  
