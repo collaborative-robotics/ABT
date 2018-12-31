@@ -96,8 +96,8 @@ class hmm():
                     tmpsum +=  a * b
                 c = logB[j,Y[t]]
                 alpha[t,j] = c * tmpsum 
-        print '------------ alpha ----------------'
-        print alpha
+        #print '------------ alpha ----------------'
+        #print alpha
         return alpha
             
     def POlambda(self, Y):
@@ -114,7 +114,6 @@ class hmm():
     def backwardSL(self, Y):   #  See Rabiner
         T = len(Y)
         N = self.N
-        print Y
         logA =  logPm(self.transmat_)
         logB =  logPm(self.emissionprob_)
         #initialization                                 (24)
@@ -207,11 +206,11 @@ class hmm():
     #  Baum Welch Algorithm
     #
     def fit(self,Obs):
-        print '-------------  A (starting self.transmat_) --------------'
-        print self.transmat_
+        #print '-------------  A (starting self.transmat_) --------------'
+        #print self.transmat_
     
-        print '-------------  B (starting self.emissionprob_) --------------'
-        print self.emissionprob_
+        #print '-------------  B (starting self.emissionprob_) --------------'
+        #print self.emissionprob_
     
         alpha = self.forwardSL(Obs)
         beta  = self.backwardSL(Obs)
@@ -277,7 +276,7 @@ class hmm():
         self.transmat_ = a_hat
         #print '-----------new transmat_ -----------'
         #print self.transmat_
-        #self.emissionprob_ = b_hat
+        self.emissionprob_ = b_hat
         #print '-----------new emissionprob_ -----------'
         #print self.emissionprob_
         
@@ -338,7 +337,6 @@ class hmm():
         for r in range(self.N):
             self.row_check(self.transmat_[r],self.N)
         sum = 0.0
-        print 'got here'
         for st in range(self.N):
             self.row_check(self.emissionprob_[st,:],NSYMBOLS)
         self.row_check(self.Pi,self.N)
@@ -467,8 +465,8 @@ if __name__ == '__main__':
         em = [6, 3, 6, 6, 8, 12, 14, 10, 15, 14, 14, 15, 12, 13, 16]
         alpha =  m.forwardSL(em)
         
-        print '------------alpha-------------'
-        print alpha
+        #print '------------alpha-------------'
+        #print alpha
         
         
         print alpha[14,4].test_val()
@@ -483,7 +481,7 @@ if __name__ == '__main__':
           
         beta_test =  m.backwardSL(em)
         fs = '    backwards algorithm backwardSL(em) '
-        print beta_test
+        #print beta_test
         #assert abs(beta_test[13,3].test_val()-0.1666666666667)<epsilon, fs+FAIL
         #assert abs(beta_test[ 3,0].test_val()-9.57396964103e-11) < TINY_EPSILON , fs+FAIL
         #print fs+PASS
@@ -511,20 +509,10 @@ if __name__ == '__main__':
         #
         #   Let's try the Baum Welch!
         #
-        print  '\n\n   Test Baum Welch fit() method'
-        p0 = m.POlambda(em)
-        m.fit(em)
-        p1 = m.POlambda(em)
-        r = raw_input('<cr>')
-        m.fit(em)
-        p2 = m.POlambda(em)
-        r = raw_input('<cr>')
-        m.fit(em)
-        p3 = m.POlambda(em)
-        
-        print "    Change in PO-lambda: "
-        print p0
-        print p1
-        print p2
-        print p3
+        print  '\n\n   Test Baum Welch fit() method - convergence: '
+        for i in range(100):
+            p0 = m.POlambda(em)
+            print '     ', i, p0
+            m.fit(em)
+         
             
