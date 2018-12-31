@@ -150,16 +150,10 @@ print pert
 # New names for convergence tol and iteration count
 ConvTol = RatioL
 
-<<<<<<< HEAD
-print 'Read in ', nrow,' rows'
-print ''
-
-=======
 print 'read in', files
 #print len(pert), ' perturbations'
-#print pert 
+#print pert
 #quit()
->>>>>>> UWmaster2
 
 ymax = 1.0  #error plotting range 0.0--ymax
 

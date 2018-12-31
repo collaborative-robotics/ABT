@@ -51,30 +51,25 @@ def A_row_test(A,of):
             r += A[i,j]
         #print  'assertion:', i,r
         assert abs(r-1.0) < eps, 'Assert Problem: a row sum of A-matrix is != 1.0, sum = '+str(r)
-<<<<<<< HEAD
 
-def HMM_setup(model, toler=0.01, maxiter=20):     #  New: setup model.B:  discrete emission probs.
-=======
-        
 #def A_non_zero(A):
     #'''
-    #make sure trans matrix has no 0.0 elements 
+    #make sure trans matrix has no 0.0 elements
     #'''
-    #eps = 1.0E-5        # min value 
+    #eps = 1.0E-5        # min value
     ##print 'A-matrix row test'
     #for i in range(A.shape[0]):
         #for j in range(A.shape[1]):
             #if(A[i,j] < eps):
-                #A[i,j] = eps 
+                #A[i,j] = eps
         #sum = 0.0
         #for j in range(A.shape[1]):
             #sum += A[i,j]
         #for j in range(A.shape[1]):
             #A[i,j] /= sum
 
-        
-def HMM_setup(model, toler=0.01, maxiter=20):     #  New: setup model.B:  discrete emission probs. 
->>>>>>> UWmaster2
+
+def HMM_setup(model, toler=0.01, maxiter=20):     #  New: setup model.B:  discrete emission probs.
     #print 'Size: A: ', A.shape
     l = model.A.shape[0]
     #print 'len(Pi): ', len(Pi), l
@@ -82,10 +77,10 @@ def HMM_setup(model, toler=0.01, maxiter=20):     #  New: setup model.B:  discre
     #M.typestring = 'GaussianHMM'
     #   fit all params:  params='ste'
     #   fit only A matrix:  params='t'
-    
+
     M = hmm.MultinomialHMM(n_components=l, n_iter=maxiter, params='t', init_params='')
     M.typestring = 'MultinomialHMM'
-    
+
     #M.n_features = 1
     M.startprob_ = model.Pi
     M.transmat_ = model.A
@@ -191,7 +186,7 @@ def HMM_perturb(M, d, model=abtc.model(1)):
         d = perturbation (0 < d < 1.0)
         model = model parameters
         '''
-    assert len(model.names) > 1, 'HMM_perturb() [in hmm_bt.py] must be called with a model (2nd argument)'    
+    assert len(model.names) > 1, 'HMM_perturb() [in hmm_bt.py] must be called with a model (2nd argument)'
     A = M.transmat_
     #np.save("M_trans",M.transmat_)
     #np.save("Means",M.means_)
@@ -201,66 +196,6 @@ def HMM_perturb(M, d, model=abtc.model(1)):
         flag = -1
         rowcnt = 0   # how many non-zero elements in this row?
         for c in range(c1):
-<<<<<<< HEAD
-            # second non-zero element of row
-            #print 'looking at element: ',r,c
-            #print 'flag = ', flag
-            if flag > 0  and A[r][c] > 0:
-                A[r][c] = 1.0 - flag
-                #print 'setting second element to', 1.0 - flag
-            # first non-zero element of row
-            elif A[r][c] > 0:
-                if abs(A[r][c] - 1.0) < 0.000001: # don't mess with 1.0 transitions
-                    continue
-                change =  randsign() * d
-                #print 'Applying change 1.0 + ',change
-                pbef = A[r][c]
-                A[r][c] *= (1.0 + change)
-                paft =  A[r][c]
-                #print 'Actual Change: ', (paft-pbef)/pbef
-                if A[r][c] >  0.9999:
-                    A[r][c] = 0.9999  # don't allow going to 1.0 or above
-                flag = A[r][c]      # store value (for use above)
-
-    # Perturb B matrix means.  Each mean must be perturbed by same amount, not by a 1+delta as above
-    #    because then some states have bigger probabilty errors than others.
-    sigma = 2.0    #  HACK
-    bdelta = 2 * d * sigma    # factor of 2 just feels better(!)
-
-    # Shifting the probabilty based on the lengthof the symbols and the petrubations passed through the function
-
-    # Option 1 # By rolling
-    # B = M.emissionprob_
-    # for i in range(B.shape[0]):
-    #     B[i] = np.roll(B[i],int(B.shape[1]*d*randsign()))
-    # M.emissionprob_ = B
-
-    #Option 2 # By shifting the mean
-    # B = M.emissionprob_
-    # for i in range(B.shape[0]):
-    #     tmp_leaf = abtc.aug_leaf(0.500)  # dummy leaf to use SetObsDensity() method
-    #     tmp_leaf.set_Obs_Density(int(np.argmax(B[i])+B.shape[1]*d*randsign()), sig)
-    #     for j in range(NSYMBOLS):
-    #         B[i,j] = tmp_leaf.Obs[j]
-    # M.emissionprob_ = B
-
-    #Option 3
-    # B = M.emissionprob_
-    # for i in range(B.shape[0]):
-    #     tmp_leaf = abtc.aug_leaf(0.500)  # dummy leaf to use SetObsDensity() method
-    #     tmp_leaf.set_Obs_Density(int(np.argmax(B[i])+bdelta*randsign()), sig)
-    #     for j in range(NSYMBOLS):
-    #         B[i,j] = tmp_leaf.Obs[j]
-    # M.emissionprob_ = B
-    #assert np.array_equiv(B,M.emissionprob_)
-
-    # B = M.means_
-    # for i,b in enumerate(B):
-    #     #B[i] = int(0.5 + b * (1.0 +  randsign() * d))
-    #     B[i] += randsign() * bdelta
-    # M.means_ = B
-
-=======
             if A[r][c] > 0.0000001:
                 rowcnt += 1
         assert rowcnt > 1, 'only 1 non-zero element should not occur - quitting'
@@ -286,7 +221,7 @@ def HMM_perturb(M, d, model=abtc.model(1)):
                         A[r][c] = 0.9999  # don't allow going to 1.0 or above
                     if A[r][c] < 0.0000001:  # don't allow negative
                         A[r][c] = 0.0000001
-                    flag = A[r][c]      # store value (for use above) 
+                    flag = A[r][c]      # store value (for use above)
         elif rowcnt == 3:     #ABT + duration type models
             flag = 0
             for c in range(c1):
@@ -308,19 +243,19 @@ def HMM_perturb(M, d, model=abtc.model(1)):
                             A[r][c] = 0.9999  # don't allow going to 1.0 or above
                         if A[r][c] < 0.0000001:  # don't allow negative
                             A[r][c] = 0.0000001
-                        flag = A[r][c]      # store value (for use above) 
-                         
-        else: 
+                        flag = A[r][c]      # store value (for use above)
+
+        else:
              print 'I dont know how to perturb ', rowcnt, ' non-zero values in a row'
              quit()
-             
+
     # Perturb B matrix means.  Each mean must be perturbed by same amount, not by a 1+delta as above
-    #    because before, some states had bigger probability errors than others. 
+    #    because before, some states had bigger probability errors than others.
     sigma = 2.0    #  HACK
-    bdelta = 2 * d * sigma    # factor of 2 just feels better(!)  
+    bdelta = 2 * d * sigma    # factor of 2 just feels better(!)
     #
     #  New coding for Multinomial - explicit probs over the symbol integers
-    #   (some kind of "shift"??)  or just regenerate. 
+    #   (some kind of "shift"??)  or just regenerate.
     #
     if M.typestring == 'GaussianHMM':
         B = M.means_
@@ -328,7 +263,7 @@ def HMM_perturb(M, d, model=abtc.model(1)):
             #B[i] = int(0.5 + b * (1.0 +  randsign() * d))
             B[i] += randsign() * bdelta
         M.means_ = B
-    elif M.typestring == 'MultinomialHMM':     
+    elif M.typestring == 'MultinomialHMM':
         #########################
         sig = 2.0  # HACK!!!
         #############################   Multinomial emissions
@@ -341,13 +276,12 @@ def HMM_perturb(M, d, model=abtc.model(1)):
             tmp_leaf.set_Obs_Density(newmean, sig)
             for j in range(NSYMBOLS):
                 model.B[i,j] = tmp_leaf.Obs[j]    # guarantees same P's as ABT(!)
-        M.emissionprob_ = np.array(model.B.copy())  # docs unclear on this name!!!!    
+        M.emissionprob_ = np.array(model.B.copy())  # docs unclear on this name!!!!
     else:
         print 'Unknown model typestring'
         quit()
     return
-    
->>>>>>> UWmaster2
+
 def randsign():
     a = random.random()
     if a > 0.500:
