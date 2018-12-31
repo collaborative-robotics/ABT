@@ -293,7 +293,7 @@ class hmm():
     
         #print '-------------  B (starting self.emissionprob_) --------------'
         #print self.emissionprob_
-        print 'fitM: ', Obs, '\n', Ls
+        #print 'fitM: ', Obs, '\n', Ls
         lp0 = logP(0.0)  # quicker to keep this around for intializing
         N = self.N
         a_hat = np.zeros((N,N))
@@ -314,6 +314,7 @@ class hmm():
             betak.append(self.backwardSL(Ok))
             Pk.append(self.POlambda(Ok))
             obsl.append(Ok)
+            
         for i in range(N):
             for j in range(N):
                 nsum = lp0              # numerator of (109)
@@ -321,9 +322,9 @@ class hmm():
                 # now go through seqs and compute num and denom (109)
                 for k in range(len(Ls)):
                     Tk = Ls[k]
+                    Ok = obsl[k]
                     numk = lp0
                     denk = lp0
-                    Ok = obsl[k]
                     for t in range(Tk-1):
                             #numerator of (109)
                             a = alphak[k][t,i]
@@ -341,7 +342,7 @@ class hmm():
                 
                 
         #  b_hat                              eqn 110
-        for i in range(N):
+        for j in range(N):
             for l in range(NSYMBOLS):
                 nsum = lp0
                 dsum = lp0
@@ -353,14 +354,13 @@ class hmm():
                     denk = lp0
                     for t in range(Tk-1):
                         #                             numerator of (110)
-                        tmp = alphak[k][t,j]*betak[k][t,j]
                         if(Ok[t]==l):
-                            numk = numk + tmp
+                            numk = numk + alphak[k][t,j]*betak[k][t,j]
                         #                             denominator of (110)
-                        denk = denk + tmp
+                        denk = denk + alphak[k][t,j]*betak[k][t,j]
                     nsum = nsum + numk / Pk[k]
                     dsum = dsum + denk / Pk[k]
-                b_hat[i,l] = (nsum/dsum).test_val()
+                b_hat[j,l] = (nsum/dsum).test_val()
         
         self.transmat_ = a_hat
         #print '-----------new transmat_ -----------'
@@ -618,7 +618,29 @@ if __name__ == '__main__':
             
         print '\n\n        -- --  --   Multiple Runout HMM.fit()  -- -- -- \n\n\n'
         
+        ###################################################################
+        #
+        #    Regen the hmm
+        #
+        ntest = 5
+        m = hmm(ntest)
+        if ntest == 5:
+            m.transmat_ = A5.copy()
+        else:
+            m.transmat_ = A10.copy()
         
+        #   set up emission probabilities with width of 'w' symbols
+        w = 6
+        for i in range(m.N):
+            mu = 0.5*w*(i+1)
+            for j in range(NSYMBOLS):
+                m.emissionprob_[i,j] = 0.0
+                if j>mu-w/2 and j<=(mu+w/2):
+                    m.emissionprob_[i,j] = 1/float(w)
+        #print m.emissionprob_
+        #if ntest == 10:
+            #quit()
+                 
         ###################################################################
         #
         #    Generate the data
@@ -628,7 +650,7 @@ if __name__ == '__main__':
         Sts = []   # true state sequences
         Ls  = []
         Obsll = []
-        nrunout = 3
+        nrunout = 10
         for rn in range(nrunout):
             #    Simulate the HMM
             st, em = m.sample(nsim_samples)
@@ -637,9 +659,12 @@ if __name__ == '__main__':
             Sts.extend(st)
             Ls.append(len(st))
 
-        print 'Initial Prob: ', m.POlambda(Obsll[1]) 
-        m.fitMultiple(Obs,Ls)
-        print 'Final Prob:   ', m.POlambda(Obsll[1]) 
+        print 'Initial Prob: ', m.POlambda(Obsll[1])
+        for bwiter in range(10):
+            m.fitMultiple(Obs,Ls)
+            print bwiter, '     Prob:   ', m.POlambda(Obsll[1]) 
+        print m.transmat_
+        print m.emissionprob_
         
         print ' \n\n               Completed  Test Runs  of hmm_log package   \n\n'
             
