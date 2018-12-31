@@ -131,9 +131,7 @@ class logP():
         #print 'add: ',self.test_val(), lp2.test_val()
         t = logP(.5)
         if not isinstance(lp2,logP):
-            print 'got a non-logP: ', lp2, type(lp2)
             lp2 = logP(lp2)
-            print 'Add: converted a float: ', lp2, lp2.test_val()
         if np.isnan(self.lp) or np.isnan(lp2.lp):
             if np.isnan(self.lp):
                 return lp2

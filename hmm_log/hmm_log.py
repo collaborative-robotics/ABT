@@ -206,35 +206,34 @@ class hmm():
     #  Baum Welch Algorithm
     #
     def fit(self,Obs):
+        '''     For a single runout / observation sequence
+        '''
         #print '-------------  A (starting self.transmat_) --------------'
-        #print self.transmat_
-    
+        #print self.transmat_    
         #print '-------------  B (starting self.emissionprob_) --------------'
         #print self.emissionprob_
-    
+        lp0 = logP(0.0)
         alpha = self.forwardSL(Obs)
         beta  = self.backwardSL(Obs)
         T = len(Obs)
         N = self.N
-        xi = logPm(np.zeros((T,N,N)))       #    (37)  Rab-->python: t+1 --> t,   t--> t-1 
+        xi = logPm(np.zeros((T,N,N)))       #    (37) 
         s1 = logPv(np.zeros(T))
         for t in range(T-1):
-            #denominator of (37)
-            denom = logP(0.0)
-            #numerator
+            denom = lp0              #denominator of (37)
             nslice = logPm(np.zeros((N,N)))
             for i in range(N):
-                a = alpha[t-1,i]
+                a = alpha[t,i]
                 for j in range(N):
                     b = self.transmat_[i,j]
-                    c = self.emissionprob_[j,Obs[t]] 
-                    d = beta[t,j] 
+                    c = self.emissionprob_[j,Obs[t+1]] 
+                    d = beta[t+1,j] 
                     nslice[i,j] = a*b*c*d 
                     denom = denom +  nslice[i,j] 
             #assert denom.test_val() > TINY_EPSILON, ' (Almost) divide by zero ' 
             for i in range(N):
                 for j in range(N):
-                    xi[t-1,i,j] = nslice[i,j]/denom
+                    xi[t,i,j] = nslice[i,j]/denom
                     #assert xi[t-1,i,j].test_val() >= 0.0, ' Help!!'
                     #assert xi[t-1,i,j].test_val() != np.Inf, ' Help!! (inf)'
             
@@ -263,16 +262,106 @@ class hmm():
                 a_hat[i,j] = (xi_m[i,j]/gam_v[i]).test_val()
                 
         b_hat = np.zeros((N,NSYMBOLS))  #   (40c)
-        for k in range(NSYMBOLS):
+        for sym in range(NSYMBOLS):
             for j in range(N):
-                dsum = logP(0.0)  # denominator
-                nsum = logP(0.0) # numerator
+                dsum = lp0  # denominator
+                nsum = lp0 # numerator
                 for t in range(T):
-                    if Obs[t] == k:
+                    if Obs[t] == sym:
                         nsum+=gam[t,j]
                     dsum += gam[t,j]
-                b_hat[j,k] = (nsum/dsum).test_val()
+                b_hat[j,sym] = (nsum/dsum).test_val()
                 
+        self.transmat_ = a_hat
+        #print '-----------new transmat_ -----------'
+        #print self.transmat_
+        self.emissionprob_ = b_hat
+        #print '-----------new emissionprob_ -----------'
+        #print self.emissionprob_
+        
+               # 
+    #  Baum Welch Algorithm for multiple observation sequences
+    #       (ideally for non-stationary models)
+    #
+    def fitMultiple(self,Obs, Ls):
+        '''   based on Rabiner, eqns 109, 110
+              Obs --  concatenated multiple runout observation sequences
+              Ls  --  list of lengths of each sequene such that  Ls.sum == len Obs
+        '''
+        #print '-------------  A (starting self.transmat_) --------------'
+        #print self.transmat_
+    
+        #print '-------------  B (starting self.emissionprob_) --------------'
+        #print self.emissionprob_
+        print 'fitM: ', Obs, '\n', Ls
+        lp0 = logP(0.0)  # quicker to keep this around for intializing
+        N = self.N
+        a_hat = np.zeros((N,N))
+        b_hat=np.zeros((N,NSYMBOLS))
+        obsl = []
+        alphak = []
+        betak = []
+        Pk = []
+        ptr = 0                 # point to the start of each seqeuence
+        # first go through seqs and eval alpha & beta 
+        for k in range(len(Ls)):     # go through the obs sequences
+            olen = Ls[k]
+            #print 'ptrs: ', ptr, ptr+olen
+            Ok = Obs[ptr:ptr+olen] # the current obs sequence
+            ptr += olen 
+            #print 'starting alk,bek:', olen, Ok
+            alphak.append(self.forwardSL(Ok))
+            betak.append(self.backwardSL(Ok))
+            Pk.append(self.POlambda(Ok))
+            obsl.append(Ok)
+        for i in range(N):
+            for j in range(N):
+                nsum = lp0              # numerator of (109)
+                dsum = lp0
+                # now go through seqs and compute num and denom (109)
+                for k in range(len(Ls)):
+                    Tk = Ls[k]
+                    numk = lp0
+                    denk = lp0
+                    Ok = obsl[k]
+                    for t in range(Tk-1):
+                            #numerator of (109)
+                            a = alphak[k][t,i]
+                            b = self.transmat_[i,j]
+                            c = self.emissionprob_[j,Ok[t+1]]
+                            d = betak[k][t+1,j] 
+                            numk = numk + a*b*c*d
+                            # now work on demoninator of (109)
+                            d = betak[k][t,i]
+                            denk = denk + a*d
+                    # summing over k
+                    nsum = nsum + numk / Pk[k]
+                    dsum = dsum + denk / Pk[k]
+                a_hat[i,j] = (nsum/dsum).test_val()
+                
+                
+        #  b_hat                              eqn 110
+        for i in range(N):
+            for l in range(NSYMBOLS):
+                nsum = lp0
+                dsum = lp0
+                ptr = 0
+                for k in range(len(Ls)):     # go through the obs sequences
+                    Tk = Ls[k]
+                    Ok = obsl[k]
+                    numk = lp0
+                    denk = lp0
+                    for t in range(Tk-1):
+                        #                             numerator of (110)
+                        tmp = alphak[k][t,j]*betak[k][t,j]
+                        if(Ok[t]==l):
+                            numk = numk + tmp
+                        #                             denominator of (110)
+                        denk = denk + tmp
+                    nsum = nsum + numk / Pk[k]
+                    dsum = dsum + denk / Pk[k]
+                b_hat[i,l] = (nsum/dsum).test_val()
+        
         self.transmat_ = a_hat
         #print '-----------new transmat_ -----------'
         #print self.transmat_
@@ -287,7 +376,7 @@ class hmm():
         # initial starting state
         state, p = self.pick_from_vec(self.Pi)
         states.append(state)
-        print 'initial state: ',state
+        #print 'initial state: ',state
         # main loop
         for i in range(T-1):
             # generate emission
@@ -418,6 +507,7 @@ if __name__ == '__main__':
         else:
             m.transmat_ = A10.copy()
         
+        #   set up emission probabilities with width of 'w' symbols
         w = 6
         for i in range(m.N):
             mu = 0.5*w*(i+1)
@@ -469,7 +559,7 @@ if __name__ == '__main__':
         #print alpha
         
         
-        print alpha[14,4].test_val()
+        #print alpha[14,4].test_val()
         #assert abs(alpha[14,4].test_val()-9.35945852879e-13) < TINY_EPSILON, fs+FAIL
         #assert abs(alpha[ 2,0].test_val()-0.000578703703704) < epsilon, fs+FAIL
         print fs+PASS
@@ -509,10 +599,47 @@ if __name__ == '__main__':
         #
         #   Let's try the Baum Welch!
         #
-        print  '\n\n   Test Baum Welch fit() method - convergence: '
-        for i in range(100):
-            p0 = m.POlambda(em)
-            print '     ', i, p0
-            m.fit(em)
-         
+        print  '\n\n   Test Baum Welch fit() method'
+        p0 = m.POlambda(em)
+        m.fit(em)
+        #p1 = m.POlambda(em)
+        ##r = raw_input('<cr>')
+        #m.fit(em)
+        #p2 = m.POlambda(em)
+        ##r = raw_input('<cr>')
+        #m.fit(em)
+        #p3 = m.POlambda(em)
+        
+        print "    Change in PO-lambda: "
+        print p0
+        #print p1
+        #print p2
+        #print p3
+            
+        print '\n\n        -- --  --   Multiple Runout HMM.fit()  -- -- -- \n\n\n'
+        
+        
+        ###################################################################
+        #
+        #    Generate the data
+        #
+        
+        Obs = []
+        Sts = []   # true state sequences
+        Ls  = []
+        Obsll = []
+        nrunout = 3
+        for rn in range(nrunout):
+            #    Simulate the HMM
+            st, em = m.sample(nsim_samples)
+            Obs.extend(em)
+            Obsll.append(em)  # as list of lists
+            Sts.extend(st)
+            Ls.append(len(st))
+
+        print 'Initial Prob: ', m.POlambda(Obsll[1]) 
+        m.fitMultiple(Obs,Ls)
+        print 'Final Prob:   ', m.POlambda(Obsll[1]) 
+        
+        print ' \n\n               Completed  Test Runs  of hmm_log package   \n\n'
             
