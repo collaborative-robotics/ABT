@@ -55,9 +55,8 @@ class hmm():
     def Backward(self, observation, length) :
         backward_lattice = np.empty((self.Nstate,length))
         backward_lattice[:,length-1] = 1
-        print((np.sum((self._emission[:,[observation[1+1]]] * self._transmat), axis = 1)).shape)
+        # print((np.sum((self._emission[:,[observation[1+1]]] * self._transmat), axis = 1)).shape)
         for i in range(length-2,-1,-1):
-            print(i)
             backward_lattice[:,i] = np.sum((self._emission[:,[observation[i+1]]].T * self._transmat * backward_lattice[:,i+1].T), axis = 1)# * backward_lattice[:,i+1]
         return backward_lattice
 
@@ -80,32 +79,59 @@ class hmm():
         return state_sequence
 
     def Forward_one(self,observation,length):
-        foward_lattice = np.empty((self.Nstate,length))
+        foward_lattice = np.zeros((self.Nstate,length))
         foward_lattice[:,0] = (self.Pi * self._emission[:,[observation[0]]]).T
-        for j in range(1,length-2):
-            foward_lattice[:,j] = np.sum(foward_lattice[:,[j-1]]* self._transmat, axis = 0) * self._emission[:,[observation[j]]].T
+        for j in range(0,length-1):
+            foward_lattice[:,j+1] = np.sum(foward_lattice[:,[j]]* self._transmat, axis = 0) * self._emission[:,[observation[j+1]]].T
         return foward_lattice
 
+
     def BaumWelch(self,observation,length):
+        denoms = np.zeros(self.Nstate)
+        nums = np.zeros((self.Nstate,self.Nstate))
+        denoms2 = np.zeros(self.Nstate)
+        bnums = np.zeros((self.Nstate,self.nsymbols))
         for i in range(observation.shape[0]):
             foward_lattice = self.Forward_one(observation[i],length[i])
             backward_lattice = self.Backward(observation[i],length[i])
             # Numerator
             xi = np.empty((length[i],self.Nstate,self.Nstate)) #TODO: Correction
             for j in range(0,length[i]-1):
-                xi[j] = foward_lattice[:,j].reshape(self.Nstate,1) * self._transmat * self._emission[:,observation[i][j+1]].reshape(1,self.Nstate) *   backward_lattice[:,j+1].reshape(1,self.Nstate)
-            xi /= np.sum(eta)
+                xi[j] = foward_lattice[:,[j]] * self._transmat * self._emission[:,[observation[i][j+1]]].T * backward_lattice[:,[j+1]].T
+                xi[j] /= np.sum(xi[j])
+            # xi /= np.sum(xi)
             xi[length[i]-1] = 0
+            nums = nums + np.sum(xi,axis = 0)
             denom = np.sum(np.sum(xi,axis = 2),axis = 0)
+            denoms += denom
             #Update
-            self._transmat = np.sum(xi,axis = 0) / denom.reshape(self.Nstate,1)
+            # print("::::",denom.shape)
+            # print("::::",(np.sum(xi,axis = 0)).shape)
+            # self._transmat = np.sum(xi,axis = 0) / denom#.reshape(self.Nstate,1)
             #_emission update
-            gammma2 = np.sum(xi,axis = 1)
+            gamma2 = np.sum(xi,axis = 1)
             denom2 = np.sum(np.sum(xi,axis = 1),axis = 0)
-            b = np.tile(np.array(logP(0)),(nstate,nsymbols))
+            denoms2 += denom2
+            # print(":::::::::",gamma2.shape,denom2.shape)
+            # b = np.tile(np.array(logP(0)),(nstate,nsymbols))
+            b = np.zeros((self.Nstate,self.nsymbols))
+            # print((b[:,[observation[i][j]]] + gamma2[[j]].T).shape)
+            # print((b[:,observation[i][j]] + gamma2[[j]]).shape)
             for j in range(length[i]):
-                b[:,observation[j]] += gamma2[j]
-            b /= denom2.reshape(1,self.Nstate)
+                b[:,observation[i][j]] = np.squeeze(b[:,[observation[i][j]]] + gamma2[[j]].T)
+            # print(denom2.shape,b.shape)
+            # b /= denom2.reshape(self.Nstate,1)
+            bnums += b
+        self._transmat = nums/denoms
+        self._emission = bnums/denoms2.reshape(denoms.shape[0],1)
+
+    # def BaumWelch2(self,observation,length):
+    #     num = np.zeros((Nstate,Nstate))
+    #     for i in range(len(length)):
+    #         alpha = self.Forward_one(observation[i],length[i])
+    #         beta = self.Backward(observation[i],length[i])
+    #         for j in range(length[i]):
+
 
     def sample(self,T):
         states = []
@@ -194,7 +220,9 @@ class hmm():
         print ('hmm class (hmm_bh): ' + msg)
         quit()
 
-
+    def probability_check(self,Obs):
+        a = self.Forward_one(Obs,len(Obs))
+        return np.sum(a[:,-1])
 
 #################################################################################################
 #################################################################################################
@@ -298,8 +326,9 @@ if __name__ == '__main__':
         fs = '   forward algorithm, forwardSL(em) '
         stseq =  [0, 0, 1, 1, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4]
         em = [6, 3, 6, 6, 8, 12, 14, 10, 15, 14, 14, 15, 12, 13, 16]
-        alpha =  m.Forward_one(em,len(em))
-
+        alpha =  m.Forward_one(np.array(em),len(em))
+        print(alpha.T)
+        # exit()
         # print ('------------alpha-------------')
         # print (alpha)
         # exit()
@@ -350,7 +379,7 @@ if __name__ == '__main__':
         #
         print  ('\n\n   Test Baum Welch fit() method')
         # p0 = m.POlambda(em) #TODO
-        m.BaumWelch(em)
+        m.BaumWelch(np.array(em, ndmin = 2),np.array(len(em), ndmin = 1))
         #p1 = m.POlambda(em)
         ##r = raw_input('<cr>')
         #m.fit(em)
@@ -360,7 +389,7 @@ if __name__ == '__main__':
         #p3 = m.POlambda(em)
 
         print ("    Change in PO-lambda: ")
-        print (p0)
+        # print (p0) #TODO
         #print p1
         #print p2
         #print p3
@@ -385,9 +414,13 @@ if __name__ == '__main__':
             Obsll.append(em)  # as list of lists
             Sts.extend(st)
             Ls.append(len(st))
-
-        print ('Initial Prob: ', m.POlambda(Obsll[1]))
-        m.fitMultiple(Obs,Ls)
-        print ('Final Prob:   ', m.POlambda(Obsll[1]))
+        # print((np.array(Obsll)).shape)
+        Obsll = np.array(Obsll)
+        a = m._transmat
+        b = m._emission
+        print ('Initial Prob: ', m.probability_check(Obsll[1]))
+        m.BaumWelch(Obsll,Ls)
+        print(np.array_equal(a,m._transmat),np.array_equal(b,m._emission))
+        print ('Final Prob:   ', m.probability_check(Obsll[1]))
 
         print (' \n\n               Completed  Test Runs  of hmm_log package   \n\n')

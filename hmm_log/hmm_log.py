@@ -88,8 +88,9 @@ class hmm():
         logB =  logPm(self.emissionprob_)
         #for y in Y[1:]:  # emission sequence
         for t in range(1,T):         #    Rab t+1 ->  t,  t --> t-1
-            tmpsum = logP(0)
+
             for j in range(self.N):
+                tmpsum = logP(0)
                 for i in range(self.N):                #       (20)
                     a = logA[i,j]
                     b = alpha[t-1,i]
@@ -561,8 +562,8 @@ if __name__ == '__main__':
         alpha =  m.forwardSL(em)
 
         # print '------------alpha-------------'
-        # print alpha
-        # exit()
+        print alpha
+        exit()
 
         #print alpha[14,4].test_val()
         #assert abs(alpha[14,4].test_val()-9.35945852879e-13) < TINY_EPSILON, fs+FAIL
@@ -576,8 +577,8 @@ if __name__ == '__main__':
 
         beta_test =  m.backwardSL(em)
         fs = '    backwards algorithm backwardSL(em) '
-        print beta_test
-        exit()
+        # print beta_test
+        # exit()
         #assert abs(beta_test[13,3].test_val()-0.1666666666667)<epsilon, fs+FAIL
         #assert abs(beta_test[ 3,0].test_val()-9.57396964103e-11) < TINY_EPSILON , fs+FAIL
         #print fs+PASS
