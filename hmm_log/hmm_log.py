@@ -54,20 +54,19 @@ class hmm():
     def forwardS(self, Y): # go through the emissions 
         #alpha = logPv(self.Pi) * logPv(self.emissionprob_[:,Y[0]].T)  # starting state probs.
         #print 'forwardS: lenY:', len(Y)
-        alpha = np.ones((len(Y),self.N))
+        alpha = np.ones((len(Y),self.N)) #       eqn     (19)
         for i in range(self.N):
             alpha[0,i] = self.Pi[i] * self.emissionprob_[i, Y[0]]
             
-        ai = 1
-        for jj,y in enumerate( Y[1:]):
-            #print '    iter, ai:', jj,ai
-            tmpsum = 0.0   
-            for st in range(self.N):  # do for each state 
-                for prev_st in range(self.N): # sum over previous states 
-                    tmpsum += self.transmat_[prev_st,st]*alpha[ai-1,prev_st] 
-                alpha[ai,st] = self.emissionprob_[st,y] * tmpsum
+        for tp1,y in enumerate( Y[1:]): #                (20)
+            t = tp1 - 1
+            #print '    iter, tp1:', jj,tp1
+            for st in range(self.N):  # iterate over post states
+                tmpsum = 0.0
+                for prev_st in range(self.N): # sum over prev states 
+                    tmpsum += self.transmat_[prev_st,st]*alpha[t,prev_st] 
+                alpha[tp1,st] = self.emissionprob_[st,y] * tmpsum
                 prev_st = st
-            ai += 1
         return alpha 
             
     # Log-based forward algorithm for a single runout
@@ -88,8 +87,8 @@ class hmm():
         logB =  logPm(self.emissionprob_)
         #for y in Y[1:]:  # emission sequence
         for t in range(1,T):         #    Rab t+1 ->  t,  t --> t-1
-            tmpsum = logP(0)
             for j in range(self.N):
+                tmpsum = logP(0)
                 for i in range(self.N):                #       (20)
                     a = logA[i,j] 
                     b = alpha[t-1,i]
