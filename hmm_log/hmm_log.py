@@ -649,7 +649,7 @@ if __name__ == '__main__':
         Sts = []   # true state sequences
         Ls  = []
         Obsll = []
-        nrunout = 10
+        nrunout = 1000
         for rn in range(nrunout):
             #    Simulate the HMM
             st, em = m.sample(nsim_samples)
@@ -658,6 +658,7 @@ if __name__ == '__main__':
             Sts.extend(st)
             Ls.append(len(st))
 
+        print '\n\n  Baum-Welch System ID with ', nrunout, ' runouts, ', ntest,'x',ntest, ' model.\n\n'
         print 'Initial Prob: ', m.POlambda(Obsll[1])
         for bwiter in range(10):
             m.fitMultiple(Obs,Ls)

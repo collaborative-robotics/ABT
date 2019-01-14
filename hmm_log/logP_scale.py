@@ -23,12 +23,15 @@ SMALLEST_LOG = -1.0E306
 #    (overload * and + )
 class logP:
     def __init__(self,p): 
-        if isinstance(p,logP):
-            self = p
-            return
-        fs = 'logP_scale() __init__ bad input' 
-        assert isinstance(p,numbers.Number), fs
-        assert p >= 0.00, fs
+        #
+        #   Comment out these tests for speed
+        #
+        #if isinstance(p,logP):
+            #self = p
+            #return
+        #fs = 'logP_scale() __init__ bad input' 
+        #assert isinstance(p,numbers.Number), fs
+        #assert p >= 0.00, fs
         self.exp = np.int64(0)
         self.mant = np.float64(p)
         
@@ -147,7 +150,7 @@ def lPnorm2(a,b):
     ediff = a.exp-b.exp
     if ediff > 0:
         b.exp += ediff
-        b.mant = b.mant / (10.0**ediff)
+        b.mant = b.mant * (10.0**(-ediff))
     elif ediff < 0:
         a.exp -= ediff
         a.mant *= (10.0**ediff)

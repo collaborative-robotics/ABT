@@ -94,6 +94,7 @@ for i in range(TN):
     z = x + y
 t = time.clock()-start_time
 trep(TN,' x + y ',t)
+addtime = t
 
 #############################
 #
@@ -108,6 +109,7 @@ t = time.clock()-start_time
 trep(TN,' x + 0.200 ',t)
 
 
+
 #############################
 #
 #  logP __mult__()
@@ -118,9 +120,9 @@ y = logP(0.25)
 start_time = time.clock()
 for i in range(TN):
     z = x * y
-trep(TN,msg, time.clock()-start_time)
-
-
+t = time.clock()-start_time
+trep(TN,msg, t)
+timestime = t
 
 #############################
 #
@@ -201,6 +203,7 @@ for i in range(TN):
     z = x+y
 t= time.clock()-start_time
 trep(TN,'3-Vect. Add',t)
+print '                                     (',3*addtime,')'
 
 #############
 # vector addition
@@ -212,6 +215,7 @@ for i in range(TN):
     z = x*y
 t= time.clock()-start_time
 trep(TN,'3-Vect. Mult',t)
+print '                                     (',3*timestime,')'
 
 
 
@@ -242,56 +246,55 @@ for i in range(TN):
     z = x+y
 t= time.clock()-start_time
 trep(TN,str(Nv)+'-Vect. Add',t)
+print '                                     (',Nv*addtime,')'
+
 
 #############
-# vector addition
+# vector mult
 
 start_time = time.clock()
 for i in range(TN):
     z = x*y
 t= time.clock()-start_time
 trep(TN,str(Nv)+'-Vect. Mult',t)
+print '                                     (',Nv*timestime,')'
 
 
+###############################3
+#
+#    MATRIX
+#
 
-quit()   
- 
-    
-    
-    
-####################################################
-#  logP for vectors 
-# 
+#############
+# Matrix instantiation
+Nm = 3
 
-q =logPv([e*e, e, 1/e]) 
-q[1] = logP(0.5)
+x = np.ones((Nm,Nm)) * 0.50
+
+start_time = time.clock()
+for i in range(TN):
+    Mt = logPm(x)
+t= time.clock()-start_time
+trep(TN,str(Nm)+'x'+str(Nm)+'-Matrix Init',t)
+minittime = t
+
+#############
+# Big Matrix instantiation
+Nm = 20
+
+x = np.ones((Nm,Nm)) * 0.50
+
+start_time = time.clock()
+for i in range(TN):
+    Mt = logPm(x)
+t= time.clock()-start_time
+trep(TN,str(Nm)+'x'+str(Nm)+'-Matrix Init',t)
+
+print '                                     (',Nm*Nm*minittime/9,')'
 
 
-print '\n Test addition of logPv vectors  with '+libname
-# let's  sumn two logPv vectors and check them
-z = x+y
-fs = ' logPv addition produces wrong type'
-assert isinstance(z, logPv), fs + FAIL
-
-for i in range(3):
-    print ' sum computation: ', x[i],y[i],z[i] 
-
-
-m = []  # a list of numerical float values
-for l in z.v:
-    print 'appending ', l, l.test_val()
-    m.append(l.test_val())
-m = np.array(m)
-
-#print 'm;',m
-fs = 'logPv() addition tests '
-#print 'compare: ', m[0], (e+e*e)
-print 'error: ', abs(m[0] - (e*e+e))
-assert abs(m[0] - (e+e*e)) < epsilon, fs + 'FAIL'
-print 'error: ', abs(m[1] - (e*e+e))
-assert abs(m[1] - (e+e*e)) < epsilon, fs + 'FAIL'
-print 'error: ', abs(m[2] - (e*e*e + 1/e))
-#assert abs(m[2] - (e*e*e + 0.001)) < epsilon, fs + 'FAIL'
+quit()
+     
 
 #  logPv add the elements:
 x = np.array([[1,2,3,4,5],
