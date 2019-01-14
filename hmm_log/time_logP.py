@@ -64,6 +64,24 @@ if libname=='scale':
     t= time.clock() - start_time
     trep(TN,' x.norm(0.5): ',t)
     
+    
+    ##################################
+    #
+    #  test lPnorm2(a,b)
+    #   (normalize exponent to largest one
+    #
+    
+    x = logP(0.5E-001)
+    y = logP(0.5E-10)
+    start_time = time.clock()
+    for i in range(TN):
+        a,b = lPnorm2(x,y)
+    t= time.clock() - start_time
+    trep(TN,' lPnorm2(x,y): ',t)
+    
+    
+    
+    
 #############################
 #
 #  logP __add__()
@@ -76,6 +94,18 @@ for i in range(TN):
     z = x + y
 t = time.clock()-start_time
 trep(TN,' x + y ',t)
+
+#############################
+#
+#  logP __add__()   x+0.200
+
+
+x = logP(0.25) 
+start_time = time.clock()
+for i in range(TN):
+    z = x + 0.200
+t = time.clock()-start_time
+trep(TN,' x + 0.200 ',t)
 
 
 #############################
@@ -148,7 +178,7 @@ trep(TN,' z += x*y',t)
 
 ###################################################################
 #
-#     Vectors
+#    3- Vectors
 #
 
 #############
@@ -182,6 +212,47 @@ for i in range(TN):
     z = x*y
 t= time.clock()-start_time
 trep(TN,'3-Vect. Mult',t)
+
+
+
+###################################################################
+#
+#    Nv- Vectors
+#
+
+Nv = 100
+#############
+#Instantiation
+fv = np.ones(Nv)*0.5 
+
+start_time = time.clock()
+for i in range(TN):
+    x = logPv(fv)
+    #y = logPv([e*e, e, 0.001])
+t= time.clock()-start_time
+trep(TN, str(Nv) + '-Vect. Instantiation',t)
+
+#############
+# vector addition
+
+x = logPv(fv)
+y = logPv(fv*0.5)
+start_time = time.clock()
+for i in range(TN):
+    z = x+y
+t= time.clock()-start_time
+trep(TN,str(Nv)+'-Vect. Add',t)
+
+#############
+# vector addition
+
+start_time = time.clock()
+for i in range(TN):
+    z = x*y
+t= time.clock()-start_time
+trep(TN,str(Nv)+'-Vect. Mult',t)
+
+
 
 quit()   
  
