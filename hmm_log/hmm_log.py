@@ -22,7 +22,7 @@ import random as random
 NSYMBOLS = 40
 STRICT = True
 
-LZ = np.nan   # our log of zero value
+LZ = np.nan   # our log-of-zero value
 
 epsilon = 1.0E-4
 FAIL = '          FAIL'
@@ -489,15 +489,15 @@ if __name__ == '__main__':
     
     A10 = np.zeros((10,10))
     
-    nsim_samples = 15
-    nsim_rollouts = 1
+    nsim_samples =   20         #   baseline   15
+    nsim_rollouts = 100
     
     for r in range(10):
         A10[r,r] = pv[r]
         if(r+1 < 10):
             A10[r,r+1] = 1.0-A10[r,r]
                     
-    for ntest in [5]:
+    for ntest in [10]:
         fs =  '\n\ntesting hmm with ' + str(ntest) + ' states'
         print fs
         m = hmm(ntest)
@@ -579,19 +579,28 @@ if __name__ == '__main__':
         print 'st:',st
         print 'em:',em
         #print m.emissionprob_
-        stseq =  [0, 0, 1, 1, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4,4,4]
-        #  NOTE: for BW testing w/ non stationary model, last state must be
-        #        occupied more than once!
-        em = [6, 3, 6, 6, 8, 12, 14, 10, 15, 14, 14, 15, 12, 13, 16,16,16]
-        
-        est_correct = [0,0,1,1,2,3,3,3,3,3,3,3,3,4,4,4,4]
+        if ntest == 5:
+            # TRUE state sequence (gen during simulation)
+            stseq =  [0, 0, 1, 1, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4,4,4]
+            #  NOTE: for BW testing w/ non stationary model, last state must be
+            #        occupied more than once!
+            em = [6, 3, 6, 6, 8, 12, 14, 10, 15, 14, 14, 15, 12, 13, 16,16,16]
+            
+            est_correct = [0,0,1,1,2,3,3,3,3,3,3,3,3,4,4,4,4]
+        elif ntest == 10:
+            stseq        = [0, 1, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 6, 7, 8]
+            est_correct =  [0, 1, 1, 2, 2, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 6, 7, 8]
+            #                                    ^^^^^^
+            em    = [3, 8, 6, 8, 7, 13, 10, 15, 14, 14, 14, 15, 18, 17, 18, 21, 17, 23, 23, 30]
+            
         fs = 'test setup problem - data length mismatch'
         assert len(em) == len(stseq), fs
         assert len(em) == len(est_correct), fs
 
         qs = m.Viterbi(em)
-        fs = 'Vitermi state estimation tests'
+        fs = 'Viterbi state estimation tests'
         for i,q in enumerate(qs):
+            print 'true/est: ',stseq[i], q
             assert q==est_correct[i], fs+FAIL
         print fs+PASS
             
@@ -660,9 +669,20 @@ if __name__ == '__main__':
 
         print '\n\n  Baum-Welch System ID with ', nrunout, ' runouts, ', ntest,'x',ntest, ' model.\n\n'
         print 'Initial Prob: ', m.POlambda(Obsll[1])
-        for bwiter in range(10):
+        Ratio = 100.0
+        BW_epsilon = 0.001
+        tinyvalue = logP(1.0E-300) * logP(1.0E-300) * logP(1.0E-300)
+        p = logP(1.0E-20)
+        pprev = tinyvalue
+        bwiter = 0
+        while abs(1.0-Ratio) > BW_epsilon:
+            bwiter += 1
             m.fitMultiple(Obs,Ls)
-            print bwiter, '     Prob:   ', m.POlambda(Obsll[1]) 
+            pprev = p
+            p = m.POlambda(Obsll[1])   # returns a logP()
+            Ratio = (p/pprev).test_val()
+            print bwiter, '     Prob:   ', p, '   Ratio: ',  Ratio
+        print '\n\n'
         print m.transmat_
         print m.emissionprob_
         

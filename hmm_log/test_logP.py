@@ -46,7 +46,7 @@ if (libname == 'log'):
     assert np.isnan(y[2]), fs
     assert abs(y[3] - 0.5) < epsilon, fs
     assert abs(ELv(e*e)-2.0) < epsilon, fs
-    print ' elog() tests    PASSED'
+    print 'log only: elog() tests    PASSED'
 
     # eexp()
     fs = ' eexp() test  FAIL'
@@ -62,7 +62,7 @@ if (libname == 'log'):
 
     y = EEv([[e, 0],[LZ, 1]])
     assert abs(y[1,1]-e) < epsilon, fs
-    print ' eexp() tests    PASSED'
+    print 'log only:  eexp() tests    PASSED'
 
 ###################################
 # test logP classes and operator overloads
@@ -84,6 +84,32 @@ assert abs(z.test_val() - (1.76673447099e-13))< epsilon, 'logP() returns wrong v
 z = logP(x)  # i.e. init with one of its own as argument
 
 assert isinstance(z,logP), 'logP_log: Problem with self initialization'
+
+########################################
+#
+#   Instantiate some small LogP() entities
+#
+
+print 'Python small numbers: '
+
+print '1.0E-900 =', 1.0E-900, ' is an absurdly small number: '
+print '1.0E-500 =', 1.0E-500, ' is an absurdly small number: '
+print '1.0E-400 =', 1.0E-400, ' is an absurdly small number: '
+print '1.0E-321 =', 1.0E-325, ' is an absurdly small number: '
+print '1.0E-320 =', 1.0E-320, ' is a very very small number: '
+print '1.0E-300 =', 1.0E-300, ' is a very very small number: '
+print '1.0E-200 =', 1.0E-200, ' is a very very small number: '
+ 
+print '\n Instantiation of small numbers: '
+
+x_sm_01 = logP(1.0E-300)
+x_sm_02 = logP(1.0E-300) 
+
+if(libname == 'scale'):
+    print 'scale:  logP(1.0E-300): mant: ', x_sm_01.mant , 'exp: ', x_sm_01.exp
+if(libname == 'log'):
+    print 'log:    logP(1.0E-300): test_val():', x_sm_01.test_val()
+     
 
 if libname=='scale':
     ##################################
@@ -215,9 +241,40 @@ assert abs(z.test_val()-prod) < epsilon, fs+FAIL
 assert abs((x*y).test_val()-prod) < epsilon, fs+FAIL 
 print fs+PASS
 
+
+print '     Testing multiplication with underflow'
+fs = ' multiplication of very small numbers '
+a = logP(1.0E-300) * logP(1.0E-300)
+
+if(libname == 'scale'):
+    print 'scale:  logP(1.0E-300)^2: mant: ', a.mant , 'exp: ', a.exp
+    assert a.mant == 1.0E-200, fs+FAIL
+    assert a.exp  == -400 , fs+FAIL
+    
+if(libname == 'log'):
+    print 'log:    logP(1.0E-300)^2: test_val():', a.test_val()
+    assert np.log(a.test_val()) - (-322) < epsilon, fs + FAIL 
+
+print '\n\n'+fs+PASS
 print '      Multiplication tests '  + PASS 
 
 
+fs = ' multiplication of very very very small numbers '
+
+b = a * logP(1.0E-300)
+
+if(libname == 'scale'):
+    print 'scale:  logP(1.0E-900): mant: ', b.mant , 'exp: ', b.exp
+    assert b.mant == 1.0E-100, fs+FAIL
+    assert b.exp  == -800 , fs+FAIL
+    
+if(libname == 'log'):
+    print 'log:    logP(1.0E-300)^2: test_val():', b.test_val()
+    assert np.log(b.test_val()) - (-322) < epsilon, fs + FAIL 
+
+print '\n\n'+fs+PASS
+
+quit()
 ##############################          Division 
 #
 #  logP __Div__()

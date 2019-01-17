@@ -70,7 +70,7 @@ class logP:
 
     
     def __div__(self,y):  
-        DEBUG = True
+        DEBUG = False
         if isinstance(y,numbers.Number):  # case of logP * float
             if np.log(y) < SMALLEST_LOG:
                 return logP(np.Inf)
@@ -118,14 +118,20 @@ class logP:
                 print 'I caught exception'
                 print 'x = ', self.mant, 'x10^',self.exp
                 print 'y = ', y.mant, 'x10^',y.exp
-            self.exp += (-200)
-            ap = self.mant
-            a = np.float64(ap) * np.float64(1.0E200)
-            b = yval
-            zm = logP(a*b).mant
+            if np.log10(self.mant) < 150.0:
+                self.exp += (-200)
+                ap = self.mant
+                a = np.float64(ap) * np.float64(1.0E200)
+                self.mant = a
+            if np.log(yval) < 150.0:
+                ye = ye + (-200)
+                yp = yval
+                a  = np.float64(yp) * np.float64(1.0E200)
+                y.mant = a
+            zm = self.mant*y.mant
         
         ze = self.exp + ye
-        z = logP(zm) # return value
+        z = logP(0.5) # return value
         z.mant = zm
         z.exp = ze
         return z
