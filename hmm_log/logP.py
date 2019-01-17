@@ -22,6 +22,7 @@ SMALLEST_LOG = -1.0E306
 #
 #    (overload * and + )
 class logP:
+<<<<<<< HEAD:hmm_log/logP.py
     def __init__(self,p):
         if isinstance(p,logP):
             self = p
@@ -29,6 +30,18 @@ class logP:
         fs = 'logP_scale() __init__ bad input'
         assert isinstance(p,numbers.Number), fs
         assert p >= 0.00, fs
+=======
+    def __init__(self,p): 
+        #
+        #   Comment out these tests for speed
+        #
+        #if isinstance(p,logP):
+            #self = p
+            #return
+        #fs = 'logP_scale() __init__ bad input' 
+        #assert isinstance(p,numbers.Number), fs
+        #assert p >= 0.00, fs
+>>>>>>> origin/UWmaster2:hmm_log/logP_scale.py
         self.exp = np.int64(0)
         self.mant = np.float64(p)
 
@@ -65,9 +78,15 @@ class logP:
     def test_val(self):  # return a float64 for testing
         return np.float64(self.mant*10.00**self.exp)
 
+<<<<<<< HEAD:hmm_log/logP.py
 
     def __div__(self,y):
         DEBUG = True
+=======
+    
+    def __div__(self,y):  
+        DEBUG = False
+>>>>>>> origin/UWmaster2:hmm_log/logP_scale.py
         if isinstance(y,numbers.Number):  # case of logP * float
             if np.log(y) < SMALLEST_LOG:
                 return logP(np.Inf)
@@ -115,14 +134,29 @@ class logP:
                 print 'I caught exception'
                 print 'x = ', self.mant, 'x10^',self.exp
                 print 'y = ', y.mant, 'x10^',y.exp
+<<<<<<< HEAD:hmm_log/logP.py
             self.exp += (-200)
             ap = self.mant
             a = np.float64(ap) * np.float64(1.0E200)
             b = yval
             zm = logP(a*b).mant
 
+=======
+            if np.log10(self.mant) < 150.0:
+                self.exp += (-200)
+                ap = self.mant
+                a = np.float64(ap) * np.float64(1.0E200)
+                self.mant = a
+            if np.log(yval) < 150.0:
+                ye = ye + (-200)
+                yp = yval
+                a  = np.float64(yp) * np.float64(1.0E200)
+                y.mant = a
+            zm = self.mant*y.mant
+        
+>>>>>>> origin/UWmaster2:hmm_log/logP_scale.py
         ze = self.exp + ye
-        z = logP(zm) # return value
+        z = logP(0.5) # return value
         z.mant = zm
         z.exp = ze
         return z
@@ -147,7 +181,7 @@ def lPnorm2(a,b):
     ediff = a.exp-b.exp
     if ediff > 0:
         b.exp += ediff
-        b.mant = b.mant / (10.0**ediff)
+        b.mant = b.mant * (10.0**(-ediff))
     elif ediff < 0:
         a.exp -= ediff
         a.mant *= (10.0**ediff)
