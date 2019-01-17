@@ -89,15 +89,15 @@ class logP():
         self.__init__(x)
         
     def test_val(self):  # return a float64 of prob. for testing
+        #
+        #  Important note:   This function is essentially meaningless 
+        #      when logP() class deals with underflows and very very small numbers
+        #   
         if np.isnan(self.lp):
             return np.float64(0.0)
         elif self.lp < -737:  #  (1.0E-320)
             print '(test_val underflow: ', self.lp,')' ,
-            return np.float(0.9999999E-320)
-        #print 'got here mul ***'
-        #print self.lp
-        #print  np.float64(np.exp(self.lp))
-        #print '...'
+            return np.float(0.9999999E-320) 
         return np.float64(np.exp(self.lp))
         
     def __mul__(self, lp2):

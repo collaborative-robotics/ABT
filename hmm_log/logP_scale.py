@@ -66,6 +66,10 @@ class logP:
         self.__init__(x)
     
     def test_val(self):  # return a float64 for testing
+        #
+        #  Important note:   This function is essentially meaningless 
+        #      when logP() class deals with underflows and very very small numbers
+        #        
         return np.float64(self.mant*10.00**self.exp)
 
     
