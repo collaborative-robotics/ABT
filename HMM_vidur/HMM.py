@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import os
 import sys
 NSYMBOLS = 40
+import time
 class hmm():
     ########################################
     #Assumes 2D observations
@@ -232,13 +233,14 @@ class hmm():
 #
 
 if __name__ == '__main__':
+
     STRICT = True
     epsilon = 1.0E-4
     FAIL = '          FAIL'
     PASS = '          PASS'
     ###################################
     # hmm class tests
-
+    start = time.time()
     # test pic_from_vect(v)
     m = hmm(10,10)
     vector = [0,0,0,.333,.333,.333, 0,0,0]  # note sum = 0.9990000
@@ -373,13 +375,16 @@ if __name__ == '__main__':
             # print (q,est_correct[i])
             assert q==est_correct[i], fs+FAIL
         print (fs+PASS)
-
+        end = time.time()
+        print(end-start)
+        exit()
         #
         #   Let's try the Baum Welch!
         #
         print  ('\n\n   Test Baum Welch fit() method')
         # p0 = m.POlambda(em) #TODO
         m.BaumWelch(np.array(em, ndmin = 2),np.array(len(em), ndmin = 1))
+
         #p1 = m.POlambda(em)
         ##r = raw_input('<cr>')
         #m.fit(em)

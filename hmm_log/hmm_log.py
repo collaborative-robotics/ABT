@@ -14,7 +14,7 @@ import sys
 
 from logP import *
 from logP_matrix import *
-
+import time
 #sudo pip install scikit-learn  # dep for hmmlearn
 #pip install -U --user hmmlearn
 #from hmmlearn import hmm
@@ -473,7 +473,7 @@ if __name__ == '__main__':
 
     ###################################
     # hmm class tests
-
+    start = time.time()
     # test pic_from_vect(v)
     m = hmm(10)
     vector = [0,0,0,.333,.333,.333, 0,0,0]  # note sum = 0.9990000
@@ -563,7 +563,6 @@ if __name__ == '__main__':
 
         # print '------------alpha-------------'
         print alpha
-        exit()
 
         #print alpha[14,4].test_val()
         #assert abs(alpha[14,4].test_val()-9.35945852879e-13) < TINY_EPSILON, fs+FAIL
@@ -602,7 +601,9 @@ if __name__ == '__main__':
         for i,q in enumerate(qs):
             assert q==est_correct[i], fs+FAIL
         print fs+PASS
-
+        end = time.time()
+        print end-start
+        exit()
         #
         #   Let's try the Baum Welch!
         #
