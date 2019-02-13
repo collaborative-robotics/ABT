@@ -87,7 +87,7 @@ class hmm():
 
 
     def BaumWelch(self,observation,length):
-        denoms = np.zeros(self.Nstate)
+        denoms = np.zeros(1,self.Nstate)
         nums = np.zeros((self.Nstate,self.Nstate))
         denoms2 = np.zeros(self.Nstate)
         bnums = np.zeros((self.Nstate,self.nsymbols))
@@ -95,14 +95,16 @@ class hmm():
             foward_lattice = self.Forward_one(observation[i],length[i])
             backward_lattice = self.Backward(observation[i],length[i])
             # Numerator
-            xi = np.empty((length[i],self.Nstate,self.Nstate)) #TODO: Correction
+            xi = np.zeros((length[i],self.Nstate,self.Nstate)) #TODO: Correction
             for j in range(0,length[i]-1):
+
                 xi[j] = foward_lattice[:,[j]] * self._transmat * self._emission[:,[observation[i][j+1]]].T * backward_lattice[:,[j+1]].T
                 xi[j] /= np.sum(xi[j])
             # xi /= np.sum(xi)
-            xi[length[i]-1] = 0
-            nums = nums + np.sum(xi,axis = 0)
-            denom = np.sum(np.sum(xi,axis = 2),axis = 0)
+            # xi2 = xi;
+            # xi2[length[i]-1] = 0
+            nums = nums + np.sum(xi[:-2],axis = 0)
+            denom = np.sum(np.sum(xi[:-2],axis = 2),axis = 0)
             denoms += denom
             #Update
             # print("::::",denom.shape)
@@ -125,13 +127,35 @@ class hmm():
         self._transmat = nums/denoms
         self._emission = bnums/denoms2.reshape(denoms.shape[0],1)
 
-    # def BaumWelch2(self,observation,length):
-    #     num = np.zeros((Nstate,Nstate))
-    #     for i in range(len(length)):
-    #         alpha = self.Forward_one(observation[i],length[i])
-    #         beta = self.Backward(observation[i],length[i])
-    #         for j in range(length[i]):
-
+    def BaumWelch2(self,observation,length):
+        numas = np.zeros((self.Nstate,self.Nstate))
+        # denas = np.zeros((Nstate,Nstate))
+        denas = np.zeros((self.Nstate,1))
+        numbs = np.zeros((self.Nstate,self.nsymbols))
+        denbs = np.zeros((self.Nstate,1))
+        for i in range(len(length)):
+            alpha = self.Forward_one(observation[i],length[i])
+            beta = self.Backward(observation[i],length[i])
+            xi = np.zeros((length[i],self.Nstate,self.Nstate))
+            # xid = np.zeros((length[i],self.Nstate,self.Nstate))
+            for j in range(length[i]-1):
+                print((self._emission[:,[observation[i][j+1]]].T).shape)
+                xi[j] = alpha[:,[j]] * self._transmat * self._emission[:,[observation[i][j+1]]].T * beta[:,[j+1]].T
+                # xid[j] = np.dot(foward_lattice[:,[j]],backward_lattice[:,[j+1]].T)
+            xid = alpha * beta
+            # print(xid.shape)
+            numa = np.sum(xi[:-2],axis = 0);
+            dena = np.sum(xid[:,:-2], axis = 1).reshape(self.Nstate,1)
+            # print(dena.shape)
+            numas += numa
+            denas += dena
+            numb = np.zeros((self.Nstate,self.nsymbols))
+            for k in range(length[i]-1):
+                numb[:,observation[i][k]] = numb[:,observation[i][k]] + xid[:,k]
+            numbs += numb
+            denbs += np.sum(xid,axis = 1).reshape(self.Nstate,1)
+        self._transmat = numas/(denas.T)
+        self._emission = numbs/denbs
 
     def sample(self,T):
         states = []
@@ -379,7 +403,7 @@ if __name__ == '__main__':
         #
         print  ('\n\n   Test Baum Welch fit() method')
         # p0 = m.POlambda(em) #TODO
-        m.BaumWelch(np.array(em, ndmin = 2),np.array(len(em), ndmin = 1))
+        m.BaumWelch2(np.array(em, ndmin = 2),np.array(len(em), ndmin = 1))
         #p1 = m.POlambda(em)
         ##r = raw_input('<cr>')
         #m.fit(em)
@@ -406,7 +430,7 @@ if __name__ == '__main__':
         Sts = []   # true state sequences
         Ls  = []
         Obsll = []
-        nrunout = 3
+        nrunout = 1000
         for rn in range(nrunout):
             #    Simulate the HMM
             st, em = m.sample(nsim_samples)
@@ -419,7 +443,7 @@ if __name__ == '__main__':
         a = m._transmat
         b = m._emission
         print ('Initial Prob: ', m.probability_check(Obsll[1]))
-        m.BaumWelch(Obsll,Ls)
+        m.BaumWelch2(Obsll,Ls)
         print(np.array_equal(a,m._transmat),np.array_equal(b,m._emission))
         print ('Final Prob:   ', m.probability_check(Obsll[1]))
 
