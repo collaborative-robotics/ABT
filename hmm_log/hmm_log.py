@@ -14,7 +14,7 @@ import sys
 
 from logP import *
 from logP_matrix import *
-
+import time
 #sudo pip install scikit-learn  # dep for hmmlearn
 #pip install -U --user hmmlearn
 #from hmmlearn import hmm
@@ -465,8 +465,13 @@ class hmm():
 if __name__ == '__main__':
          
     ###################################
+<<<<<<< HEAD
     # hmm class tests 
     
+=======
+    # hmm class tests
+    start = time.time()
+>>>>>>> 13dee48c21c06184cea1a2521d3ce6de733194e3
     # test pic_from_vect(v)
     m = hmm(10)
     vector = [0,0,0,.333,.333,.333, 0,0,0]  # note sum = 0.9990000
@@ -553,11 +558,18 @@ if __name__ == '__main__':
         stseq =  [0, 0, 1, 1, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4]
         em = [6, 3, 6, 6, 8, 12, 14, 10, 15, 14, 14, 15, 12, 13, 16]
         alpha =  m.forwardSL(em)
+<<<<<<< HEAD
         
         #print '------------alpha-------------'
         #print alpha
         
         
+=======
+
+        # print '------------alpha-------------'
+        print alpha
+
+>>>>>>> 13dee48c21c06184cea1a2521d3ce6de733194e3
         #print alpha[14,4].test_val()
         #assert abs(alpha[14,4].test_val()-9.35945852879e-13) < TINY_EPSILON, fs+FAIL
         #assert abs(alpha[ 2,0].test_val()-0.000578703703704) < epsilon, fs+FAIL
@@ -603,7 +615,13 @@ if __name__ == '__main__':
             print 'true/est: ',stseq[i], q
             assert q==est_correct[i], fs+FAIL
         print fs+PASS
+<<<<<<< HEAD
             
+=======
+        end = time.time()
+        print end-start
+        exit()
+>>>>>>> 13dee48c21c06184cea1a2521d3ce6de733194e3
         #
         #   Let's try the Baum Welch!
         #
