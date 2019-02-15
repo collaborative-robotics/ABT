@@ -407,12 +407,7 @@ if __name__ == '__main__':
         #
         print  ('\n\n   Test Baum Welch fit() method')
         # p0 = m.POlambda(em) #TODO
-<<<<<<< HEAD
         m.BaumWelch2(np.array(em, ndmin = 2),np.array(len(em), ndmin = 1))
-=======
-        m.BaumWelch(np.array(em, ndmin = 2),np.array(len(em), ndmin = 1))
-
->>>>>>> 13dee48c21c06184cea1a2521d3ce6de733194e3
         #p1 = m.POlambda(em)
         ##r = raw_input('<cr>')
         #m.fit(em)
