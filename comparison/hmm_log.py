@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 ##from tqdm import tqdm
 import os
 import sys
-
+from tqdm import tqdm
 from logP import *
 from logP_matrix import *
 import time
@@ -43,6 +43,11 @@ class hmm():
         self.typestring = 'hmm_bh'
         for i in range(self.N):
             self.names.append('-noname-')
+
+    def custom(self,Pic,transmatc_,emissionprobc_):
+        self.Pi = Pic
+        self.transmat_ = transmatc_
+        self.emissionprob_ = emissionprobc_
 
     # Forward algorithm for multiple runouts
     #def forwardM(self, X, lengths):
@@ -93,10 +98,11 @@ class hmm():
                     a = logA[i,j]
                     b = alpha[t-1,i]
                     tmpsum +=  a * b
+                # print (j)
+                # if j > 34:
+                #     print (j)
                 c = logB[j,Y[t]]
                 alpha[t,j] = c * tmpsum
-            # print alpha
-            # print alpha[t,:]
         #print '------------ alpha ----------------'
         #print alpha
         return alpha
@@ -196,10 +202,10 @@ class hmm():
                 lj += c
             lines.append(lj)
 
-        print 'State evolution:'
+        print ('State evolution:')
         for j in range(self.N):
-            print j, '  ['+lines[j]+']'
-        print '\n\n'
+            print (j, '  ['+lines[j]+']')
+        print ('\n\n')
 
 
 
@@ -305,7 +311,7 @@ class hmm():
         Pk = []
         ptr = 0                 # point to the start of each seqeuence
         # first go through seqs and eval alpha & beta
-        for k in range(len(Ls)):     # go through the obs sequences
+        for k in tqdm(range(len(Ls))):     # go through the obs sequences
             olen = Ls[k]
             #print 'ptrs: ', ptr, ptr+olen
             Ok = Obs[ptr:ptr+olen] # the current obs sequence
@@ -316,8 +322,8 @@ class hmm():
             Pk.append(self.POlambda(Ok))
             obsl.append(Ok)
 
-        for i in range(N):
-            for j in range(N):
+        for i in tqdm(range(N)):
+            for j in tqdm(range(N)):
                 nsum = lp0              # numerator of (109)
                 dsum = lp0
                 # now go through seqs and compute num and denom (109)
@@ -343,8 +349,8 @@ class hmm():
 
 
         #  b_hat                              eqn 110
-        for j in range(N):
-            for l in range(NSYMBOLS):
+        for j in tqdm(range(N)):
+            for l in tqdm(range(NSYMBOLS)):
                 nsum = lp0
                 dsum = lp0
                 ptr = 0
@@ -417,7 +423,7 @@ class hmm():
         self._error('invalid prob vector')
 
     def check(self):
-        print 'model check:'
+        print ('model check:')
         sh = np.shape(self.transmat_)
         if (sh[0] != self.N or sh[1] != self.N):
             self.error(' transmat_ wrong size')
@@ -439,20 +445,20 @@ class hmm():
         for c in range(m):
             t = row[c]
             if t > 1.0 or  t < 0.0 :
-                print 'illegal probability found'
+                print ('illegal probability found')
                 valid = False
             sum += t
         if abs(sum-1.0) > epsilon:
             valid = False
         if not valid:
-            print row
-            print 'Sum: ', sum
+            print (row)
+            print ('Sum: ', sum)
             self._error('a vector failed row check: sum != 1.0')
         return True
 
 
     def _error(self,msg):
-        print 'hmm class (hmm_bh): ' + msg
+        print ('hmm class (hmm_bh): ' + msg)
         quit()
 
 
@@ -478,7 +484,7 @@ if __name__ == '__main__':
     for i in range(10000):  # this really tests sum=1.000000
         x,p = m.pick_from_vec(vector)
         assert (x >1 and  x <= 5), fs+FAIL
-    print fs+PASS
+    print (fs+PASS)
 
 
     ######################################
@@ -499,9 +505,9 @@ if __name__ == '__main__':
         if(r+1 < 10):
             A10[r,r+1] = 1.0-A10[r,r]
 
-    for ntest in [5]:
+    for ntest in [10]:
         fs =  '\n\ntesting hmm with ' + str(ntest) + ' states'
-        print fs
+        print (fs)
         m = hmm(ntest)
         if ntest == 5:
             m.transmat_ = A5.copy()
@@ -521,27 +527,26 @@ if __name__ == '__main__':
             #quit()
 
         m.check()
-        print fs + ' [setup] ' + PASS
+        print (fs + ' [setup] ' + PASS)
 
         ############################	for(int i = 0;i <100; i--)##################################
         #
         #    Simulate the HMM
         #
         st, em = m.sample(nsim_samples)
-        print '----------- state sequence & emissions -----------------------'
-        print st
-        print em
+        print( '----------- state sequence & emissions -----------------------')
+        print (st)
+        print (em)
         assert len(st) == len(em), 'Emissions dont match states from sample()'
 
-        print '\n\nTest valid sample outputs:'
+        print ('\n\nTest valid sample outputs:')
         for i,s in enumerate(st):
             #print 'checking: ' , i, s, em[i]
             if m.emissionprob_[s,em[i]] < epsilon:
                 m._error('invalid emission detected')
-        print 'got valid emissions'
-        print(m.emissionprob_.sum())
-        print(m.transmat_)
-        print '\nForward Algorithm:'
+        print ('got valid emissions')
+
+        print ('\nForward Algorithm:')
 
         #print 'state estimate: '
         #print '       forwardS()   (regular math)'
@@ -551,34 +556,35 @@ if __name__ == '__main__':
 
         TINY_EPSILON = 1.0E-20
 
-        print '\n     Test    Forward Algorithm:'
+        print ('\n     Test    Forward Algorithm:')
         fs = '   forward algorithm, forwardSL(em) '
         stseq =  [0, 0, 1, 1, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4]
         em = [6, 3, 6, 6, 8, 12, 14, 10, 15, 14, 14, 15, 12, 13, 16]
         alpha =  m.forwardSL(em)
 
         # print '------------alpha-------------'
-        print alpha
+        print (alpha)
 
         #print alpha[14,4].test_val()
         #assert abs(alpha[14,4].test_val()-9.35945852879e-13) < TINY_EPSILON, fs+FAIL
         #assert abs(alpha[ 2,0].test_val()-0.000578703703704) < epsilon, fs+FAIL
-        print fs+PASS
+        print (fs+PASS)
 
-        print '\n     Test    Backward Algorithm:'
+
+        print( '\n     Test    Backward Algorithm:')
         stseq =  [0, 0, 1, 1, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4]
         em = [6, 3, 6, 6, 8, 12, 14, 10, 15, 14, 14, 15, 12, 13, 16]
 
         beta_test =  m.backwardSL(em)
         fs = '    backwards algorithm backwardSL(em) '
-        print beta_test
+        #print beta_test
         #assert abs(beta_test[13,3].test_val()-0.1666666666667)<epsilon, fs+FAIL
         #assert abs(beta_test[ 3,0].test_val()-9.57396964103e-11) < TINY_EPSILON , fs+FAIL
         #print fs+PASS
-        # exit()
-        print '\n\n Test Viterbi Algorithm:'
-        print 'st:',st
-        print 'em:',em
+
+        print ('\n\n Test Viterbi Algorithm:')
+        print ('st:',st)
+        print ('em:',em)
         #print m.emissionprob_
         if ntest == 5:
             # TRUE state sequence (gen during simulation)
@@ -601,16 +607,16 @@ if __name__ == '__main__':
         qs = m.Viterbi(em)
         fs = 'Viterbi state estimation tests'
         for i,q in enumerate(qs):
-            print 'true/est: ',stseq[i], q
+            print ('true/est: ',stseq[i], q)
             assert q==est_correct[i], fs+FAIL
-        print fs+PASS
+        print (fs+PASS)
         end = time.time()
-        print end-start
+        print (end-start)
         # exit()
         #
         #   Let's try the Baum Welch!
         #
-        print  '\n\n   Test Baum Welch fit() method'
+        print  ('\n\n   Test Baum Welch fit() method')
         p0 = m.POlambda(em)
         m.fit(em)
         #p1 = m.POlambda(em)
@@ -621,13 +627,13 @@ if __name__ == '__main__':
         #m.fit(em)
         #p3 = m.POlambda(em)
 
-        print "    Change in PO-lambda: "
-        print p0
+        print ("    Change in PO-lambda: ")
+        print (p0)
         #print p1
         #print p2
         #print p3
 
-        print '\n\n        -- --  --   Multiple Runout HMM.fit()  -- -- -- \n\n\n'
+        print ('\n\n        -- --  --   Multiple Runout HMM.fit()  -- -- -- \n\n\n')
 
         ###################################################################
         #
@@ -670,26 +676,23 @@ if __name__ == '__main__':
             Sts.extend(st)
             Ls.append(len(st))
 
-        print '\n\n  Baum-Welch System ID with ', nrunout, ' runouts, ', ntest,'x',ntest, ' model.\n\n'
-        print 'Initial Prob: ', m.POlambda(Obsll[1])
+        print ('\n\n  Baum-Welch System ID with ', nrunout, ' runouts, ', ntest,'x',ntest, ' model.\n\n')
+        print ('Initial Prob: ', m.POlambda(Obsll[1]))
         Ratio = 100.0
         BW_epsilon = 0.001
         tinyvalue = logP(1.0E-300) * logP(1.0E-300) * logP(1.0E-300)
         p = logP(1.0E-20)
         pprev = tinyvalue
         bwiter = 0
-        # print(Obs)
-        # exit()
-        # while abs(1.0-Ratio) > BW_epsilon:
-        for i in range(1):
+        while abs(1.0-Ratio) > BW_epsilon:
             bwiter += 1
             m.fitMultiple(Obs,Ls)
             pprev = p
             p = m.POlambda(Obsll[1])   # returns a logP()
             Ratio = (p/pprev).test_val()
-            print bwiter, '     Prob:   ', p, '   Ratio: ',  Ratio
-        print '\n\n'
-        print m.transmat_.sum(axis = 1)
-        print m.emissionprob_
+            print (bwiter, '     Prob:   ', p, '   Ratio: ',  Ratio)
+        print ('\n\n')
+        print (m.transmat_)
+        print (m.emissionprob_)
 
-        print ' \n\n               Completed  Test Runs  of hmm_log package   \n\n'
+        print (' \n\n               Completed  Test Runs  of hmm_log package   \n\n')

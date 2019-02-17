@@ -38,18 +38,17 @@ class hmm():
 
         self._emission = np.zeros((self.Nstate,self.nsymbols))
         self._emission.flags['WRITEABLE'] = True
-        print(self._transmat.shape)
+        # print(self._transmat.shape)
 
 # hmm(10,10)
     def Forawrd(self, observation, length):
         log_prob = np.empty(lengths.shape[0])
         for i in range(obsevation.shape[0]):
-            print(length[i])
+            # print(length[i])
             foward_lattice = np.empty((self.Nstate,length[i]))
             foward_lattice[:,0] = self.Pi * self._emission[:,observation[i][0]]
             for j in range(1,length[i]-2):
                 foward_lattice[:,j] = np.sum(foward_lattice[:,j-1].reshape(1,self.Nstate) * self._transmat, axis = 0) * self._emission[:,observation[i][j]]
-
             log_prob[i] = np.sum(foward_lattice[:,length(i)])
         return log_prob
 
@@ -121,42 +120,49 @@ class hmm():
             # print((b[:,[observation[i][j]]] + gamma2[[j]].T).shape)
             # print((b[:,observation[i][j]] + gamma2[[j]]).shape)
             for j in range(length[i]):
-                b[:,observation[i][j]] = np.squeeze(b[:,[observation[i][j]]] + gamma2[[j]].T)
+                b[:,observation[i][j]] = np.squeeze(b[:,[observation[i][j]]].T + gamma2[[j]].T)
             # print(denom2.shape,b.shape)
             # b /= denom2.reshape(self.Nstate,1)
             bnums += b
         self._transmat = nums/denoms
         self._emission = bnums/denoms2.reshape(denoms.shape[0],1)
 
-    def BaumWelch2(self,observation,length):
-        numas = np.zeros((self.Nstate,self.Nstate))
-        # denas = np.zeros((Nstate,Nstate))
-        denas = np.zeros((self.Nstate,1))
-        numbs = np.zeros((self.Nstate,self.nsymbols))
-        denbs = np.zeros((self.Nstate,1))
-        for i in range(len(length)):
-            alpha = self.Forward_one(observation[i],length[i])
-            beta = self.Backward(observation[i],length[i])
-            xi = np.zeros((length[i],self.Nstate,self.Nstate))
-            # xid = np.zeros((length[i],self.Nstate,self.Nstate))
-            for j in range(length[i]-1):
-                print((self._emission[:,[observation[i][j+1]]].T).shape)
-                xi[j] = alpha[:,[j]] * self._transmat * self._emission[:,[observation[i][j+1]]].T * beta[:,[j+1]].T
-                # xid[j] = np.dot(foward_lattice[:,[j]],backward_lattice[:,[j+1]].T)
-            xid = alpha * beta
-            # print(xid.shape)
-            numa = np.sum(xi[:-2],axis = 0);
-            dena = np.sum(xid[:,:-2], axis = 1).reshape(self.Nstate,1)
-            # print(dena.shape)
-            numas += numa
-            denas += dena
-            numb = np.zeros((self.Nstate,self.nsymbols))
-            for k in range(length[i]-1):
-                numb[:,observation[i][k]] = numb[:,observation[i][k]] + xid[:,k]
-            numbs += numb
-            denbs += np.sum(xid,axis = 1).reshape(self.Nstate,1)
-        self._transmat = numas/(denas.T)
-        self._emission = numbs/denbs
+    def baum_welch_step(self,observation,length):
+        alpha = self.Forward_one(observation, length)
+        beta =self.Backward(observation, length)
+        num_a = np.zeros((self.Nstate,self.Nstate))
+        den_a = np.zeros((self.Nstate,1))
+        num_b = np.zeros(self._emission.shape)
+        den_b = np.zeros((self.Nstate,1))
+        for i in range(len(observation)-1):
+            num_a += alpha[:,[i]] * self._transmat * self._emission[:,[observation[i+1]]] * beta[:,[i+1]].T
+            num_b[:,observation] = num_b[:,[observation[i]]] + alpha[:,[i]] * beta[:,[i]]
+            # print(num_b[:,[observation[i]]] * alpha[:,[i]] * beta[:,[i]])
+        den_a = np.sum((alpha * beta)[:,:-2], axis = 1).reshape(self.Nstate,1)
+        den_b = np.sum((alpha * beta)[:,:-2], axis = 1).reshape(self.Nstate,1)
+        # print(num_b)
+        # print("shape:",den_b.shape)
+        return num_a, num_b, den_a, den_b
+
+    def fit(self,observations,lengths):
+        num_a = np.zeros((self.Nstate,self.Nstate))
+        den_a = np.zeros((self.Nstate,1))
+        num_b = np.zeros(self._emission.shape)
+        den_b = np.zeros((self.Nstate,1))
+        for i in range(len(lengths)):
+            observation = observations[i]
+            length = lengths[i]
+            na,nb,da,db = self.baum_welch_step(observation,length)
+            num_a += na
+            num_b += nb
+            den_a += da
+            den_b += db
+        # print(den_a)
+        # print(den_b)
+        # print(num_a)
+        # print(num_b)
+        self._transmat = num_a/den_a
+        self._emission = num_b/den_b
 
     def sample(self,T):
         states = []
@@ -336,6 +342,9 @@ if __name__ == '__main__':
             #print 'checking: ' , i, s, em[i]
             if m._emission[s,em[i]] < epsilon:
                 m._error('invalid emission detected')
+        # print(m._emission.sum())
+        # print(m._transmat)
+        # exit()
         print ('got valid emissions')
 
         print ('\nForward Algorithm:')
@@ -393,7 +402,7 @@ if __name__ == '__main__':
         # print("Trans":)
         qs = m.Viterbi(np.array(em, ndmin = 2),np.array(len(em), ndmin = 1))
         fs = 'Vitermi state estimation tests'
-        print(qs.shape)
+        # print(qs.shape)
         # exit()
         for i,q in enumerate(np.nditer(qs[0])):
             # print (q,est_correct[i])
@@ -401,13 +410,13 @@ if __name__ == '__main__':
         print (fs+PASS)
         end = time.time()
         print(end-start)
-        exit()
+
         #
         #   Let's try the Baum Welch!
         #
         print  ('\n\n   Test Baum Welch fit() method')
         # p0 = m.POlambda(em) #TODO
-        m.BaumWelch2(np.array(em, ndmin = 2),np.array(len(em), ndmin = 1))
+        # m.fit(np.array(em, ndmin = 2),np.array(len(em), ndmin = 1))
         #p1 = m.POlambda(em)
         ##r = raw_input('<cr>')
         #m.fit(em)
@@ -437,6 +446,7 @@ if __name__ == '__main__':
         nrunout = 1000
         for rn in range(nrunout):
             #    Simulate the HMM
+            # print("HIT")
             st, em = m.sample(nsim_samples)
             Obs.extend(em)
             Obsll.append(em)  # as list of lists
@@ -446,9 +456,14 @@ if __name__ == '__main__':
         Obsll = np.array(Obsll)
         a = m._transmat
         b = m._emission
+        print(a)
+        # exit()
         print ('Initial Prob: ', m.probability_check(Obsll[1]))
-        m.BaumWelch2(Obsll,Ls)
+        for i in range(1):
+            m.fit(Obsll,Ls)
         print(np.array_equal(a,m._transmat),np.array_equal(b,m._emission))
+        print(m._transmat)
+        print(m._emission)
         print ('Final Prob:   ', m.probability_check(Obsll[1]))
 
         print (' \n\n               Completed  Test Runs  of hmm_log package   \n\n')

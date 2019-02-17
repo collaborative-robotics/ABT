@@ -68,7 +68,7 @@ class logPm():
                 stmp += ' ]\n'
             return stmp + ' ]'
         else:
-            print 'logPm(): I dont know how to str 3D array'
+            print ('logPm(): I dont know how to str 3D array')
             quit()
 
 
@@ -93,7 +93,7 @@ class logPv():
     def __init__(self, Pv):
         if False:
             if len(np.shape(Pv)) != 1:
-                print 'LogPv() wrong shape'
+                print ('LogPv() wrong shape')
                 quit()
         self.v = []
         for i,p in enumerate(Pv):
