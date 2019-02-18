@@ -220,6 +220,7 @@ class hmm():
         N = self.N
         xi = logPm(np.zeros((T,N,N)))       #    (37)
         s1 = logPv(np.zeros(T))
+        nslice2 = logPm(np.zeros((N,N)))
         for t in range(T-1):
             denom = lp0              #denominator of (37)
             nslice = logPm(np.zeros((N,N)))
@@ -230,14 +231,23 @@ class hmm():
                     c = self.emissionprob_[j,Obs[t+1]]
                     d = beta[t+1,j]
                     nslice[i,j] = a*b*c*d
+                    # if(i == N-1 and j == N-1):
+                    #     print "Point: ",t
+                    #     # print a
+                    #     print c
+                    #     #  print b
+                    #     # print d
+                    #     # print nslice[i,j]
                     denom = denom +  nslice[i,j]
             #assert denom.test_val() > TINY_EPSILON, ' (Almost) divide by zero '
             for i in range(N):
                 for j in range(N):
+                    nslice2[i,j] += nslice[i,j]
                     xi[t,i,j] = nslice[i,j]/denom
                     #assert xi[t-1,i,j].test_val() >= 0.0, ' Help!!'
                     #assert xi[t-1,i,j].test_val() != np.Inf, ' Help!! (inf)'
-
+        print nslice2[-1,-1]
+        # exit()
         gam = logPm(np.zeros((T,N)))     #       (38)
         for t in range(T-1):
             for i in range(N):
@@ -315,7 +325,9 @@ class hmm():
             betak.append(self.backwardSL(Ok))
             Pk.append(self.POlambda(Ok))
             obsl.append(Ok)
-
+        nsum2 = np.zeros((N,N))
+        # dsum2 = np.zeros((N,N))
+        list = []
         for i in range(N):
             for j in range(N):
                 nsum = lp0              # numerator of (109)
@@ -328,6 +340,8 @@ class hmm():
                     denk = lp0
                     for t in range(Tk-1):
                             #numerator of (109)
+                            # print(alphak[k])
+                            # exit()
                             a = alphak[k][t,i]
                             b = self.transmat_[i,j]
                             c = self.emissionprob_[j,Ok[t+1]]
@@ -335,14 +349,32 @@ class hmm():
                             numk = numk + a*b*c*d
                             # now work on demoninator of (109)
                             d = betak[k][t,i]
+                            # if(i == N-1 and j == N-1):
+                            #     print "Point: ", t
+                            #     print a * d
                             denk = denk + a*d
+                    if (i == 0 and j == 0):
+                        list.append(numk)
                     # summing over k
-                    nsum = nsum + numk / Pk[k]
-                    dsum = dsum + denk / Pk[k]
+                    # print(nsum)
+                    nsum = nsum + numk #/ Pk[k]
+                    dsum = dsum + denk #/ Pk[k]
+                # print(dsum)
+                nsum2[i,j] = nsum
+                # dsum2[i,j] = dsum
                 a_hat[i,j] = (nsum/dsum).test_val()
-
+        print(nsum2)
+        print("2:")
+        # print(dsum2)
+        # for item in list:
+        #     print item
+        # exit()
 
         #  b_hat                              eqn 110
+        b_num = np.zeros((N,NSYMBOLS))
+        # b_num2 = np.zeros((N,NSYMBOLS))
+        b_den =  np.zeros((N,NSYMBOLS))
+        numero = []
         for j in range(N):
             for l in range(NSYMBOLS):
                 nsum = lp0
@@ -358,11 +390,21 @@ class hmm():
                         if(Ok[t]==l):
                             numk = numk + alphak[k][t,j]*betak[k][t,j]
                         #                             denominator of (110)
-                        denk = denk + alphak[k][t,j]*betak[k][t,j]
-                    nsum = nsum + numk / Pk[k]
-                    dsum = dsum + denk / Pk[k]
-                b_hat[j,l] = (nsum/dsum).test_val()
+                        if(Ok[t] == 3 and j == 0 and Ok[t] == l):
+                            numero.append(alphak[k][t,j])
+                            numero.append(betak[k][t,j])
 
+                        denk = denk + alphak[k][t,j]*betak[k][t,j]
+                    nsum = nsum + numk #/ Pk[k]
+                    dsum = dsum + denk #/ Pk[k]
+                b_num[j,l] = nsum
+                b_den[j,l] = dsum
+                b_hat[j,l] = (nsum/dsum).test_val()
+        print(b_num)
+        # print(numero[0])
+        # print(numero[1])
+        # print(b_den)
+        # exit()
         self.transmat_ = a_hat
         #print '-----------new transmat_ -----------'
         #print self.transmat_
@@ -611,8 +653,12 @@ if __name__ == '__main__':
         #   Let's try the Baum Welch!
         #
         print  '\n\n   Test Baum Welch fit() method'
+        print(em)
         p0 = m.POlambda(em)
-        m.fit(em)
+        # m.fitMultiple(em,[len(em)])
+        # print m.transmat_
+        # print m.emissionprob_
+        # exit()
         #p1 = m.POlambda(em)
         ##r = raw_input('<cr>')
         #m.fit(em)
@@ -681,7 +727,15 @@ if __name__ == '__main__':
         # print(Obs)
         # exit()
         # while abs(1.0-Ratio) > BW_epsilon:
-        for i in range(1):
+        print(Ls)
+        import pickle
+
+        with open('Obs', 'rb') as fp:
+            Obs = pickle.load(fp)
+        with open('Obsll','rb') as fp2:
+            Obsll = pickle.load(fp2)
+        # exit()
+        for i in range(10):
             bwiter += 1
             m.fitMultiple(Obs,Ls)
             pprev = p
@@ -689,7 +743,7 @@ if __name__ == '__main__':
             Ratio = (p/pprev).test_val()
             print bwiter, '     Prob:   ', p, '   Ratio: ',  Ratio
         print '\n\n'
-        print m.transmat_.sum(axis = 1)
-        print m.emissionprob_
+        print m.transmat_
+        # print m.emissionprob_
 
         print ' \n\n               Completed  Test Runs  of hmm_log package   \n\n'

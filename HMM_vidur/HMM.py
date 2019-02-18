@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import os
 import sys
 NSYMBOLS = 40
+num = 0
 import time
 class hmm():
     ########################################
@@ -51,6 +52,15 @@ class hmm():
                 foward_lattice[:,j] = np.sum(foward_lattice[:,j-1].reshape(1,self.Nstate) * self._transmat, axis = 0) * self._emission[:,observation[i][j]]
             log_prob[i] = np.sum(foward_lattice[:,length(i)])
         return log_prob
+
+    def POlambda(self, Y):
+        al = self.Forward_one(Y,len(Y))
+        T = len(Y)-1
+        a = 0
+        for j in range(self.Nstate):
+            b = al[j,T]
+            a = a + b
+        return a
 
     def Backward(self, observation, length) :
         backward_lattice = np.empty((self.Nstate,length))
@@ -128,20 +138,21 @@ class hmm():
         self._emission = bnums/denoms2.reshape(denoms.shape[0],1)
 
     def baum_welch_step(self,observation,length):
+        global num
         alpha = self.Forward_one(observation, length)
         beta =self.Backward(observation, length)
         num_a = np.zeros((self.Nstate,self.Nstate))
         den_a = np.zeros((self.Nstate,1))
         num_b = np.zeros(self._emission.shape)
+        # print(self._emission.shape)
         den_b = np.zeros((self.Nstate,1))
         for i in range(len(observation)-1):
-            num_a += alpha[:,[i]] * self._transmat * self._emission[:,[observation[i+1]]] * beta[:,[i+1]].T
-            num_b[:,observation] = num_b[:,[observation[i]]] + alpha[:,[i]] * beta[:,[i]]
-            # print(num_b[:,[observation[i]]] * alpha[:,[i]] * beta[:,[i]])
-        den_a = np.sum((alpha * beta)[:,:-2], axis = 1).reshape(self.Nstate,1)
-        den_b = np.sum((alpha * beta)[:,:-2], axis = 1).reshape(self.Nstate,1)
-        # print(num_b)
-        # print("shape:",den_b.shape)
+            # print("Point: ",i)
+            # print(alpha[-1,i],beta[-1,i+1],self._emission[-1,[observation[i+1]]])#,self._transmat[-1,-1])
+            num_a += alpha[:,[i]] * self._transmat * self._emission[:,[observation[i+1]]].T * beta[:,[i+1]].T
+            num_b[:,observation[i]] = np.squeeze(num_b[:,[observation[i]]] + alpha[:,[i]] * beta[:,[i]])
+        den_a = np.sum((alpha * beta)[:,:-1], axis = 1).reshape(self.Nstate,1)
+        den_b = np.sum((alpha * beta)[:,:-1], axis = 1).reshape(self.Nstate,1)
         return num_a, num_b, den_a, den_b
 
     def fit(self,observations,lengths):
@@ -149,18 +160,22 @@ class hmm():
         den_a = np.zeros((self.Nstate,1))
         num_b = np.zeros(self._emission.shape)
         den_b = np.zeros((self.Nstate,1))
+        list = []
         for i in range(len(lengths)):
+
             observation = observations[i]
+            # print(observation)
             length = lengths[i]
+            # prob = self.POlambda(observation)
             na,nb,da,db = self.baum_welch_step(observation,length)
-            num_a += na
-            num_b += nb
-            den_a += da
-            den_b += db
-        # print(den_a)
-        # print(den_b)
-        # print(num_a)
-        # print(num_b)
+            list.append(na[0,0])
+            num_a += na#/prob
+            num_b += nb#/prob
+            den_a += da#/prob
+            den_b += db#/prob
+        print(num_a)
+        print("2: ", num_b)
+        # exit()
         self._transmat = num_a/den_a
         self._emission = num_b/den_b
 
@@ -293,8 +308,8 @@ if __name__ == '__main__':
 
     A10 = np.zeros((10,10))
 
-    nsim_samples = 15
-    nsim_rollouts = 1
+    nsim_samples = 20
+    nsim_rollouts = 100
 
     for r in range(10):
         A10[r,r] = pv[r]
@@ -419,7 +434,10 @@ if __name__ == '__main__':
         # m.fit(np.array(em, ndmin = 2),np.array(len(em), ndmin = 1))
         #p1 = m.POlambda(em)
         ##r = raw_input('<cr>')
-        #m.fit(em)
+        # m.fit([em],[len(em)])
+        # print(m._transmat)
+        # print(m._emission)
+        # exit()
         #p2 = m.POlambda(em)
         ##r = raw_input('<cr>')
         #m.fit(em)
@@ -452,18 +470,24 @@ if __name__ == '__main__':
             Obsll.append(em)  # as list of lists
             Sts.extend(st)
             Ls.append(len(st))
+        import pickle
+        with open('Obs', 'rb') as fp:
+            Obs = pickle.load(fp)
+        with open('Obsll','rb') as fp2:
+            Obsll = pickle.load(fp2)
         # print((np.array(Obsll)).shape)
+        # print(Ls)
         Obsll = np.array(Obsll)
+        print(Obsll.shape)
         a = m._transmat
         b = m._emission
-        print(a)
-        # exit()
         print ('Initial Prob: ', m.probability_check(Obsll[1]))
-        for i in range(1):
+        for i in range(10):
             m.fit(Obsll,Ls)
         print(np.array_equal(a,m._transmat),np.array_equal(b,m._emission))
-        print(m._transmat)
-        print(m._emission)
+        # print(m._transmat.sum(axis = 1))
+        # print(m._emission)
+        # print(m._transmat)
         print ('Final Prob:   ', m.probability_check(Obsll[1]))
 
         print (' \n\n               Completed  Test Runs  of hmm_log package   \n\n')
