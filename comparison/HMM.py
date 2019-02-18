@@ -1,11 +1,11 @@
-from Log_class import *
+# from Log_class import *
 import numpy as np
 # import numpy as np
 import numbers
 from random import *
 import matplotlib.pyplot as plt
 #import editdistance as ed   #pip install editdistance
-##from tqdm import tqdm
+from tqdm import tqdm
 import os
 import sys
 NSYMBOLS = 40
@@ -22,6 +22,7 @@ class hmm():
     # self.b =
         self.Nstate = states
         self.nsymbols = nsymbols
+        self.probability = 0
 
         # self.Pi = np.broadcast_to(np.array(logP(np.inf)),states)
 
@@ -52,6 +53,11 @@ class hmm():
                 foward_lattice[:,j] = np.sum(foward_lattice[:,j-1].reshape(1,self.Nstate) * self._transmat, axis = 0) * self._emission[:,observation[i][j]]
             log_prob[i] = np.sum(foward_lattice[:,length(i)])
         return log_prob
+
+    def custom(self,Pic,transmatc_,emissionprobc_):
+        self.Pi = Pic
+        self._transmat = transmatc_
+        self._emission = emissionprobc_
 
     def POlambda(self, Y):
         al = self.Forward_one(Y,len(Y))
@@ -89,8 +95,12 @@ class hmm():
         return state_sequence
 
     def Forward_one(self,observation,length):
-        foward_lattice = np.zeros((self.Nstate,length))
+        # print(len(observation))
+        foward_lattice = np.zeros((self.Nstate,len(observation)))
+        # (forward_lattice.shape)
         foward_lattice[:,0] = (self.Pi * self._emission[:,[observation[0]]]).T
+        # print("Hit:" ,self.Pi.sum() ,"Seq:",observation)
+        # print("Hit2", self._emission.T.sum())
         for j in range(0,length-1):
             foward_lattice[:,j+1] = np.sum(foward_lattice[:,[j]]* self._transmat, axis = 0) * self._emission[:,[observation[j+1]]].T
         return foward_lattice
@@ -160,20 +170,24 @@ class hmm():
         den_a = np.zeros((self.Nstate,1))
         num_b = np.zeros(self._emission.shape)
         den_b = np.zeros((self.Nstate,1))
-        list = []
-        for i in range(len(lengths)):
+        tprob = 0
+        # list = []
+        for i in (range(len(lengths))):
 
-            observation = observations[i]
+            observation = np.array(observations[i])
             # print(observation)
             length = lengths[i]
             prob = self.POlambda(observation)
             na,nb,da,db = self.baum_welch_step(observation,length)
-            list.append(na[0,0])
+            # list.append(na[0,0])
             num_a += na/prob
             num_b += nb/prob
             den_a += da/prob
             den_b += db/prob
-        # print(num_a)
+            tprob +=prob
+            # print(prob)
+        self.probability = tprob
+        print(self.probability)
         # print("2: ", num_b)
         # exit()
         self._transmat = num_a/den_a
