@@ -11,10 +11,10 @@ import matplotlib.pyplot as plt
 ##from tqdm import tqdm
 import os
 import sys
-
+from tqdm import tqdm
 from logP import *
 from logP_matrix import *
-import time
+
 #sudo pip install scikit-learn  # dep for hmmlearn
 #pip install -U --user hmmlearn
 #from hmmlearn import hmm
@@ -95,8 +95,6 @@ class hmm():
                     tmpsum +=  a * b
                 c = logB[j,Y[t]]
                 alpha[t,j] = c * tmpsum
-            # print alpha
-            # print alpha[t,:]
         #print '------------ alpha ----------------'
         #print alpha
         return alpha
@@ -220,7 +218,6 @@ class hmm():
         N = self.N
         xi = logPm(np.zeros((T,N,N)))       #    (37)
         s1 = logPv(np.zeros(T))
-        nslice2 = logPm(np.zeros((N,N)))
         for t in range(T-1):
             denom = lp0              #denominator of (37)
             nslice = logPm(np.zeros((N,N)))
@@ -231,23 +228,14 @@ class hmm():
                     c = self.emissionprob_[j,Obs[t+1]]
                     d = beta[t+1,j]
                     nslice[i,j] = a*b*c*d
-                    # if(i == N-1 and j == N-1):
-                    #     print "Point: ",t
-                    #     # print a
-                    #     print c
-                    #     #  print b
-                    #     # print d
-                    #     # print nslice[i,j]
                     denom = denom +  nslice[i,j]
             #assert denom.test_val() > TINY_EPSILON, ' (Almost) divide by zero '
             for i in range(N):
                 for j in range(N):
-                    nslice2[i,j] += nslice[i,j]
                     xi[t,i,j] = nslice[i,j]/denom
                     #assert xi[t-1,i,j].test_val() >= 0.0, ' Help!!'
                     #assert xi[t-1,i,j].test_val() != np.Inf, ' Help!! (inf)'
-        print nslice2[-1,-1]
-        # exit()
+
         gam = logPm(np.zeros((T,N)))     #       (38)
         for t in range(T-1):
             for i in range(N):
@@ -325,9 +313,8 @@ class hmm():
             betak.append(self.backwardSL(Ok))
             Pk.append(self.POlambda(Ok))
             obsl.append(Ok)
-        nsum2 = np.zeros((N,N))
-        # dsum2 = np.zeros((N,N))
-        list = []
+        a_hat2 = np.zeros((N,N))
+        b_hat2 =np.zeros((N,NSYMBOLS))
         for i in range(N):
             for j in range(N):
                 nsum = lp0              # numerator of (109)
@@ -340,8 +327,6 @@ class hmm():
                     denk = lp0
                     for t in range(Tk-1):
                             #numerator of (109)
-                            # print(alphak[k])
-                            # exit()
                             a = alphak[k][t,i]
                             b = self.transmat_[i,j]
                             c = self.emissionprob_[j,Ok[t+1]]
@@ -349,32 +334,15 @@ class hmm():
                             numk = numk + a*b*c*d
                             # now work on demoninator of (109)
                             d = betak[k][t,i]
-                            # if(i == N-1 and j == N-1):
-                            #     print "Point: ", t
-                            #     print a * d
                             denk = denk + a*d
-                    if (i == 0 and j == 0):
-                        list.append(numk)
                     # summing over k
-                    # print(nsum)
-                    nsum = nsum + numk #/ Pk[k]
-                    dsum = dsum + denk #/ Pk[k]
-                # print(dsum)
-                nsum2[i,j] = nsum
-                # dsum2[i,j] = dsum
+                    nsum = nsum + numk / Pk[k]
+                    dsum = dsum + denk / Pk[k]
+                a_hat2[i,j] = nsum
                 a_hat[i,j] = (nsum/dsum).test_val()
-        print(nsum2)
-        print("2:")
-        # print(dsum2)
-        # for item in list:
-        #     print item
-        # exit()
+
 
         #  b_hat                              eqn 110
-        b_num = np.zeros((N,NSYMBOLS))
-        # b_num2 = np.zeros((N,NSYMBOLS))
-        b_den =  np.zeros((N,NSYMBOLS))
-        numero = []
         for j in range(N):
             for l in range(NSYMBOLS):
                 nsum = lp0
@@ -390,21 +358,13 @@ class hmm():
                         if(Ok[t]==l):
                             numk = numk + alphak[k][t,j]*betak[k][t,j]
                         #                             denominator of (110)
-                        if(Ok[t] == 3 and j == 0 and Ok[t] == l):
-                            numero.append(alphak[k][t,j])
-                            numero.append(betak[k][t,j])
-
                         denk = denk + alphak[k][t,j]*betak[k][t,j]
-                    nsum = nsum + numk #/ Pk[k]
-                    dsum = dsum + denk #/ Pk[k]
-                b_num[j,l] = nsum
-                b_den[j,l] = dsum
+                    nsum = nsum + numk / Pk[k]
+                    dsum = dsum + denk / Pk[k]
                 b_hat[j,l] = (nsum/dsum).test_val()
-        print(b_num)
-        # print(numero[0])
-        # print(numero[1])
-        # print(b_den)
-        # exit()
+                b_hat2[j,l] = nsum
+        print a_hat2
+        print "2:", b_hat2
         self.transmat_ = a_hat
         #print '-----------new transmat_ -----------'
         #print self.transmat_
@@ -510,7 +470,7 @@ if __name__ == '__main__':
 
     ###################################
     # hmm class tests
-    start = time.time()
+
     # test pic_from_vect(v)
     m = hmm(10)
     vector = [0,0,0,.333,.333,.333, 0,0,0]  # note sum = 0.9990000
@@ -541,7 +501,7 @@ if __name__ == '__main__':
         if(r+1 < 10):
             A10[r,r+1] = 1.0-A10[r,r]
 
-    for ntest in [5]:
+    for ntest in [10]:
         fs =  '\n\ntesting hmm with ' + str(ntest) + ' states'
         print fs
         m = hmm(ntest)
@@ -565,7 +525,7 @@ if __name__ == '__main__':
         m.check()
         print fs + ' [setup] ' + PASS
 
-        ############################	for(int i = 0;i <100; i--)##################################
+        ##############################################################
         #
         #    Simulate the HMM
         #
@@ -581,8 +541,7 @@ if __name__ == '__main__':
             if m.emissionprob_[s,em[i]] < epsilon:
                 m._error('invalid emission detected')
         print 'got valid emissions'
-        print(m.emissionprob_.sum())
-        print(m.transmat_)
+
         print '\nForward Algorithm:'
 
         #print 'state estimate: '
@@ -599,13 +558,15 @@ if __name__ == '__main__':
         em = [6, 3, 6, 6, 8, 12, 14, 10, 15, 14, 14, 15, 12, 13, 16]
         alpha =  m.forwardSL(em)
 
-        # print '------------alpha-------------'
-        print alpha
+        #print '------------alpha-------------'
+        #print alpha
+
 
         #print alpha[14,4].test_val()
         #assert abs(alpha[14,4].test_val()-9.35945852879e-13) < TINY_EPSILON, fs+FAIL
         #assert abs(alpha[ 2,0].test_val()-0.000578703703704) < epsilon, fs+FAIL
         print fs+PASS
+
 
         print '\n     Test    Backward Algorithm:'
         stseq =  [0, 0, 1, 1, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4]
@@ -613,11 +574,11 @@ if __name__ == '__main__':
 
         beta_test =  m.backwardSL(em)
         fs = '    backwards algorithm backwardSL(em) '
-        print beta_test
+        #print beta_test
         #assert abs(beta_test[13,3].test_val()-0.1666666666667)<epsilon, fs+FAIL
         #assert abs(beta_test[ 3,0].test_val()-9.57396964103e-11) < TINY_EPSILON , fs+FAIL
         #print fs+PASS
-        # exit()
+
         print '\n\n Test Viterbi Algorithm:'
         print 'st:',st
         print 'em:',em
@@ -646,19 +607,13 @@ if __name__ == '__main__':
             print 'true/est: ',stseq[i], q
             assert q==est_correct[i], fs+FAIL
         print fs+PASS
-        end = time.time()
-        print end-start
-        # exit()
+
         #
         #   Let's try the Baum Welch!
         #
         print  '\n\n   Test Baum Welch fit() method'
-        print(em)
         p0 = m.POlambda(em)
-        # m.fitMultiple(em,[len(em)])
-        # print m.transmat_
-        # print m.emissionprob_
-        # exit()
+        m.fitMultiple(em,[len(em)])
         #p1 = m.POlambda(em)
         ##r = raw_input('<cr>')
         #m.fit(em)
@@ -669,6 +624,7 @@ if __name__ == '__main__':
 
         print "    Change in PO-lambda: "
         print p0
+        exit()
         #print p1
         #print p2
         #print p3
@@ -724,18 +680,8 @@ if __name__ == '__main__':
         p = logP(1.0E-20)
         pprev = tinyvalue
         bwiter = 0
-        # print(Obs)
-        # exit()
         # while abs(1.0-Ratio) > BW_epsilon:
-        print(Ls)
-        import pickle
-
-        with open('Obs', 'rb') as fp:
-            Obs = pickle.load(fp)
-        with open('Obsll','rb') as fp2:
-            Obsll = pickle.load(fp2)
-        # exit()
-        for i in range(10):
+        for i in tqdm(range(10)):
             bwiter += 1
             m.fitMultiple(Obs,Ls)
             pprev = p
@@ -744,6 +690,6 @@ if __name__ == '__main__':
             print bwiter, '     Prob:   ', p, '   Ratio: ',  Ratio
         print '\n\n'
         print m.transmat_
-        # print m.emissionprob_
+        print m.emissionprob_
 
         print ' \n\n               Completed  Test Runs  of hmm_log package   \n\n'

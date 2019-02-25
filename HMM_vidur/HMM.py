@@ -175,7 +175,7 @@ class hmm():
             den_b += db/prob
         # print(num_a)
         # print("2: ", num_b)
-        # exit()
+        # # exit()
         self._transmat = num_a/den_a
         self._emission = num_b/den_b
 
@@ -195,7 +195,6 @@ class hmm():
             state, p = self.pick_from_vec(self._transmat[state,:])
             #print 'next state: ', state
             states.append(state)
-
         # generate a final emission
         em, p = self.pick_from_vec(self._emission[state,:])
         emissions.append(em)
@@ -316,7 +315,7 @@ if __name__ == '__main__':
         if(r+1 < 10):
             A10[r,r+1] = 1.0-A10[r,r]
 
-    for ntest in [5]:
+    for ntest in [10]:
         fs =  '\n\ntesting hmm with ' + str(ntest) + ' states'
         print (fs)
         m = hmm(ntest,NSYMBOLS)
@@ -404,21 +403,26 @@ if __name__ == '__main__':
         print ('\n\n Test Viterbi Algorithm:')
         print ('st:',st)
         print ('em:',em)
-        #print m._emission
-        stseq =  [0, 0, 1, 1, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4,4,4]
-        #  NOTE: for BW testing w/ non stationary model, last state must be
-        #        occupied more than once!
-        em = [6, 3, 6, 6, 8, 12, 14, 10, 15, 14, 14, 15, 12, 13, 16,16,16]
+        if ntest == 5:
+            # TRUE state sequence (gen during simulation)
+            stseq =  [0, 0, 1, 1, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4,4,4]
+            #  NOTE: for BW testing w/ non stationary model, last state must be
+            #        occupied more than once!
+            em = [6, 3, 6, 6, 8, 12, 14, 10, 15, 14, 14, 15, 12, 13, 16,16,16]
 
-        est_correct = [0,0,1,1,2,3,3,3,3,3,3,3,3,4,4,4,4]
+            est_correct = [0,0,1,1,2,3,3,3,3,3,3,3,3,4,4,4,4]
+        elif ntest == 10:
+            stseq        = [0, 1, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 6, 7, 8]
+            est_correct =  [0, 1, 1, 2, 2, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 6, 7, 8]
+            #                                    ^^^^^^
+            em    = [3, 8, 6, 8, 7, 13, 10, 15, 14, 14, 14, 15, 18, 17, 18, 21, 17, 23, 23, 30]
         fs = 'test setup problem - data length mismatch'
         assert len(em) == len(stseq), fs
         assert len(em) == len(est_correct), fs
         # print("Trans":)
         qs = m.Viterbi(np.array(em, ndmin = 2),np.array(len(em), ndmin = 1))
         fs = 'Vitermi state estimation tests'
-        # print(qs.shape)
-        # exit()
+        print(qs)
         for i,q in enumerate(np.nditer(qs[0])):
             # print (q,est_correct[i])
             assert q==est_correct[i], fs+FAIL
@@ -434,10 +438,9 @@ if __name__ == '__main__':
         # m.fit(np.array(em, ndmin = 2),np.array(len(em), ndmin = 1))
         #p1 = m.POlambda(em)
         ##r = raw_input('<cr>')
-        # m.fit([em],[len(em)])
+        m.fit([em],[len(em)])
         # print(m._transmat)
         # print(m._emission)
-        # exit()
         #p2 = m.POlambda(em)
         ##r = raw_input('<cr>')
         #m.fit(em)
@@ -451,7 +454,28 @@ if __name__ == '__main__':
 
         print ('\n\n        -- --  --   Multiple Runout HMM.fit()  -- -- -- \n\n\n')
 
+        ###################################################################
+        #
+        #    Regen the hmm
+        #
+        ntest = 10
+        m = hmm(ntest,NSYMBOLS)
+        if ntest == 5:
+            m._transmat = A5.copy()
+        else:
+            m._transmat = A10.copy()
 
+        #   set up emission probabilities with width of 'w' symbols
+        w = 6
+        for i in range(m.Nstate):
+            mu = 0.5*w*(i+1)
+            for j in range(NSYMBOLS):
+                m._emission[i,j] = 0.0
+                if j>mu-w/2 and j<=(mu+w/2):
+                    m._emission[i,j] = 1/float(w)
+        #print m.emissionprob_
+        #if ntest == 10:
+            #quit()
         ###################################################################
         #
         #    Generate the data
@@ -470,11 +494,11 @@ if __name__ == '__main__':
             Obsll.append(em)  # as list of lists
             Sts.extend(st)
             Ls.append(len(st))
-        import pickle
-        with open('Obs', 'rb') as fp:
-            Obs = pickle.load(fp)
-        with open('Obsll','rb') as fp2:
-            Obsll = pickle.load(fp2)
+        # import pickle
+        # with open('Obs', 'rb') as fp:
+        #     Obs = pickle.load(fp)
+        # with open('Obsll','rb') as fp2:
+        #     Obsll = pickle.load(fp2)
         # print((np.array(Obsll)).shape)
         # print(Ls)
         Obsll = np.array(Obsll)
