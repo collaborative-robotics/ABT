@@ -19,6 +19,8 @@ import time
 #pip install -U --user hmmlearn
 #from hmmlearn import hmm
 import random as random
+import pickle
+
 NSYMBOLS = 40
 STRICT = True
 
@@ -88,8 +90,10 @@ class hmm():
             alpha = logPm(np.ones((T,N)))          #       (19)
             for j in range(N):
                 alpha[0,j] = logP(self.Pi[j] * self.emissionprob_[j,Y[0]])
+        # print "Before", self.emissionprob_.shape
         logA =  logPm(self.transmat_)
         logB =  logPm(self.emissionprob_)
+        # print(logB.m.shape)
         #for y in Y[1:]:  # emission sequence
         for t in range(1,T):         #    Rab t+1 ->  t,  t --> t-1
             for j in range(self.N):
@@ -304,7 +308,8 @@ class hmm():
         lp0 = logP(0.0)  # quicker to keep this around for intializing
         N = self.N
         a_hat = np.zeros((N,N))
-        b_hat=np.zeros((N,NSYMBOLS))
+        Nsym = self.emissionprob_.shape[1]
+        b_hat=np.zeros((N,Nsym))
         obsl = []
         alphak = []
         betak = []
@@ -505,7 +510,7 @@ if __name__ == '__main__':
         if(r+1 < 10):
             A10[r,r+1] = 1.0-A10[r,r]
 
-    for ntest in [10]:
+    for ntest in [5]:
         fs =  '\n\ntesting hmm with ' + str(ntest) + ' states'
         print (fs)
         m = hmm(ntest)
@@ -676,6 +681,11 @@ if __name__ == '__main__':
             Sts.extend(st)
             Ls.append(len(st))
 
+        with open('Obs', 'rb') as fp:
+            Obs = pickle.load(fp)
+        with open('Obsll','rb') as fp2:
+            Obsll = pickle.load(fp2)
+
         print ('\n\n  Baum-Welch System ID with ', nrunout, ' runouts, ', ntest,'x',ntest, ' model.\n\n')
         print ('Initial Prob: ', m.POlambda(Obsll[1]))
         Ratio = 100.0
@@ -690,7 +700,8 @@ if __name__ == '__main__':
             pprev = p
             p = m.POlambda(Obsll[1])   # returns a logP()
             Ratio = (p/pprev).test_val()
-            print (bwiter, '     Prob:   ', p, '   Ratio: ',  Ratio)
+            # print (bwiter, '     Prob:   ', p, '   Ratio: ',  Ratio)
+            print(p)
         print ('\n\n')
         print (m.transmat_)
         print (m.emissionprob_)
