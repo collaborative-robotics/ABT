@@ -14,11 +14,13 @@ import sys
 from tqdm import tqdm
 from logP import *
 from logP_matrix import *
-
+import time
 #sudo pip install scikit-learn  # dep for hmmlearn
 #pip install -U --user hmmlearn
 #from hmmlearn import hmm
 import random as random
+import pickle
+
 NSYMBOLS = 40
 STRICT = True
 
@@ -43,6 +45,11 @@ class hmm():
         self.typestring = 'hmm_bh'
         for i in range(self.N):
             self.names.append('-noname-')
+
+    def custom(self,Pic,transmatc_,emissionprobc_):
+        self.Pi = Pic
+        self.transmat_ = transmatc_
+        self.emissionprob_ = emissionprobc_
 
     # Forward algorithm for multiple runouts
     #def forwardM(self, X, lengths):
@@ -83,8 +90,10 @@ class hmm():
             alpha = logPm(np.ones((T,N)))          #       (19)
             for j in range(N):
                 alpha[0,j] = logP(self.Pi[j] * self.emissionprob_[j,Y[0]])
+        # print "Before", self.emissionprob_.shape
         logA =  logPm(self.transmat_)
         logB =  logPm(self.emissionprob_)
+        # print(logB.m.shape)
         #for y in Y[1:]:  # emission sequence
         for t in range(1,T):         #    Rab t+1 ->  t,  t --> t-1
             for j in range(self.N):
@@ -93,6 +102,9 @@ class hmm():
                     a = logA[i,j]
                     b = alpha[t-1,i]
                     tmpsum +=  a * b
+                # print (j)
+                # if j > 34:
+                #     print (j)
                 c = logB[j,Y[t]]
                 alpha[t,j] = c * tmpsum
         #print '------------ alpha ----------------'
@@ -194,10 +206,10 @@ class hmm():
                 lj += c
             lines.append(lj)
 
-        print 'State evolution:'
+        print ('State evolution:')
         for j in range(self.N):
-            print j, '  ['+lines[j]+']'
-        print '\n\n'
+            print (j, '  ['+lines[j]+']')
+        print ('\n\n')
 
 
 
@@ -296,14 +308,15 @@ class hmm():
         lp0 = logP(0.0)  # quicker to keep this around for intializing
         N = self.N
         a_hat = np.zeros((N,N))
-        b_hat=np.zeros((N,NSYMBOLS))
+        Nsym = self.emissionprob_.shape[1]
+        b_hat=np.zeros((N,Nsym))
         obsl = []
         alphak = []
         betak = []
         Pk = []
         ptr = 0                 # point to the start of each seqeuence
         # first go through seqs and eval alpha & beta
-        for k in range(len(Ls)):     # go through the obs sequences
+        for k in tqdm(range(len(Ls))):     # go through the obs sequences
             olen = Ls[k]
             #print 'ptrs: ', ptr, ptr+olen
             Ok = Obs[ptr:ptr+olen] # the current obs sequence
@@ -313,10 +326,9 @@ class hmm():
             betak.append(self.backwardSL(Ok))
             Pk.append(self.POlambda(Ok))
             obsl.append(Ok)
-        a_hat2 = np.zeros((N,N))
-        b_hat2 =np.zeros((N,NSYMBOLS))
-        for i in range(N):
-            for j in range(N):
+
+        for i in tqdm(range(N)):
+            for j in tqdm(range(N)):
                 nsum = lp0              # numerator of (109)
                 dsum = lp0
                 # now go through seqs and compute num and denom (109)
@@ -338,13 +350,12 @@ class hmm():
                     # summing over k
                     nsum = nsum + numk / Pk[k]
                     dsum = dsum + denk / Pk[k]
-                a_hat2[i,j] = nsum
                 a_hat[i,j] = (nsum/dsum).test_val()
 
 
         #  b_hat                              eqn 110
-        for j in range(N):
-            for l in range(NSYMBOLS):
+        for j in tqdm(range(N)):
+            for l in tqdm(range(NSYMBOLS)):
                 nsum = lp0
                 dsum = lp0
                 ptr = 0
@@ -362,9 +373,7 @@ class hmm():
                     nsum = nsum + numk / Pk[k]
                     dsum = dsum + denk / Pk[k]
                 b_hat[j,l] = (nsum/dsum).test_val()
-                b_hat2[j,l] = nsum
-        print a_hat2
-        print "2:", b_hat2
+
         self.transmat_ = a_hat
         #print '-----------new transmat_ -----------'
         #print self.transmat_
@@ -419,7 +428,7 @@ class hmm():
         self._error('invalid prob vector')
 
     def check(self):
-        print 'model check:'
+        print ('model check:')
         sh = np.shape(self.transmat_)
         if (sh[0] != self.N or sh[1] != self.N):
             self.error(' transmat_ wrong size')
@@ -441,20 +450,20 @@ class hmm():
         for c in range(m):
             t = row[c]
             if t > 1.0 or  t < 0.0 :
-                print 'illegal probability found'
+                print ('illegal probability found')
                 valid = False
             sum += t
         if abs(sum-1.0) > epsilon:
             valid = False
         if not valid:
-            print row
-            print 'Sum: ', sum
+            print (row)
+            print ('Sum: ', sum)
             self._error('a vector failed row check: sum != 1.0')
         return True
 
 
     def _error(self,msg):
-        print 'hmm class (hmm_bh): ' + msg
+        print ('hmm class (hmm_bh): ' + msg)
         quit()
 
 
@@ -470,7 +479,7 @@ if __name__ == '__main__':
 
     ###################################
     # hmm class tests
-
+    start = time.time()
     # test pic_from_vect(v)
     m = hmm(10)
     vector = [0,0,0,.333,.333,.333, 0,0,0]  # note sum = 0.9990000
@@ -480,7 +489,7 @@ if __name__ == '__main__':
     for i in range(10000):  # this really tests sum=1.000000
         x,p = m.pick_from_vec(vector)
         assert (x >1 and  x <= 5), fs+FAIL
-    print fs+PASS
+    print (fs+PASS)
 
 
     ######################################
@@ -489,8 +498,6 @@ if __name__ == '__main__':
     #
 
     A5 = np.array([[.5,.5,0,0,0],[0,.6,.4,0,0],[0,0,.75,.25,0],[0,0,0,0.8,0.2],[0,0,0,0,1.0]])
-    
-    # pv is the diagonal elements of 10x10 matrix
     pv = [0.5, 0.5, 0.7, 0.65, 0.8, 0.5, 0.3,0.6,0.7, 1.0]
 
     A10 = np.zeros((10,10))
@@ -505,7 +512,7 @@ if __name__ == '__main__':
 
     for ntest in [5]:
         fs =  '\n\ntesting hmm with ' + str(ntest) + ' states'
-        print fs
+        print (fs)
         m = hmm(ntest)
         if ntest == 5:
             m.transmat_ = A5.copy()
@@ -525,26 +532,26 @@ if __name__ == '__main__':
             #quit()
 
         m.check()
-        print fs + ' [setup] ' + PASS
+        print (fs + ' [setup] ' + PASS)
 
-        ##############################################################
+        ############################	for(int i = 0;i <100; i--)##################################
         #
         #    Simulate the HMM
         #
         st, em = m.sample(nsim_samples)
-        print '----------- state sequence & emissions -----------------------'
-        print st
-        print em
+        print( '----------- state sequence & emissions -----------------------')
+        print (st)
+        print (em)
         assert len(st) == len(em), 'Emissions dont match states from sample()'
 
-        print '\n\nTest valid sample outputs:'
+        print ('\n\nTest valid sample outputs:')
         for i,s in enumerate(st):
             #print 'checking: ' , i, s, em[i]
             if m.emissionprob_[s,em[i]] < epsilon:
                 m._error('invalid emission detected')
-        print 'got valid emissions'
+        print ('got valid emissions')
 
-        print '\nForward Algorithm:'
+        print ('\nForward Algorithm:')
 
         #print 'state estimate: '
         #print '       forwardS()   (regular math)'
@@ -554,23 +561,22 @@ if __name__ == '__main__':
 
         TINY_EPSILON = 1.0E-20
 
-        print '\n     Test    Forward Algorithm:'
+        print ('\n     Test    Forward Algorithm:')
         fs = '   forward algorithm, forwardSL(em) '
         stseq =  [0, 0, 1, 1, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4]
         em = [6, 3, 6, 6, 8, 12, 14, 10, 15, 14, 14, 15, 12, 13, 16]
         alpha =  m.forwardSL(em)
 
-        #print '------------alpha-------------'
-        #print alpha
-
+        # print '------------alpha-------------'
+        print (alpha)
 
         #print alpha[14,4].test_val()
         #assert abs(alpha[14,4].test_val()-9.35945852879e-13) < TINY_EPSILON, fs+FAIL
         #assert abs(alpha[ 2,0].test_val()-0.000578703703704) < epsilon, fs+FAIL
-        print fs+PASS
+        print (fs+PASS)
 
 
-        print '\n     Test    Backward Algorithm:'
+        print( '\n     Test    Backward Algorithm:')
         stseq =  [0, 0, 1, 1, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4]
         em = [6, 3, 6, 6, 8, 12, 14, 10, 15, 14, 14, 15, 12, 13, 16]
 
@@ -581,9 +587,9 @@ if __name__ == '__main__':
         #assert abs(beta_test[ 3,0].test_val()-9.57396964103e-11) < TINY_EPSILON , fs+FAIL
         #print fs+PASS
 
-        print '\n\n Test Viterbi Algorithm:'
-        print 'st:',st
-        print 'em:',em
+        print ('\n\n Test Viterbi Algorithm:')
+        print ('st:',st)
+        print ('em:',em)
         #print m.emissionprob_
         if ntest == 5:
             # TRUE state sequence (gen during simulation)
@@ -606,15 +612,18 @@ if __name__ == '__main__':
         qs = m.Viterbi(em)
         fs = 'Viterbi state estimation tests'
         for i,q in enumerate(qs):
+            print ('true/est: ',stseq[i], q)
             assert q==est_correct[i], fs+FAIL
-        print fs+PASS
-
+        print (fs+PASS)
+        end = time.time()
+        print (end-start)
+        # exit()
         #
         #   Let's try the Baum Welch!
         #
-        print  '\n\n   Test Baum Welch fit() method'
+        print  ('\n\n   Test Baum Welch fit() method')
         p0 = m.POlambda(em)
-        m.fitMultiple(em,[len(em)])
+        m.fit(em)
         #p1 = m.POlambda(em)
         ##r = raw_input('<cr>')
         #m.fit(em)
@@ -623,14 +632,13 @@ if __name__ == '__main__':
         #m.fit(em)
         #p3 = m.POlambda(em)
 
-        print "    Change in PO-lambda: "
-        print p0
-        exit()
+        print ("    Change in PO-lambda: ")
+        print (p0)
         #print p1
         #print p2
         #print p3
 
-        print '\n\n        -- --  --   Multiple Runout HMM.fit()  -- -- -- \n\n\n'
+        print ('\n\n        -- --  --   Multiple Runout HMM.fit()  -- -- -- \n\n\n')
 
         ###################################################################
         #
@@ -664,7 +672,7 @@ if __name__ == '__main__':
         Sts = []   # true state sequences
         Ls  = []
         Obsll = []
-        nrunout = 10  # how many simulations of the HMM to perform/record
+        nrunout = 1000
         for rn in range(nrunout):
             #    Simulate the HMM
             st, em = m.sample(nsim_samples)
@@ -673,22 +681,29 @@ if __name__ == '__main__':
             Sts.extend(st)
             Ls.append(len(st))
 
-        print '\n\n  Baum-Welch System ID with ', nrunout, ' runouts, ', ntest,'x',ntest, ' model.\n\n'
-        print 'Initial Prob: ', m.POlambda(Obsll[1])
-        imprv_ratio = 100.0
-        BW_epsilon = 0.025   # stop after improvement below this (percentage)
+        with open('Obs', 'rb') as fp:
+            Obs = pickle.load(fp)
+        with open('Obsll','rb') as fp2:
+            Obsll = pickle.load(fp2)
+
+        print ('\n\n  Baum-Welch System ID with ', nrunout, ' runouts, ', ntest,'x',ntest, ' model.\n\n')
+        print ('Initial Prob: ', m.POlambda(Obsll[1]))
+        Ratio = 100.0
+        BW_epsilon = 0.001
+        tinyvalue = logP(1.0E-300) * logP(1.0E-300) * logP(1.0E-300)
         p = logP(1.0E-20)
+        pprev = tinyvalue
         bwiter = 0
-        while abs(1.0-imprv_ratio) > BW_epsilon:
-        #for i in tqdm(range(10)):
+        while abs(1.0-Ratio) > BW_epsilon:
             bwiter += 1
             m.fitMultiple(Obs,Ls)
             pprev = p
             p = m.POlambda(Obsll[1])   # returns a logP()
-            imprv_ratio = (p/pprev).test_val()
-            print bwiter, '     Prob:   ', p, '   imprv_ratio: ',  imprv_ratio-1.0
-        print '\n\n'
-        print m.transmat_
-        print m.emissionprob_
+            Ratio = (p/pprev).test_val()
+            # print (bwiter, '     Prob:   ', p, '   Ratio: ',  Ratio)
+            print(p)
+        print ('\n\n')
+        print (m.transmat_)
+        print (m.emissionprob_)
 
-        print ' \n\n               Completed  Test Runs  of hmm_log package   \n\n'
+        print (' \n\n               Completed  Test Runs  of hmm_log package   \n\n')

@@ -79,6 +79,92 @@ class logP():
         res.e = e
         return res
 
+    def __lt__(self,x):
+        x = logP(x)
+        if self.e < x.e:
+            return True
+        if self.e > x.e:
+            return False
+        if self.e == x.e:
+            if self.m < x.m:
+                return True
+            if self.m > x.m:
+                return False
+
+    def __gt__(self,x):
+        x = logP(x)
+        if self.e > x.e:
+            return True
+        if self.e < x.e:
+            return False
+        if self.e == x.e:
+            if self.m > x.m:
+                return True
+            if self.m < x.m:
+                return False
+
+    def __le__(self,x):
+        x = logP(x)
+        if self.e <= x.e:
+            return True
+        if self.e > x.e:
+            return False
+        if self.e == x.e:
+            if self.m <= x.m:
+                return True
+            if self.m > x.m:
+                return False
+
+    def __ge__(self,x):
+        x = logP(x)
+        if self.e >= x.e:
+            return True
+        if self.e < x.e:
+            return False
+        if self.e == x.e:
+            if self.m >= x.m:
+                return True
+            if self.m < x.m:
+                return False
+
+    def __eq__(self,x):
+        x = logP(x)
+        if self.e == x.e and self.m == x.m:
+            return True
+        else:
+            return False
+
+    def __ne__(self,x):
+        x = logP(x)
+        if self.e == x.e and self.m == x.m:
+            return False
+        else:
+            return True
+
+    def __isub__(self,x):
+        x = logP(x)
+        x = self - x
+        self.e = x.e
+        self.m = x.m
+
+    def __iadd__(self,x):
+        x = logP(x)
+        x = self + x
+        self.e = x.e
+        self.m = x.m
+
+    def __imul__(self,x):
+        x = logP(x)
+        x = self * x
+        self.e = x.e
+        self.m = x.m
+
+    def __idiv__(self,x):
+        x = logP(x)
+        x = self / x
+        self.e = x.e
+        self.m = x.m
+
     def test_val(self):
         return (self.m * 10.00**self.e)
 
