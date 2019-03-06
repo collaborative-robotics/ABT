@@ -13,7 +13,7 @@ class Composite(b3.BaseNode):
         self.children_size = 0
         self.children_start = 0
         self.ifroot = False
-    def scan(self, size): # Idenftifie the size of the ABT and size of every composite node
+    def scan(self, size): # Idenftify the size of the ABT and size of every composite node
         temp = size
         self.children_start = size
         for child in self.children:
