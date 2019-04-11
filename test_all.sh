@@ -9,7 +9,7 @@ set -e  #  have to use >bash test_all.sh
 python test_hmm_init.py
 python test_hmm_pert.py
 python test_hmm_rand_pert.py
-python test_obs_stats.py  TSTstatelog.txt
+python test_obs_stats.py  GENDATA 
 python test_random.py
 python test_seq_stats.py  TSTstatelog.txt
 python test_forward.py

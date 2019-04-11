@@ -6,6 +6,7 @@ from hmm_bt import *
 from abtclass import *
 import matplotlib.pyplot as plt
 
+logps=[]
 log_avgs = []  # avg log probability 
 rused = []     # the output ratio used
 
@@ -107,17 +108,42 @@ for Ratio in RatioList:
     counter = 0
     logprob = 0
     log_avg = 0
-    for i in range(len(Ls)):
-        sample = Y[counter:counter+Ls[i]]
-        logprob += M.score(sample,[Ls[i]])
-        counter += Ls[i]
-    log_avg = logprob/len(Ls)
-    log_avgs.append(log_avg)
+    
+    OLD = False
+    if OLD:  # original method
+        for i in range(len(Ls)):
+            sample = Y[counter:counter+Ls[i]]
+            logprob += M.score(sample,[Ls[i]])
+            counter += Ls[i]
+        log_avg = logprob/len(Ls)  # not sure this is right but harmless?
+        log_avgs.append(log_avg)
+        logps.append(logprob)
+    else:
+        logprob = M.score(Y,Ls)
+        logps.append(logprob)
+        log_avg = logprob/len(Ls)
+        log_avgs.append(log_avg)
+        
     rused.append(Ratio)
     
+
+#                       The two methods above (OLD/NEW) do NOT give identical results (but close).
+#OLD Method
+#Model perturb:  0.5
+#Symbol mean ratios:  [0.0, 0.25, 1.0, 2.5, 5.0]
+#Log Probs:           [-25.865871290831933, -32.134652351778399, -34.406968706952213, -34.657660887784566, -36.172495153674696]
+#Log Probs not avg:   [-517317.42581663869, -642693.04703556793, -688139.3741390442, -693153.21775569126, -723449.90307349397]
+
+#NEW Method
+#Model perturb:  0.5
+#Symbol mean ratios:  [0.0, 0.25, 1.0, 2.5, 5.0]
+#Log Probs:           [-26.707095357589221, -27.838879660466617, -33.072928267575854, -34.58171369638778, -36.451474475000339]
+#Log Probs not avg:   [-534141.9071517844, -556777.59320933232, -661458.56535151706, -691634.27392775554, -729029.48950000678]
+
 print '\n\nModel perturb: ', model_perturb
 print 'Symbol mean ratios: ', rused
 print 'Log Probs:          ', log_avgs
+print 'Log Probs not avg:  ', logps
 
 pr1 = log_avgs[rused.index(5.0)]
 pr2 = log_avgs[rused.index(0.25)]
