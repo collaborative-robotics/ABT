@@ -1,19 +1,36 @@
 import numpy as np
-from model01 import *
+import model01 as m1
 from peg2_ABT import *
 from hmm_bt import *
 from abtclass import *
 import matplotlib.pyplot as plt
 
+log_avgs = []  # avg log probability 
+rused = []     # the output ratio used
 
-
-log_avgs = []
+#
+#   Effect of output Ratio on Fwd alg perf. with 20% perturbation
+#
 for Ratio in RatioList:
-    model = modelo01
+    model = m1.modelo01
     model.setup_means(FIRSTSYMBOL,Ratio, sig)
     M = HMM_setup(model)
+    
+    #print ' HMM review: '
+    #print 'A'
+    #print M.transmat_
+    #print 'B'
+    #print M.emissionprob_
+    #print'\n\n'
+    
+    
+    model_perturb = 0.5
+    test_eps = 0.000001
+    
+    
     Ar = np.copy(M.transmat_)
-    HMM_perturb(M, .2)
+    HMM_model_sizes_check(M)
+    HMM_perturb(M, model_perturb, model)
 
 
 
@@ -22,8 +39,9 @@ for Ratio in RatioList:
 
     ##  some assertions to make sure pertubations are being done right
     #   (if they aren't there's not point in doing the sim)
-    assert em > 0.0 , 'Perturbation caused no difference in A matrices'
-    assert e2 > 0.0 , 'Perturbation caused no difference in A matrices'
+    if model_perturb > 0.0:
+        assert em > 0.0 , 'Perturbation caused no difference in A matrices'
+        assert e2 > 0.0 , 'Perturbation caused no difference in A matrices'
     print 'em: {:.2f}'.format(em)
     print 'e2: {:.2f}'.format(e2)
     if model.n < 8:
@@ -31,8 +49,8 @@ for Ratio in RatioList:
     else:
         outS_index = 14
     outF_index = outS_index+1
-    # assert M.transmat_[outS_index,outS_index] - 1.0 < testeps, 'A 1.0 element was modified'
-    # assert M.transmat_[outF_index,outF_index] - 1.0 < testeps, 'A 1.0 element was modified'
+    assert M.transmat_[outS_index,outS_index] - 1.0 < test_eps, 'A 1.0 element was modified'
+    assert M.transmat_[outF_index,outF_index] - 1.0 < test_eps, 'A 1.0 element was modified'
     print 'Passed A-matrix Assertions'
 
 
@@ -76,5 +94,14 @@ for Ratio in RatioList:
         counter += Ls[i]
     log_avg = logprob/len(Ls)
     log_avgs.append(log_avg)
+    rused.append(Ratio)
+    
+print '\n\nModel perturb: ', model_perturb
+print 'Symbol mean ratios: ', rused
+print 'Log Probs:          ', log_avgs
 
-print(log_avgs)
+pr1 = log_avgs[rused.index(5.0)]
+pr2 = log_avgs[rused.index(0.25)]
+
+assert pr1 > pr2, 'Probability trend is not correct with perturbations'
+

@@ -22,7 +22,7 @@ MODEL = SMALL   # may need to clear this for test_xxx.py
 random_flag = 0.500  # if a 'perturbation' is  > this, it means totally random
                      #  state transition matrix with no zero elements
 
-RatioList = [5.0, 0.0, 0.25, 1.0, 2.5]  # output spacing ratios (di/sigma)
+RatioList = [ 0.0, 0.25, 1.0, 2.5, 5.0]  # output spacing ratios (di/sigma)
 
 T = True
 F = False
