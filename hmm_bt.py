@@ -198,7 +198,7 @@ def HMM_perturb(M, d, model=abtc.model(1)):
         for c in range(c1):
             if A[r][c] > 0.0000001:
                 rowcnt += 1
-        assert rowcnt > 1, 'only 1 non-zero element should not occur - quitting'
+        ##assert rowcnt > 1, 'only 1 non-zero element should not occur ('+str(rowcnt)+') - quitting'
         if rowcnt == 2:    # ABT type models and SLR models
             for c in range(c1):
                 # second non-zero element of row
@@ -246,8 +246,9 @@ def HMM_perturb(M, d, model=abtc.model(1)):
                         flag = A[r][c]      # store value (for use above)
 
         else:
-             print 'I dont know how to perturb ', rowcnt, ' non-zero values in a row'
-             quit()
+             #print 'I dont know how to perturb ', rowcnt, ' non-zero values in a row'
+             #quit()
+             pass    # if there is a 1.0 transition (100% success or fail) just leave it alone
 
     # Perturb B matrix means.  Each mean must be perturbed by same amount, not by a 1+delta as above
     #    because before, some states had bigger probability errors than others.
