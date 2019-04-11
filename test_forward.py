@@ -1,5 +1,6 @@
 import numpy as np
 import model01 as m1
+import model00 as m0
 from peg2_ABT import *
 from hmm_bt import *
 from abtclass import *
@@ -11,8 +12,26 @@ rused = []     # the output ratio used
 #
 #   Effect of output Ratio on Fwd alg perf. with 20% perturbation
 #
+
+#NST = 6    # Small model
+NST = 16
+
+print '\n\n'
+print '          testing forward algorithm: test_forward.py'
+if NST < 10:
+    print '                  SMALL model'
+else:
+    print '                  LARGE model'
+
+
 for Ratio in RatioList:
-    model = m1.modelo01
+    print '\n\n'
+    print '          testing forward algorithm with output Ratio: ', Ratio
+    if NST == 16:
+        model = m1.modelo01
+    elif NST == 6:
+        model = m0.modelo00
+        
     model.setup_means(FIRSTSYMBOL,Ratio, sig)
     M = HMM_setup(model)
     
@@ -102,6 +121,4 @@ print 'Log Probs:          ', log_avgs
 
 pr1 = log_avgs[rused.index(5.0)]
 pr2 = log_avgs[rused.index(0.25)]
-
-assert pr1 > pr2, 'Probability trend is not correct with perturbations'
 
