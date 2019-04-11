@@ -270,8 +270,10 @@ if(libname == 'scale'):
     
 if(libname == 'log'):
     print 'log:    logP(1.0E-300)^2: test_val():', b.test_val()
+    print ' log: b.lp = ', b.lp
     assert np.log(b.test_val()) - (-322) < epsilon, fs + FAIL 
-
+    assert abs(b.lp - (-2072.32658369)) < epsilon, fs + FAIL
+    
 print '\n\n'+fs+PASS
 
 quit()

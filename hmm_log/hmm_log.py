@@ -489,6 +489,8 @@ if __name__ == '__main__':
     #
 
     A5 = np.array([[.5,.5,0,0,0],[0,.6,.4,0,0],[0,0,.75,.25,0],[0,0,0,0.8,0.2],[0,0,0,0,1.0]])
+    
+    # pv is the diagonal elements of 10x10 matrix
     pv = [0.5, 0.5, 0.7, 0.65, 0.8, 0.5, 0.3,0.6,0.7, 1.0]
 
     A10 = np.zeros((10,10))
@@ -501,7 +503,7 @@ if __name__ == '__main__':
         if(r+1 < 10):
             A10[r,r+1] = 1.0-A10[r,r]
 
-    for ntest in [10]:
+    for ntest in [5]:
         fs =  '\n\ntesting hmm with ' + str(ntest) + ' states'
         print fs
         m = hmm(ntest)
@@ -604,7 +606,6 @@ if __name__ == '__main__':
         qs = m.Viterbi(em)
         fs = 'Viterbi state estimation tests'
         for i,q in enumerate(qs):
-            print 'true/est: ',stseq[i], q
             assert q==est_correct[i], fs+FAIL
         print fs+PASS
 
@@ -663,7 +664,7 @@ if __name__ == '__main__':
         Sts = []   # true state sequences
         Ls  = []
         Obsll = []
-        nrunout = 1000
+        nrunout = 10  # how many simulations of the HMM to perform/record
         for rn in range(nrunout):
             #    Simulate the HMM
             st, em = m.sample(nsim_samples)
@@ -674,20 +675,18 @@ if __name__ == '__main__':
 
         print '\n\n  Baum-Welch System ID with ', nrunout, ' runouts, ', ntest,'x',ntest, ' model.\n\n'
         print 'Initial Prob: ', m.POlambda(Obsll[1])
-        Ratio = 100.0
-        BW_epsilon = 0.001
-        tinyvalue = logP(1.0E-300) * logP(1.0E-300) * logP(1.0E-300)
+        imprv_ratio = 100.0
+        BW_epsilon = 0.025   # stop after improvement below this (percentage)
         p = logP(1.0E-20)
-        pprev = tinyvalue
         bwiter = 0
-        # while abs(1.0-Ratio) > BW_epsilon:
-        for i in tqdm(range(10)):
+        while abs(1.0-imprv_ratio) > BW_epsilon:
+        #for i in tqdm(range(10)):
             bwiter += 1
             m.fitMultiple(Obs,Ls)
             pprev = p
             p = m.POlambda(Obsll[1])   # returns a logP()
-            Ratio = (p/pprev).test_val()
-            print bwiter, '     Prob:   ', p, '   Ratio: ',  Ratio
+            imprv_ratio = (p/pprev).test_val()
+            print bwiter, '     Prob:   ', p, '   imprv_ratio: ',  imprv_ratio-1.0
         print '\n\n'
         print m.transmat_
         print m.emissionprob_
