@@ -81,6 +81,7 @@ logf = open(lfname,'r')
 
 
 print '\n\n\n                       Sequence Test Report '
+print '                             (test_seq_stats.py) '
 print '                                     checking state transition stats from ground truth \n\n'
 
 #state_selection = 'l2'
@@ -125,6 +126,9 @@ for i in range(N-2):  # rows (but NOT OutS and OutF cause they don't transition 
     #print 'A,sum', Ahat[i,:], rsum
     for j in range(N): # cols
         Ahat[i,j] /= rsum
+        
+Ahat[-2,-2] = 1.0   # by convention self-state trans in OutS/F but these never occur
+Ahat[-1,-1] = 1.0
         
 #state = model.names[13]
 
