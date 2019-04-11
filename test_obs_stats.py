@@ -13,6 +13,8 @@ from matplotlib.ticker import MaxNLocator
 from abt_constants import *
 
  
+PLOTTING = False  # for a graph of discrete Gaussian
+
 MODEL = SMALL
 
 testeps = 2.0
@@ -329,14 +331,21 @@ for line in logf:
         [st, sy] = line.split(',')
         if st == n:
             em.append(float(sy))
-            
 print 'Computed mean/sd: ', np.mean(em), np.std(em)
-plt.figure(12)    # histogram of ALL run paces
- 
-n, bins, patches = plt.hist(em, 100, normed=0, facecolor='blue', alpha=0.5)
-plt.xlabel('emission')
-plt.xlim([20,60])
-plt.xticks(range(20,60))
-plt.title('Emission Frequency, State l2')
-plt.show()
+
+
+if PLOTTING:            
+            
+                
+    print '\n\n Please close the current plot to continue with tests\n\n'
+
+    plt.figure(12)    # histogram of ALL run paces
+
+    n, bins, patches = plt.hist(em, 100, normed=0, facecolor='blue', alpha=0.5)
+    plt.xlabel('emission')
+    plt.xlim([20,60])
+    plt.xticks(range(20,60))
+    plt.title('Emission Frequency, State l2')
+    plt.show()
+
 logf.close()

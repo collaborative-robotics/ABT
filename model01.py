@@ -72,4 +72,3 @@ modelo01.statenos = statenos
 modelo01.names = names
 modelo01.sigma = sig
 
-print A

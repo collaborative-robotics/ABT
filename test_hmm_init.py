@@ -17,7 +17,8 @@ PS = [0.0, 1.0, 0.9, 0.8, 0.9, 0.9, 1.0, 0.9, 0.8, 0.9, 0.9, 1.0,0.9,0.75, 0.8, 
 if len(PS) != N+1:
     print 'Incorrect PS length'
     quit()
-
+    
+    
 # INITIAL State Transition Probabilities
 #  make A one bigger to make index human
 A = np.zeros((17,17))

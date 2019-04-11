@@ -17,7 +17,7 @@ from abt_constants import *
 import abtclass as abt
 import hmm_bt as hbt
 
- 
+assertct = 0
  
 #Build a model
 tmod = abt.model(5) # with 5 states
@@ -49,6 +49,7 @@ for i in range(10):   # 10 test sequences
         seqs2.append(s)
         seqs3.append(s)
 assert len(seqs1) == sum(lengths), 'Somethings wrong with sequence setup'
+assertct += 1
 
 ####################################################################################
 #  First no deletions or insertions!!!! just changes
@@ -80,11 +81,15 @@ if(False):
 test_eps = 0.001
 fs = 'test_decode_eval: string change test: assertion failure'
 assert abs(avgd - 0.099) < test_eps, fs
+assertct += 1
 assert abs(maxd - 0.600) < test_eps, fs
+assertct += 1
 assert abs(count - 6) == 0, fs
+assertct += 1
 
-print '' 
-print '\n\n  Passed all assertions '
+print '\n' 
+print '   test_decode_eval.py '
+print '\n  Passed all',assertct,' assertions '
 
 #i = 0
 #for l in ls3:
