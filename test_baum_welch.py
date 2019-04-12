@@ -14,7 +14,7 @@ rused = []     # the output ratio used
 #
 
 tol = 0.01   # HMM convergence tol (Delta P)
-pert = 0.5   # HMM Param perturbation amount
+pert = 0.2   # HMM Param perturbation amount
 
 NST = 6    # Small model
 #NST = 16    # Big Model
@@ -39,9 +39,10 @@ else:
 
 
 #for Ratio in RatioList:
-for Ratio in [0.05, 2.5]:
+for Ratio in [2.5, 0.1]:
     print '\n\n'
     print '          testing BW algorithm with output Ratio: ', Ratio
+    print '                                    perturbation: ', pert
     if NST == 16:
         model = m1.modelo01
     elif NST == 6:
