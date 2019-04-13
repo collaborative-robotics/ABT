@@ -6,7 +6,7 @@
 import numpy as np
 from random import *
 import matplotlib.pyplot as plt
-import editdistance as ed
+import editdistance as ed       #sudo pip install editdistance
 from tqdm import tqdm
 import os
 import sys

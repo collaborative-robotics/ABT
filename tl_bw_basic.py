@@ -33,44 +33,34 @@ warnings.filterwarnings('ignore', category=DeprecationWarning)
 # amount HMM parameters should be ofset
 #   from the ABT parameters.  Offset has random sign (+/-)
 
-if len(sys.argv) != 3:
-    print 'Please use two command line arguments as follows:'
-    print ' > tl_bw_hmm    d comment'
-    print '  to indicate the model Case'
+if len(sys.argv) != 4:
+    print 'Please use three command line arguments as follows:'
+    print ' > tl_bw_hmm   c d comment'
+    print '   c -> indicate the model Case'
+    print '   d -> perturbation Delta (0-0.5)'
     print '  and a comment (use single quotes for multiple words) to describe the run'
-    print 'You entered: '
     print '''
-# INITIAL State Transition Probabilities
-#  make A one bigger to make index human
-RAND = 1
-RAND_PLUS_ZEROS = 2
-SLR = 3
-ABT_LIKE = 4
-ABT_DUR  = 5
+    
+Case codes (param c):
+    RAND = 1
+    RAND_PLUS_ZEROS = 2
+    SLR = 3
+    ABT_LIKE = 4
+    ABT_DUR  = 5
 '''
     print sys.argv
     quit()
     
 #HMM_delta = float(sys.argv[1])
 Case = int(sys.argv[1])
-comment = str(sys.argv[2])
+HMM_delta = float(sys.argv[2])
+comment = str(sys.argv[3])
 
 git_hash = subprocess.check_output(['git', 'rev-parse', 'HEAD'])[:10]  # first 10 chars to ID software version
-
-# for now:
-HMM_delta = 0.5
-
-#################################################
-#     Normally 0.0 < HMM_delta < 0.500
-###   As a flag, if HMM_delta > random_flag it is a signal 
-#        that HMM initial A matrix should be set to RANDOM
-HMM_RANDOM_INIT = False
-if HMM_delta > random_flag:
-    HMM_RANDOM_INIT = True
-
+ 
 Nrunouts = 100
 sig = 2.0
-Ratio = 1.0
+Ratio = 2.5
 
 #
 ########     Generate HMM model parameters
@@ -92,16 +82,17 @@ ABT_DUR  = 5
 
 #Case = RAND_PLUS_ZEROS
 if Case == RAND:
-    print 'Randomized A-matrix'
+    type_comment =  'Randomized A-matrix'
 if Case == RAND_PLUS_ZEROS:
-    print 'Randomized A-matrix with about 20% zeros'
+    type_comment =  'Randomized A-matrix with about 20% zeros'
 if Case == SLR:
-    print 'Simple Left-to-Right HMM'
+    type_comment =  'Simple Left-to-Right HMM'
 if Case == ABT_LIKE:
-    print 'ABT-like HMM structure'
+    type_comment =  'ABT-like HMM structure'
 if Case == ABT_DUR:
-    print 'ABT HMM structure + SELF STATE TRANS.'
+    type_comment =  'ABT HMM structure + SELF STATE TRANS.'
     
+print '\n\n'+type_comment
 print 'Ratio = ', Ratio, '   HMM delta / perturbation = ', HMM_delta
 
 if Case == RAND or Case == RAND_PLUS_ZEROS:
@@ -207,6 +198,11 @@ for n in outputs.keys():
     outputs[n] = i
     i += di
     
+    
+#######################################################
+#
+#    Make ABT model 
+#
 modelT = abtc.model(len(names))  # make a new model
 modelT.A = A.copy()
 #modelT.PS = PS
@@ -218,11 +214,14 @@ modelT.typestring = "MultinomialHMM"
 
 #A_row_test(modelT.A, sys.stdout)
 
+#########################################################
+#
+#    Build the HMM
+#
+
 M = HMM_setup(modelT)
 
 #print M.sample(3*N)   #  enough to always get stuck in last state
-
-
 
 #####################################################################
 #
@@ -312,29 +311,42 @@ elif Case == SLR or Case == ABT_LIKE or Case == ABT_DUR:
     M2 = HMM_setup(model02)
 
 
-                    
+#################################################3
+#
+#   Some validations on new perturbed model
+#
 M2._check()
-
 HMM_model_sizes_check(M2)
 
 print '\n\n'
 print "Initial A-matrix perturbation: "
 Adiff_Report(A,M2.transmat_,modelT.names,of=sys.stdout)
  
+ 
+##################################################
+#
+#    Apply Baum Welch to perturbed model
+#
 M2.fit(data,lens)
+ 
+##################################################
+#
+#    Report on changed of A matrix due to BW adaptation
+#
 
-print '\n\n'
-print "Initial FIT M->M2: "
-Adiff_Report(A,M2.transmat_,modelT.names,of=sys.stdout)
+print '\n\n'+type_comment
+print 'Ratio = ', Ratio, '   HMM delta / perturbation = ', HMM_delta
 
-print '\n\n'
 print "Initial FIT M2->M: "
 Adiff_Report(M2.transmat_,A, modelT.names,of=sys.stdout)
 
-
 [e,e2,em,N2,im,jm,anoms,erasures] = Adiff(A,M2.transmat_, modelT.names)
 
-fdata = open('basic_data.txt', 'a')
+logfname = 'tl_bw_basic_data.txt'
+fdata = open(logfname, 'a')
+
+print "\n\nlogging to " + logfname 
+print ' date / sw commit / HMM_delta / A-Matrix type / e2 / em / comment'
 
 line = '{:s} | {:s} | {:4.2f} | {:d} | {:f} | {:f} | {:s}'.format(datetime.datetime.now().strftime("%y-%m-%d-%H:%M"), git_hash, HMM_delta, Case, e2, em,  comment)
 
