@@ -66,7 +66,7 @@ Ratio = 2.5
 ########     Generate HMM model parameters
 #
 
-N=6
+N=16
 names = []
 for i in range(N):
     names.append('s'+str(i+1))  #  's1', 's2', etc
