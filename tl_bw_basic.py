@@ -233,6 +233,7 @@ smax = N-2   #  real states vs terminal states (Os & Of)
 
 if Case == SLR or Case==ABT_LIKE or Case == ABT_DUR:
     Nsamples = 3*N
+    Nsamples = 500
     # generate observation data from HMM
     for i in range(Nrunouts):
         X , states = M.sample(Nsamples)
@@ -321,7 +322,10 @@ HMM_model_sizes_check(M2)
 print '\n\n'
 print "Initial A-matrix perturbation: "
 Adiff_Report(A,M2.transmat_,modelT.names,of=sys.stdout)
- 
+
+# store diffs due to perturbation
+[e,e2orig,emorig,N2,im,jm,anomsorig,erasuresorig] = Adiff(A,M2.transmat_, modelT.names)
+
  
 ##################################################
 #
@@ -346,15 +350,11 @@ logfname = 'tl_bw_basic_data.txt'
 fdata = open(logfname, 'a')
 
 print "\n\nlogging to " + logfname 
-print ' date / sw commit / HMM_delta / A-Matrix type / e2 / em / comment'
+print ' date / sw commit / HMM_delta / A-Matrix type / e2orig / e2 / emaxorig / em / iters / comment'
 
-line = '{:s} | {:s} | {:4.2f} | {:d} | {:f} | {:f} | {:s}'.format(datetime.datetime.now().strftime("%y-%m-%d-%H:%M"), git_hash, HMM_delta, Case, e2, em,  comment)
+line = '{:s} | {:s} | {:4.2f} | {:d} | {:f} | {:f} |{:f} | {:f} | {:d} | {:s}'.format(datetime.datetime.now().strftime("%y-%m-%d-%H:%M"), git_hash, HMM_delta, Case, e2orig, e2, emorig,  em, M2.monitor_.iter, comment)
 
 print >> fdata, line
 
-fdata.close()
+fdata.close() 
 
-
-#print '\n\n Model B matrix'
-#print np.where(M.emissionprob_ > 0.01)
-#print 'Max emissionprob: ', np.max(M.emissionprob_)
