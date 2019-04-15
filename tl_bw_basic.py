@@ -10,7 +10,9 @@ import os
 import subprocess
 import uuid
 import datetime
-from hmm_bt import *
+import numpy as np
+import random as random
+import hmm_bt as hbt
 from abt_constants import *
 import abtclass as abtc
 
@@ -117,7 +119,7 @@ if Case == RAND or Case == RAND_PLUS_ZEROS:
             A[r][c] /= rsum[r]
             
     A = A[1:N+1,1:N+1]  # get zero offset index (instead of math/fortran style)
-    A_row_test(A, sys.stdout)
+    hbt.A_row_test(A, sys.stdout)
 
 
 elif Case == SLR:
@@ -132,7 +134,7 @@ elif Case == SLR:
             A[i,i+1] = 0.75
         else:
             A[i,i] = 1.0
-    A_row_test(A, sys.stdout)
+    hbt.A_row_test(A, sys.stdout)
        
 elif Case == ABT_LIKE or Case == ABT_DUR:
     #
@@ -162,7 +164,7 @@ elif Case == ABT_LIKE or Case == ABT_DUR:
             A[r,r] = 0.2
             A[r,r+1] -= 0.2
         
-    A_row_test(A, sys.stdout)    # just a good idea
+    hbt.A_row_test(A, sys.stdout)    # just a g=ood idea
        
 else:
     print 'Invalid model Case defined (must be 1 or 2)'
@@ -212,14 +214,14 @@ modelT.names = names
 modelT.sigma = sig
 modelT.typestring = "MultinomialHMM"
 
-#A_row_test(modelT.A, sys.stdout)
+#hbt.A_row_test(modelT.A, sys.stdout)
 
 #########################################################
 #
 #    Build the HMM
 #
 
-M = HMM_setup(modelT)
+M = hbt.HMM_setup(modelT)
 
 #print M.sample(3*N)   #  enough to always get stuck in last state
 
@@ -276,7 +278,7 @@ assert np.sum(lens) == len(data), 'data doesnt match lengths (can be just a RARE
 #   Perturb HMM params so that it is not starting at same point as dataset
 #
 
-#HMM_perturb(M, HMM_delta, modelT)
+#hbt.HMM_perturb(M, HMM_delta, modelT)
 if(Case == RAND or Case == RAND_PLUS_ZEROS):
     A2, B2 = HMM_fully_random(modelT) 
 
@@ -291,12 +293,12 @@ if(Case == RAND or Case == RAND_PLUS_ZEROS):
     model02.typestring = "MultinomialHMM"
 
 
-    M2 = HMM_setup(model02)
+    M2 = hbt.HMM_setup(model02)
 
 
         
 elif Case == SLR or Case == ABT_LIKE or Case == ABT_DUR:
-    HMM_perturb(M, HMM_delta, modelT)
+    hbt.HMM_perturb(M, HMM_delta, modelT)
     
     
     model02 = abtc.model(len(names))  # make a new model
@@ -309,7 +311,7 @@ elif Case == SLR or Case == ABT_LIKE or Case == ABT_DUR:
     model02.typestring = "MultinomialHMM"
 
 
-    M2 = HMM_setup(model02)
+    M2 = hbt.HMM_setup(model02)
 
 
 #################################################3
@@ -317,14 +319,14 @@ elif Case == SLR or Case == ABT_LIKE or Case == ABT_DUR:
 #   Some validations on new perturbed model
 #
 M2._check()
-HMM_model_sizes_check(M2)
+hbt.HMM_model_sizes_check(M2)
 
 print '\n\n'
 print "Initial A-matrix perturbation: "
-Adiff_Report(A,M2.transmat_,modelT.names,of=sys.stdout)
+hbt.Adiff_Report(A,M2.transmat_,modelT.names,of=sys.stdout)
 
 # store diffs due to perturbation
-[e,e2orig,emorig,N2,im,jm,anomsorig,erasuresorig] = Adiff(A,M2.transmat_, modelT.names)
+[e,e2orig,emorig,N2,im,jm,anomsorig,erasuresorig] = hbt.Adiff(A,M2.transmat_, modelT.names)
 
  
 ##################################################
@@ -342,9 +344,9 @@ print '\n\n'+type_comment
 print 'Ratio = ', Ratio, '   HMM delta / perturbation = ', HMM_delta
 
 print "Initial FIT M2->M: "
-Adiff_Report(M2.transmat_,A, modelT.names,of=sys.stdout)
+hbt.Adiff_Report(M2.transmat_,A, modelT.names,of=sys.stdout)
 
-[e,e2,em,N2,im,jm,anoms,erasures] = Adiff(A,M2.transmat_, modelT.names)
+[e,e2,em,N2,im,jm,anoms,erasures] = hbt.Adiff(A,M2.transmat_, modelT.names)
 
 logfname = 'tl_bw_basic_data.txt'
 fdata = open(logfname, 'a')
