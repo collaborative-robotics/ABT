@@ -42,8 +42,11 @@ def figure_output(plt, task, modelstring, ratiostring='all'):
 plotH = 800
 plotV = 900
 
+
 fname = 'bw_converg_16-state.txt'
 #fname = 'bw_converg_6-state.txt'
+fname = 'tl_bw_basic_data.txt'   # redo test 15-apr
+
 
 Task = []
 RatioL = []
@@ -62,6 +65,8 @@ e2fin  = []
 eminit = []
 emfin  = []
 c_iter = []
+logPs  = []
+Ratios = []
 comment = []
 
 nrow = 0
@@ -82,7 +87,8 @@ with open(fname,'r') as f:
             steminit   = row[6]    #  these may depend on task
             stemfin    = row[7]    #  make sure two entries every task
             stiter     = row[8]
-            #comment    = row[9]
+            stlogP     = row[9]
+            stRatio    = row[10]
             
             date.append(stdate)
             c_hash.append(sthash)
@@ -93,7 +99,9 @@ with open(fname,'r') as f:
             eminit.append(float(steminit))
             emfin.append(float(stemfin))
             c_iter.append(int(stiter))
-            comment.append(row[9])
+            comment.append(row[11])
+            logPs.append(float(stlogP))
+            Ratios.append(float(stRatio))
             
 #########################################################
 #
@@ -107,26 +115,55 @@ with open(fname,'r') as f:
 
 #########################################################
 #
+#  LogP Final vs Output Ratio 0.1 2.5
+#
+figno = 1
+modelstring = comment[0]
+d1 = []
+d2 = []
+for i in range(len(d)):
+    if Ratio[i] == 0.1:
+        d1.append(d[i])
+    if pert[i] == 2.5:
+        d2.append(d[i])
+box_data = [d1, d2]
+ymax = 0
+ymin = -1000
+
+stXlabel = 'Output Ratio'
+stYlabel = 'Final LogP'
+stTytle  = 'BW Final LogP vs. Output Ratio (Pert = 0.2)' + modelstring 
+
+
+#########################################################
+#
 #    Improvement vs perturbation
 #
 
-figno = 1
-modelstring = '16-state ABT-like model'
-d = [] # delta
-d1 = []
-d2 = []
-d3 = []
-for i in range(len(e2init)):
-    d.append(e2fin[i]-e2init[i])
-for i in range(len(d)):
-    if pert[i] == 0.1:
-        d1.append(d[i])
-    if pert[i] == 0.3:
-        d2.append(d[i])
-    if pert[i] == 0.5:
-        d3.append(d[i])
-box_data = [d1,d2,d3]
-ymax = 0.3
+#figno = 1
+#modelstring = '6-state ABT-like model'
+#d = [] # delta
+#d1 = []
+#d2 = []
+#d3 = []
+#for i in range(len(e2init)):
+    #d.append(e2fin[i]-e2init[i])
+#for i in range(len(d)):
+    #if pert[i] == 0.1:
+        #d1.append(d[i])
+    #if pert[i] == 0.3:
+        #d2.append(d[i])
+    #if pert[i] == 0.5:
+        #d3.append(d[i])
+#box_data = [d1,d2,d3]
+#ymax = 0.3
+
+
+#############################################################
+#
+#   logP final plot
+#
+
 
 ##########
 #
@@ -153,12 +190,18 @@ figptr.set_size_inches(plotH/float(DPI),plotV/float(DPI))
 #plt.ylim(0.0, ymax)
 #plt.title('BW Parameter Estimation: A-matrix Improvement, '+modelstring)
 
-plt.xlabel('Perturbation in RMS A-matrix')
-plt.ylabel('Delta RMS Error')
-plt.ylim(-ymax, ymax)
-plt.title('BW Parameter Estimation: A-matrix Improvement, '+modelstring)
-locs, labels = plt.xticks()
-plt.xticks(locs, ['0.1','0.3','0.5'])
+#plt.xlabel('Perturbation in RMS A-matrix')
+#plt.ylabel('Delta RMS Error')
+#plt.ylim(-ymax, ymax)
+#plt.title('BW Parameter Estimation: A-matrix Improvement, '+modelstring)
+#locs, labels = plt.xticks()
+#plt.xticks(locs, ['0.1','0.3','0.5'])
+
+
+plt.xlabel(stXlabel)
+plt.ylabel(stYlabel)
+plt.ylim(ymin, ymax)
+plt.title(stTitle)
 
 plt.show(block=False)
 figure_output(plt, 'BW_A-Mat-Improvement', modelstring, 'all-perts')

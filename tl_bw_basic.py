@@ -53,9 +53,9 @@ Case codes (param c):
     print sys.argv
     quit()
     
-#HMM_delta = float(sys.argv[1])
+#HMM_perturb = float(sys.argv[1])
 Case = int(sys.argv[1])
-HMM_delta = float(sys.argv[2])
+HMM_perturb = float(sys.argv[2])  
 comment = str(sys.argv[3])
 
 git_hash = subprocess.check_output(['git', 'rev-parse', 'HEAD'])[:10]  # first 10 chars to ID software version
@@ -68,7 +68,7 @@ Ratio = 2.5
 ########     Generate HMM model parameters
 #
 
-N=16
+N=6
 names = []
 for i in range(N):
     names.append('s'+str(i+1))  #  's1', 's2', etc
@@ -95,7 +95,7 @@ if Case == ABT_DUR:
     type_comment =  'ABT HMM structure + SELF STATE TRANS.'
     
 print '\n\n'+type_comment
-print 'Ratio = ', Ratio, '   HMM delta / perturbation = ', HMM_delta
+print 'Ratio = ', Ratio, '   HMM perturbation = ', HMM_perturb
 
 if Case == RAND or Case == RAND_PLUS_ZEROS:
     #
@@ -278,7 +278,7 @@ assert np.sum(lens) == len(data), 'data doesnt match lengths (can be just a RARE
 #   Perturb HMM params so that it is not starting at same point as dataset
 #
 
-#hbt.HMM_perturb(M, HMM_delta, modelT)
+#hbt.HMM_perturb(M, HMM_perturb, modelT)
 if(Case == RAND or Case == RAND_PLUS_ZEROS):
     A2, B2 = HMM_fully_random(modelT) 
 
@@ -298,7 +298,7 @@ if(Case == RAND or Case == RAND_PLUS_ZEROS):
 
         
 elif Case == SLR or Case == ABT_LIKE or Case == ABT_DUR:
-    hbt.HMM_perturb(M, HMM_delta, modelT)
+    hbt.HMM_perturb(M, HMM_perturb, modelT)
     
     
     model02 = abtc.model(len(names))  # make a new model
@@ -335,13 +335,15 @@ hbt.Adiff_Report(A,M2.transmat_,modelT.names,of=sys.stdout)
 #
 M2.fit(data,lens)
  
+logP = M2.monitor_.history.pop()
+
 ##################################################
 #
 #    Report on changed of A matrix due to BW adaptation
 #
 
 print '\n\n'+type_comment
-print 'Ratio = ', Ratio, '   HMM delta / perturbation = ', HMM_delta
+print 'Ratio = ', Ratio, '   HMM delta / perturbation = ', HMM_perturb
 
 print "Initial FIT M2->M: "
 hbt.Adiff_Report(M2.transmat_,A, modelT.names,of=sys.stdout)
@@ -352,9 +354,21 @@ logfname = 'tl_bw_basic_data.txt'
 fdata = open(logfname, 'a')
 
 print "\n\nlogging to " + logfname 
-print ' date / sw commit / HMM_delta / A-Matrix type / e2orig / e2 / emaxorig / em / iters / comment'
+print ' date / sw commit / HMM_perturb / A-Matrix type / e2orig / e2 / emaxorig / em / iters / logPfinal / Ratio / comment'
 
-line = '{:s} | {:s} | {:4.2f} | {:d} | {:f} | {:f} |{:f} | {:f} | {:d} | {:s}'.format(datetime.datetime.now().strftime("%y-%m-%d-%H:%M"), git_hash, HMM_delta, Case, e2orig, e2, emorig,  em, M2.monitor_.iter, comment)
+line = '{:s} | {:s} | {:4.2f} | {:d} | {:f} | {:f} |{:f} | {:f} | {:d} | {:f}| {:f} | {:s}'.format(
+     datetime.datetime.now().strftime("%y-%m-%d-%H:%M"), 
+     git_hash, 
+     HMM_perturb, 
+     Case, 
+     e2orig, 
+     e2, 
+     emorig,  
+     em, 
+     M2.monitor_.iter, 
+     logP, 
+     Ratio, 
+     str(N)+' state model '+comment)
 
 print >> fdata, line
 
