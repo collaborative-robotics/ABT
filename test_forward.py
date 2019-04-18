@@ -1,7 +1,8 @@
 import numpy as np
 import model01 as m1
 import model00 as m0
-from peg2_ABT import *
+#from peg2_ABT import *  # req'd for 16-state
+from simp_ABT import *   # req'd for 6-state
 from hmm_bt import *
 from abtclass import *
 import matplotlib.pyplot as plt
@@ -14,8 +15,8 @@ rused = []     # the output ratio used
 #   Effect of output Ratio on Fwd alg perf. with 20% perturbation
 #
 
-#NST = 6    # Small model
-NST = 16
+NST = 6    # Small model
+#NST = 16
 
 print '\n\n'
 print '          testing forward algorithm: test_forward.py'
@@ -44,7 +45,8 @@ for Ratio in RatioList:
     #print'\n\n'
     
     
-    model_perturb = 0.5
+    model_perturb = 0.25
+    
     test_eps = 0.000001
     
     
@@ -100,9 +102,9 @@ for Ratio in RatioList:
 
     Y = []    # Observations
     X = []    # True state
-    Ls = []   # Length of each sequence
+    seq_lengths = []   # Length of each sequence
     seq_data_f = open(sequence_name,'r')
-    [X,Y,Ls] = read_obs_seqs(seq_data_f)
+    [X,Y,seq_lengths] = read_obs_seqs(seq_data_f)
     seq_data_f.close()
 
     counter = 0
@@ -111,21 +113,20 @@ for Ratio in RatioList:
     
     OLD = False
     if OLD:  # original method
-        for i in range(len(Ls)):
-            sample = Y[counter:counter+Ls[i]]
-            logprob += M.score(sample,[Ls[i]])
-            counter += Ls[i]
-        log_avg = logprob/len(Ls)  # not sure this is right but harmless?
+        for i in range(len(seq_lengths)):
+            sample = Y[counter:counter+seq_lengths[i]]
+            logprob += M.score(sample,[seq_lengths[i]])
+            counter += seq_lengths[i]
+        log_avg = logprob/len(seq_lengths)  # not sure this is right but harmless?
         log_avgs.append(log_avg)
         logps.append(logprob)
     else:
-        logprob = M.score(Y,Ls)
+        logprob = M.score(Y,seq_lengths)
         logps.append(logprob)
-        log_avg = logprob/len(Ls)
+        log_avg = logprob/len(seq_lengths)
         log_avgs.append(log_avg)
         
     rused.append(Ratio)
-    
 
 #                       The two methods above (OLD/NEW) do NOT give identical results (but close).
 #OLD Method
@@ -145,6 +146,5 @@ print 'Symbol mean ratios: ', rused
 print 'Log Probs:          ', log_avgs
 print 'Log Probs not avg:  ', logps
 
-pr1 = log_avgs[rused.index(5.0)]
-pr2 = log_avgs[rused.index(0.25)]
+
 
