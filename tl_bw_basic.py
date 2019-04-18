@@ -35,11 +35,13 @@ warnings.filterwarnings('ignore', category=DeprecationWarning)
 # amount HMM parameters should be ofset
 #   from the ABT parameters.  Offset has random sign (+/-)
 
-if len(sys.argv) != 4:
+if len(sys.argv) != 6:
     print 'Please use three command line arguments as follows:'
-    print ' > tl_bw_hmm   c d comment'
+    print ' > tl_bw_hmm  n c d r comment'
+    print '   n -> N states (6 or 16)'
     print '   c -> indicate the model Case'
     print '   d -> perturbation Delta (0-0.5)'
+    print '   r -> Output Ratio (0-5)'
     print '  and a comment (use single quotes for multiple words) to describe the run'
     print '''
     
@@ -54,21 +56,28 @@ Case codes (param c):
     quit()
     
 #HMM_perturb = float(sys.argv[1])
-Case = int(sys.argv[1])
-HMM_perturb = float(sys.argv[2])  
-comment = str(sys.argv[3])
+N=int(sys.argv[1])
+Case = int(sys.argv[2])
+HMM_perturb = float(sys.argv[3])  
+Ratio = float(sys.argv[4])
+comment = str(sys.argv[5])
+
+# sanity
+assert (N in [6, 16]), 'Bad state number'
+assert (Case in [1,2,3,4,5]), 'Bad case number'
+assert (HMM_perturb > 0.0 and HMM_perturb < 0.6), 'Bad HMM perturbation'
+assert (Ratio > 0.0 and Ratio < 6.0), 'Bad Output Ratio'
 
 git_hash = subprocess.check_output(['git', 'rev-parse', 'HEAD'])[:10]  # first 10 chars to ID software version
  
 Nrunouts = 100
 sig = 2.0
-Ratio = 2.5
+#Ratio = 0.1
 
 #
 ########     Generate HMM model parameters
 #
-
-N=6
+ 
 names = []
 for i in range(N):
     names.append('s'+str(i+1))  #  's1', 's2', etc

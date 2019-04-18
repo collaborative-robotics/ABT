@@ -105,6 +105,7 @@ def HMM_setup(model, toler=0.01, maxiter=20):     #  New: setup model.B:  discre
     sig = 2.0  # HACK!!!
     #############################   Multinomial emissions
     #   setup discrete model.B for MultinomialHMM()
+    #     set up a obs density with mean=model.outputs[n].
     for i,n in enumerate(model.names):
         tmp_leaf = abtc.aug_leaf(0.500)  # dummy leaf to use SetObsDensity() method
         tmp_leaf.set_Obs_Density(model.outputs[n], sig)

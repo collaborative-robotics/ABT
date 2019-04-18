@@ -34,7 +34,7 @@ A[6,6] = 1.0
 
 A = A[1:N+1,1:N+1]  # get zero offset index
  
-#  these values are place-holders, replaced later
+#  these values are place-holders, replaced later (in Hmm_setup)
 outputs = {'l1':2, 'l2': 5, 'l3':8, 'l4': 8,  'OutS':10, 'OutF':20}
 
 ## Model class takes care of this now

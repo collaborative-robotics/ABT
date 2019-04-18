@@ -91,7 +91,7 @@ class aug_leaf(b3.Action):
         self.pS = P
         self.pF = 1.0-P
 
-    def gen_obs(self):
+    def gen_obs(self):  # populate the observation probs over discrete observations for this leaf
         a = np.random.uniform(0,0.999)
         b = 0.0
         for j in range(NSYMBOLS): # accumulate discrete probs over the symbols
