@@ -115,6 +115,31 @@ def HMM_setup(model, toler=0.01, maxiter=20):     #  New: setup model.B:  discre
     M.emissionprob_ = np.array(model.B.copy())  # docs unclear on this name!!!!
     return M
 
+def HMM_Project(M,i,j):
+    '''
+    Compute the projection of observation densities between states i,j for model M
+    '''
+    N = M.emissionprob_.shape[1]   # number of output symbols
+    pr = 0.0
+    for k in range(N):  # emission symbols 
+        pr += M.emissionprob_[i,k]*M.emissionprob_[j,k]
+    return pr
+
+
+def HMM_ProjectAll(M):
+    '''
+    Compute the projection of observation densities between ALL states for model M
+    '''
+    N = M.emissionprob_.shape[1]
+    l = M.transmat_.shape[0]
+    pr = 0.0
+    for i in range(l):     # state i
+        for j in range(l):   # state j
+            for k in range(N):    # emission symbols
+                if i != j:   # not the diagonal
+                    pr += M.emissionprob_[i,k]*M.emissionprob_[j,k]
+    pr *= (2/float(l*(l-1)))   # number of off diagonal elements
+    return pr
 
 def HMM_model_sizes_check(M):
     #print 'Model size check:'
