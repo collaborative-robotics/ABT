@@ -165,15 +165,15 @@ plt.title(stTitle)
 #locs, labels = plt.xticks()
 #plt.xticks(locs, listXticks)
 
-plt.annotate('pert = 0.0', (3.2, -6.6))
-plt.annotate('pert = 0.1', (3.2, -7.1))
-plt.annotate('pert = 0.25', (3.2, -7.5))
+plt.annotate('pert = 0.0, pert=0.1', (3.2, -6.6))
+#plt.annotate('pert = 0.1', (3.2, -7.1))
+plt.annotate('pert = 0.25', (3.2, -8))
 plt.annotate('pert = 0.50', (3.2, -9))
 
 plt.annotate('pert = 0.0', (3.2, -28))
-plt.annotate('pert = 0.1', (3.2, -34))
-plt.annotate('pert = 0.25', (3.2, -36))
-plt.annotate('pert = 0.50', (3.2, -38.5))
+plt.annotate('pert = 0.1', (3.2, -29.4))
+plt.annotate('pert = 0.25', (3.2, -31.5))
+plt.annotate('pert = 0.50', (3.2, -37))
 
 plt.grid(color='lightgray', which='both')
 

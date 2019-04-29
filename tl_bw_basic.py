@@ -9,13 +9,16 @@ import sys
 import os
 import subprocess
 import uuid
-import datetime
 import numpy as np
 import random as random
-import hmm_bt as hbt
-from abt_constants import *
-import abtclass as abtc
+import datetime
 
+import model01 as m1
+import model00 as m0
+from   peg2_ABT import *
+import hmm_bt as hbt
+from   abt_constants import *
+import abtclass as abtc
 
 ###############################################
 #
@@ -24,19 +27,8 @@ import abtclass as abtc
 #   (all config in abt_constants.py <---  task_BWConv.py
 
 
-
-##
-#    Supress Deprecation Warnings from hmm_lean / scikit
-import warnings
-warnings.filterwarnings('ignore', category=DeprecationWarning)
-
-##   Set up research parameters mostly in abt_constants.py
-
-# amount HMM parameters should be ofset
-#   from the ABT parameters.  Offset has random sign (+/-)
-
-if len(sys.argv) != 6:
-    print 'Please use three command line arguments as follows:'
+def errormsg():    
+    print 'Please use 5 command line arguments as follows:'
     print ' > tl_bw_hmm  n c d r comment'
     print '   n -> N states (6 or 16)'
     print '   c -> indicate the model Case'
@@ -44,16 +36,39 @@ if len(sys.argv) != 6:
     print '   r -> Output Ratio (0-5)'
     print '  and a comment (use single quotes for multiple words) to describe the run'
     print '''
-    
 Case codes (param c):
     RAND = 1
     RAND_PLUS_ZEROS = 2
     SLR = 3
     ABT_LIKE = 4
     ABT_DUR  = 5
+    ABT_BASED = 6
 '''
-    print sys.argv
+    
+##
+#    Supress Deprecation Warnings from hmm_lean / scikit
+import warnings
+warnings.filterwarnings('ignore', category=DeprecationWarning)
+
+##   Set up research parameters mostly in abt_constants.py
+
+#  
+# "Case Codes"  
+RAND = 1
+RAND_PLUS_ZEROS = 2
+SLR = 3
+ABT_LIKE = 4
+ABT_DUR  = 5
+ABT_BASED = 6
+
+
+# amount HMM parameters should be ofset
+#   from the ABT parameters.  Offset has random sign (+/-)
+
+if len(sys.argv) != 6:
+    errormsg()
     quit()
+    
     
 #HMM_perturb = float(sys.argv[1])
 N=int(sys.argv[1])
@@ -64,15 +79,14 @@ comment = str(sys.argv[5])
 
 # sanity
 assert (N in [6, 16]), 'Bad state number'
-assert (Case in [1,2,3,4,5]), 'Bad case number'
-assert (HMM_perturb > 0.0 and HMM_perturb < 0.6), 'Bad HMM perturbation'
+assert (Case in [1,2,3,4,5,6]), 'Bad case number'
+assert (HMM_perturb >= 0.0 and HMM_perturb < 0.6), 'Bad HMM perturbation'
 assert (Ratio > 0.0 and Ratio < 6.0), 'Bad Output Ratio'
 
 git_hash = subprocess.check_output(['git', 'rev-parse', 'HEAD'])[:10]  # first 10 chars to ID software version
  
 Nrunouts = 100
 sig = 2.0
-#Ratio = 0.1
 
 #
 ########     Generate HMM model parameters
@@ -82,26 +96,35 @@ names = []
 for i in range(N):
     names.append('s'+str(i+1))  #  's1', 's2', etc
 
- 
-# INITIAL State Transition Probabilities
-#  make A one bigger to make index human
-RAND = 1
-RAND_PLUS_ZEROS = 2
-SLR = 3
-ABT_LIKE = 4
-ABT_DUR  = 5
 
+valid = False
 #Case = RAND_PLUS_ZEROS
 if Case == RAND:
     type_comment =  'Randomized A-matrix'
+    valid = True
 if Case == RAND_PLUS_ZEROS:
     type_comment =  'Randomized A-matrix with about 20% zeros'
+    valid = True
 if Case == SLR:
     type_comment =  'Simple Left-to-Right HMM'
+    valid = True
 if Case == ABT_LIKE:
     type_comment =  'ABT-like HMM structure'
+    valid = True
 if Case == ABT_DUR:
     type_comment =  'ABT HMM structure + SELF STATE TRANS.'
+    valid = True
+if Case == ABT_BASED:
+    if N == 6:
+        type_comment =  '6 State ABT based HMM'
+        valid = True
+    elif N==16:
+        type_comment =  '16 State ABT based HMM'
+        valid = True
+if not valid:
+    print 'Invalid Model Case on command line'
+    errormsg()
+    quit
     
 print '\n\n'+type_comment
 print 'Ratio = ', Ratio, '   HMM perturbation = ', HMM_perturb
@@ -174,6 +197,13 @@ elif Case == ABT_LIKE or Case == ABT_DUR:
             A[r,r+1] -= 0.2
         
     hbt.A_row_test(A, sys.stdout)    # just a g=ood idea
+ 
+        
+elif Case == ABT_BASED:    # generate a model based on actual ABTs
+    if N == 6:
+        abtmodel = m0.modelo00  # 6 state ABT
+    elif N==16: 
+        abtmodel = m1.modelo01  # 16 state ABT
        
 else:
     print 'Invalid model Case defined (must be 1 or 2)'
@@ -214,23 +244,29 @@ for n in outputs.keys():
 #
 #    Make ABT model 
 #
-modelT = abtc.model(len(names))  # make a new model
-modelT.A = A.copy()
-#modelT.PS = PS
-modelT.outputs = outputs
-modelT.statenos = statenos
-modelT.names = names
-modelT.sigma = sig
-modelT.typestring = "MultinomialHMM"
-
-#hbt.A_row_test(modelT.A, sys.stdout)
+if Case != ABT_BASED:
+    modelT = abtc.model(len(names))  # make a new model
+    modelT.A = A.copy()
+    #modelT.PS = PS
+    modelT.outputs = outputs
+    modelT.statenos = statenos
+    modelT.names = names
+    modelT.sigma = sig
+    modelT.typestring = "MultinomialHMM"
+else:
+    modelT = abtmodel
 
 #########################################################
 #
-#    Build the HMM
+#    Build the initial HMM (used to generate data)
 #
 
 M = hbt.HMM_setup(modelT)
+
+hbt.HMM_model_sizes_check(M)       # just check some model things.
+hbt.A_row_test(A,sys.stderr)
+hbt.A_row_test(modelT.A, sys.stderr)
+hbt.A_row_check(M.transmat_,sys.stderr)
 
 #print M.sample(3*N)   #  enough to always get stuck in last state
 
@@ -242,8 +278,7 @@ data = []
 lens = []
 smax = N-2   #  real states vs terminal states (Os & Of)
 
-if Case == SLR or Case==ABT_LIKE or Case == ABT_DUR:
-    Nsamples = 3*N
+if Case == SLR or Case==ABT_LIKE or Case == ABT_DUR or Case == ABT_BASED:
     Nsamples = 500
     # generate observation data from HMM
     for i in range(Nrunouts):
@@ -253,7 +288,7 @@ if Case == SLR or Case==ABT_LIKE or Case == ABT_DUR:
             if states[i] < smax:     # ignore data when stuck in final state
                 data.append(int(x))
                 lencnt +=1
-            else:
+            else:  # sequence is in a final state
                 data.append(int(x))  # except don't ignore 1 time in final state
                 lencnt +=1
                 lens.append(lencnt)
@@ -274,6 +309,8 @@ elif Case == RAND or Case == RAND_PLUS_ZEROS:
 data = np.array(data).reshape(-1,1)  # needed for hmmlearn
 lens = np.array(lens)
 
+assert len(lens) == Nrunouts, ' Somethings wrong with generation of data'
+
 #print "simulation outputs:"
 #print data
 #print 'sequence lengths: ',lens
@@ -284,13 +321,13 @@ assert np.sum(lens) == len(data), 'data doesnt match lengths (can be just a RARE
 
 #####################################################################
 #
-#   Perturb HMM params so that it is not starting at same point as dataset
+#   Perturb HMM params so that BW is not starting at same point as
+#    the HMM which generated the data set
+#     and instantiate a second HMM, M2
 #
 
-#hbt.HMM_perturb(M, HMM_perturb, modelT)
 if(Case == RAND or Case == RAND_PLUS_ZEROS):
-    A2, B2 = HMM_fully_random(modelT) 
-
+    A2, B2 = hbt.HMM_fully_random(modelT) 
 
     model02 = abtc.model(len(names))  # make a new model
     model02.A = A2.copy()
@@ -301,14 +338,14 @@ if(Case == RAND or Case == RAND_PLUS_ZEROS):
     model02.sigma = sig
     model02.typestring = "MultinomialHMM"
 
-
     M2 = hbt.HMM_setup(model02)
 
 
-        
-elif Case == SLR or Case == ABT_LIKE or Case == ABT_DUR:
-    hbt.HMM_perturb(M, HMM_perturb, modelT)
+elif Case == SLR or Case == ABT_LIKE or Case == ABT_DUR or Case == ABT_BASED:
+    Aorig = M.transmat_.copy()       # back up original HMM
+    Borig = M.emissionprob_.copy()
     
+    hbt.HMM_perturb(M, HMM_perturb, modelT)   
     
     model02 = abtc.model(len(names))  # make a new model
     model02.A = M.transmat_.copy()
@@ -319,7 +356,10 @@ elif Case == SLR or Case == ABT_LIKE or Case == ABT_DUR:
     model02.sigma = sig
     model02.typestring = "MultinomialHMM"
 
-
+    # reset original model for comparison
+    M.transmat_ = Aorig
+    M.emissionprob_ = Borig
+    # generate new perturbed HMM
     M2 = hbt.HMM_setup(model02)
 
 
@@ -332,10 +372,10 @@ hbt.HMM_model_sizes_check(M2)
 
 print '\n\n'
 print "Initial A-matrix perturbation: "
-hbt.Adiff_Report(A,M2.transmat_,modelT.names,of=sys.stdout)
+hbt.Adiff_Report(M.transmat_,M2.transmat_,modelT.names,of=sys.stdout)
 
 # store diffs due to perturbation
-[e,e2orig,emorig,N2,im,jm,anomsorig,erasuresorig] = hbt.Adiff(A,M2.transmat_, modelT.names)
+[e,e2orig,emorig,N2,im,jm,anomsorig,erasuresorig] = hbt.Adiff(M.transmat_,M2.transmat_, modelT.names)
 
  
 ##################################################
@@ -355,11 +395,12 @@ print '\n\n'+type_comment
 print 'Ratio = ', Ratio, '   HMM delta / perturbation = ', HMM_perturb
 
 print "Initial FIT M2->M: "
-hbt.Adiff_Report(M2.transmat_,A, modelT.names,of=sys.stdout)
+hbt.Adiff_Report(M2.transmat_,M.transmat_, modelT.names,of=sys.stdout)
 
-[e,e2,em,N2,im,jm,anoms,erasures] = hbt.Adiff(A,M2.transmat_, modelT.names)
+[e,e2,em,N2,im,jm,anoms,erasures] = hbt.Adiff(M.transmat_,M2.transmat_, modelT.names)
 
 logfname = 'tl_bw_basic_data.txt'
+logfname = 'TEST.txt'
 fdata = open(logfname, 'a')
 
 print "\n\nlogging to " + logfname 
