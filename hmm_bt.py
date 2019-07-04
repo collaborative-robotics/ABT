@@ -115,6 +115,70 @@ def HMM_setup(model, toler=0.01, maxiter=20):     #  New: setup model.B:  discre
     M.emissionprob_ = np.array(model.B.copy())  # docs unclear on this name!!!!
     return M
 
+# Kullback-Leibler divergence
+def KL_diverge(M,i,j): 
+    return KL_basic(M.emissionprob_[i,:], M.emissionprob_[j,:])
+
+def KL_basic(A,B):   # just two vector probs 
+    N = len(A)
+    assert N==len(B), 'mismatched prob distribs'
+    pr = 0.0
+    for k in range(N):
+        pr += A[k]*np.log2(B[k]/A[k])
+    return -1.0*pr
+
+def Shannon_Entropy(A):  # A is a discrete prob density
+    se = 0.0
+    testsum = 0.0
+    for i in range(len(A)):
+        testsum += A[i]
+        if A[i] > 1.0e-8:  # avoid numerical undeflow of log2
+            se -= A[i]*np.log2(A[i]) 
+    return se
+
+##  JS divergence between all pairs of states
+def JS_ALL(M):
+    ws = 0.0 
+    B1 = M.emissionprob_[0,:]
+    N = len(B1)        # of symbols
+    n = M.n_components # of distribs/states
+    #print 'N DISTRIBS', n
+    #print 'test:', Shannon_Entropy(M.emissionprob_[2,:])
+    #muh = 0.0
+    #for j in range(N):
+        #muh += float(j)*M.emissionprob_[2,j]
+    #print 'mu:  ', muh
+    wpi = 1.0/n
+    wP = np.zeros(N)
+    for i in range(N):  # iterate over the symbols
+        for j in range(n):  # sum over the distribs/states
+            #if M.emissionprob_[j,i] > 1.0e-6:
+                #print 'adding: ', i, M.emissionprob_[j,i]
+            wP[i] +=  M.emissionprob_[j,i]
+        wP[i] *= wpi
+    s = 0.0
+    for j in range(n):
+        s += wpi*Shannon_Entropy(M.emissionprob_[j,:])
+    print 'Sh.Ent: ', Shannon_Entropy(wP)
+    print ' term2: ', s
+    jsa = Shannon_Entropy(wP) - s
+    return jsa
+        
+
+## Jensen-Shannon divergence
+def JS_diverge(HMM,i,j):
+    B1 = HMM.emissionprob_[i,:]
+    B2 = HMM.emissionprob_[j,:]
+    #print 'shape: ', np.shape(B1)[0]
+    M = np.zeros(np.shape(B1)[0])
+    #print 'shape(M): ', np.shape(M)
+    for k in range(len(B2)):
+        M[k] = 0.500*(B1[k]+B2[k])
+    return 0.500*(KL_basic(B1,M)+KL_basic(B2,M))
+
+#def JS_divergeALL(HMMs):  # an array of HMMs
+
+
 def HMM_Project(M,i,j):
     '''
     Compute the projection of observation densities between states i,j for model M

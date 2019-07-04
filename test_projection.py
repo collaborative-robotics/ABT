@@ -30,6 +30,9 @@ else:
     from peg2_ABT import *  # req'd for 16-state
 
 
+
+print '\n(compare states 2,3)\nN states & Ratio & Proj & ProjAll & KLD  & JSD & JSAll\\\\ \\hline'
+
 for Ratio in RatioList:
 
     if NST == 16:
@@ -38,9 +41,20 @@ for Ratio in RatioList:
         model = m0.modelo00
     
         
-    model.setup_means(FIRSTSYMBOL,Ratio, sig)
+    model.setup_means(FIRSTSYMBOL,Ratio, 2.0)
+    #
+    
     M = HMM_setup(model)
 
+    #  Make sure no obs probs are exaclty 0.0  use pmin instead 
+    for i,n in enumerate(model.names):
+        tmp_leaf = abtc.aug_leaf(0.500)  # dummy leaf to use SetObsDensity() method
+        tmp_leaf.set_Obs_Density(model.outputs[n], sig)
+        for j in range(NSYMBOLS):
+            model.B[i,j] = tmp_leaf.Obs[j]    # guarantees same P's as ABT(!)
+    M.emissionprob_ = np.array(model.B.copy())  # docs unclear on this name!!!!
+    
+    
     #print '   HMM emission probabilities:'
     #for i in range(len(model.names)):
         #print i, M.emissionprob_[i]
@@ -49,8 +63,9 @@ for Ratio in RatioList:
     
     pr = HMM_Project(M,2,3)
     pr_all = HMM_ProjectAll(M)
+    kld = KL_diverge(M,2,3)
+    jsd = JS_diverge(M,2,3)
+    jsa = JS_ALL(M)
     
-    #print 'Ratio: ', Ratio, 'Pr(2,3) ', pr, ' All states: ', pr_all
-    
-    line = '{:d} & {:5.2f} & {:.2e} & {:.2e} \\ \hline'.format(NST, Ratio, pr, pr_all)
+    line = '{:d} & {:5.2f} & {:.2f} & {:.6f} & {:.6f} & {:.6f} & {:.6f} \\\\ \hline'.format(NST, Ratio, pr, pr_all, kld,jsd, jsa)
     print line
