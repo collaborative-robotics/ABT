@@ -18,7 +18,7 @@ print '          testing "projection" metric for HMM transparency: test_projecti
 
 
 NST = 6    # Small model
-#NST = 16
+NST = 16
 
 
 
@@ -31,8 +31,10 @@ else:
 
 
 
-print '\n(compare states 2,3)\nN states & Ratio & Proj & ProjAll & KLD  & JSD & JSAll\\\\ \\hline'
+print '\n(compare states 2,3)\nN states & Ratio & KLD  & JSD & JSAll\\\\ \\hline'
 
+
+print'\n\nN & Ratio & $KLD$ & $JSD$ & $JSD_{ALL}$'
 for Ratio in RatioList:
 
     if NST == 16:
@@ -67,5 +69,7 @@ for Ratio in RatioList:
     jsd = JS_diverge(M,2,3)
     jsa = JS_ALL(M)
     
-    line = '{:d} & {:5.2f} & {:.2f} & {:.6f} & {:.6f} & {:.6f} & {:.6f} \\\\ \hline'.format(NST, Ratio, pr, pr_all, kld,jsd, jsa)
+    line = '{:d} & {:.2f} &  {:.2f} & {:.2f} & {:.2f} \\\\ \hline'.format(NST, Ratio,  kld,jsd, jsa)
     print line
+    
+print 'log2(N) =', np.log2(NST)

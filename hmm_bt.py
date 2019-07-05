@@ -129,9 +129,7 @@ def KL_basic(A,B):   # just two vector probs
 
 def Shannon_Entropy(A):  # A is a discrete prob density
     se = 0.0
-    testsum = 0.0
     for i in range(len(A)):
-        testsum += A[i]
         if A[i] > 1.0e-8:  # avoid numerical undeflow of log2
             se -= A[i]*np.log2(A[i]) 
     return se
@@ -159,8 +157,6 @@ def JS_ALL(M):
     s = 0.0
     for j in range(n):
         s += wpi*Shannon_Entropy(M.emissionprob_[j,:])
-    print 'Sh.Ent: ', Shannon_Entropy(wP)
-    print ' term2: ', s
     jsa = Shannon_Entropy(wP) - s
     return jsa
         
