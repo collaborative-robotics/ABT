@@ -208,6 +208,9 @@ elif Case == ABT_BASED:    # generate a model based on actual ABTs
 else:
     print 'Invalid model Case defined (must be 1 or 2)'
     quit()
+    
+# perform model parameter self-check for valid setup
+abtmodel.check()
  
 #print 'Model size: ', A.shape
 #quit()
