@@ -14,6 +14,8 @@ import numpy as np
 from abt_constants import *
  
 
+checkepsilon = 1.0e-9
+
 class model():
     def __init__(self, Nstates):
         self.n = Nstates
@@ -37,6 +39,20 @@ class model():
         for n in self.outputs.keys():
             self.outputs[n] = i    # outputs[] = mean output for each state
             i += di
+            
+    # validate model setup
+    def check(self):
+        assert len(self.names) == self.n, 'Wrong number of states'
+        for i in range(self.n-2):   # go through the leaf-states
+            assert abs(sum(self.A[i,:]) - 1.0000) < checkepsilon, 'Rows of A-matrix must sum to 1.0'
+            for j in range(self.n):   # all transitions
+                assert abs (self.A[i,j] - 1.00) > checkepsilon, 'Success probs must be < 1.0: A['+str(i)+','+str(j)+']=' + str(self.A[i,j])
+        i = self.n - 2
+        assert abs(self.A[i,i] - 1.00)        < checkepsilon, 'State Os must have 1.0 self state prob'
+        assert abs(sum(self.A[i,:]) - 1.00)   < checkepsilon, 'Row N-2 must sum to 1.0000'
+        assert abs(self.A[i+1,i+1] - 1.00)    < checkepsilon, 'State Of must have 1.0 self state prob'
+        assert abs(sum(self.A[i+1,:]) - 1.00) < checkepsilon, 'Row N-1 must sum to 1.0000'
+        print 'abtclass.py: abt/hmm model parameters passed self.check() assertions'
 
 def gaussian(x, mu, sig):
     sig = abs(sig)
@@ -54,7 +70,7 @@ class aug_leaf(b3.Action):
         self.Obs = np.zeros(NSYMBOLS)
         # give a residual obs prob:
         for j in range(NSYMBOLS):
-            self.Obs[j] = 0.0001  # a nominal non-zero value
+            self.Obs[j] = checkepsilon*2  # a nominal non-zero value
 
     def __init__(self,probSuccess):
         b3.BaseNode.__init__(self)
@@ -65,7 +81,7 @@ class aug_leaf(b3.Action):
         self.Obs = np.zeros(NSYMBOLS)
         # give a residual obs prob:
         for j in range(NSYMBOLS):
-            self.Obs[j] = 0.0001  # a nominal non-zero value
+            self.Obs[j] = 2*checkepsilon  # a nominal non-zero value
 
     def set_Obs_Density(self, mu, sig):
         if (mu+sig) > NSYMBOLS or ((mu-sig) < 0):
@@ -73,7 +89,7 @@ class aug_leaf(b3.Action):
             print self.Name, mu, sig
             #quit()
         psum = 0.0
-        pmin = 1.0e-9 # smallest allowed probability (see test_obs_stats.py!!)
+        pmin = checkepsilon # smallest allowed probability (see test_obs_stats.py!!)
         for j in range(NSYMBOLS):
             self.Obs[j] = gaussian(float(j),float(mu),float(sig))
             #clear the tiny numerical values
