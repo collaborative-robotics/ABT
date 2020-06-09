@@ -81,6 +81,10 @@ if MODEL==SMALL:
     from model00 import *
     model = modelo00
     
+    
+# check a few things about the model
+model.check()
+
 #############################################
 #
 #      Manage outer loop (a set of runs)
@@ -271,7 +275,7 @@ for tol in [0.1, 0.01, 0.001, 0.0001, 0.00001]:
         if(not HMM_RANDOM_INIT and HMM_delta > testeps):
             #HMM_ABT_to_random(M)   # randomize probabilites
             #print 'Applied Random Matrix Perturbation'
-            HMM_perturb(M, HMM_delta)
+            HMM_perturb(M, HMM_delta,model)
             print 'Applied HMM Perturbation: ' + str(HMM_delta)
             
 

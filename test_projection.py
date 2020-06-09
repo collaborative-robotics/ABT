@@ -20,7 +20,8 @@ print '          testing "projection" metric for HMM transparency: test_projecti
 NST = 6    # Small model
 NST = 16
 
-
+s1 = 7
+s2 = 8
 
 if NST < 10:
     print '                  SMALL model'
@@ -31,7 +32,7 @@ else:
 
 
 
-print '\n(compare states 2,3)\nN states & Ratio & KLD  & JSD & JSAll\\\\ \\hline'
+print '\n(compare states {:d},{:d})\nN states & Ratio & KLD  & JSD & JSAll\\\\ \\hline'.format(s1,s2)
 
 
 print'\n\nN & Ratio & $KLD$ & $JSD$ & $JSD_{ALL}$'
@@ -61,15 +62,16 @@ for Ratio in RatioList:
     #for i in range(len(model.names)):
         #print i, M.emissionprob_[i]
         
-    # for now pick states 2,3. consecutive(!) (exist in both models!)
+    # for now pick states s1,s2. consecutive(!) (exist in both models!)
     
-    pr = HMM_Project(M,2,3)
+    pr = HMM_Project(M,s1,s2)
     pr_all = HMM_ProjectAll(M)
-    kld = KL_diverge(M,2,3)
-    jsd = JS_diverge(M,2,3)
+    kld = KL_diverge(M,s1,s2)
+    jsd = JS_diverge(M,s1,s2)
     jsa = JS_ALL(M)
     
     line = '{:d} & {:.2f} &  {:.2f} & {:.2f} & {:.2f} \\\\ \hline'.format(NST, Ratio,  kld,jsd, jsa)
     print line
     
+print 'Single compare: ', s1,s2
 print 'log2(N) =', np.log2(NST)
