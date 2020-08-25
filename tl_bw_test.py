@@ -309,7 +309,7 @@ for tol in [0.1, 0.01, 0.001, 0.0001, 0.00001]:
             outF_index = outS_index+1
             assert M.transmat_[outS_index,outS_index] - 1.0 < testeps, 'A 1.0 element was modified'
             assert M.transmat_[outF_index,outF_index] - 1.0 < testeps, 'A 1.0 element was modified'
-        print 'Passed A-matrix Assertions'
+        print 'Passed post-perturbation A-matrix Assertions'
         #end of special test code
 
 
