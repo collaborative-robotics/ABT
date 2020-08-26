@@ -30,7 +30,7 @@ from hmm_bt import *
 class Test_hmm_pert(unittest.TestCase):
 
 
-    def test_init1(self):
+    def test_pert(self):
                 
         #####################################################
 
