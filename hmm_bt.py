@@ -28,19 +28,25 @@ def outputAmat(A,title,names,of=sys.stdout):
         print >> of, '\n'
 
 def A_row_check(A,of):
+    # this is like a test but will not stop the program (see A_row_test() below)
     print >> of, "A-matrix row check"
     eps = 1.0E-6        # accuracy
+    result_ok = True
     for i in range(A.shape[0]):
         r = 0
         for j in range(A.shape[1]):
             if A[i,j] < 0.0:
                 r += 10000000
+                result_OK = False
             r += A[i,j]
         print >> of, i,r
         if abs(r-1.0) > eps:
+            result_ok = False
             print >> of, 'Problem: row ',i,' of A-matrix sum is != 1.0 -or- row contains a P<0  sum = ', r
+    return result_ok
         
 def A_row_test(A,of):
+    # an actual test using asserts
     eps = 1.0E-6        # accuracy
     #print 'A-matrix row test'
     for i in range(A.shape[0]):
