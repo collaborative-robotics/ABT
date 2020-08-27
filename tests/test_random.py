@@ -11,8 +11,6 @@ import b3 as b3          # behavior trees
 #import random as random
 import math as m
 import numpy as np
-from abt_constants import *
-#from abt_class import *
 
 
 import unittest

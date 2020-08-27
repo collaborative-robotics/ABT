@@ -20,11 +20,9 @@ from tests.common import *
 #from common import *
 
 
-import abt_constants
+import abt_constants as ac 
 from abtclass import *
 from hmm_bt import *
- 
-
 
 
 class Test_hmm_pert(unittest.TestCase):
@@ -39,7 +37,7 @@ class Test_hmm_pert(unittest.TestCase):
         MODEL = SMALL    #  values SMALL BIG
 
         ######################
-        sig = 2.0 
+        sig = ac.sig
 
         Ratio = 3.0
 

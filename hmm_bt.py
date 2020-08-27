@@ -16,7 +16,7 @@ import sys
 from hmmlearn import hmm
 import random as random
 
-from abt_constants import *
+import abt_constants as ac
 import abtclass as abtc
 
 def outputAmat(A,title,names,of=sys.stdout):
@@ -39,7 +39,7 @@ def A_row_check(A,of):
         print >> of, i,r
         if abs(r-1.0) > eps:
             print >> of, 'Problem: row ',i,' of A-matrix sum is != 1.0 -or- row contains a P<0  sum = ', r
-
+        
 def A_row_test(A,of):
     eps = 1.0E-6        # accuracy
     #print 'A-matrix row test'
@@ -102,15 +102,15 @@ def HMM_setup(model, toler=0.01, maxiter=20):     #  New: setup model.B:  discre
     #tmpcovars.shape = [l,1]
     #M.covars_ = np.array(tmpcovars)
     #########################
-    sig = 2.0  # HACK!!!
+    #sig = 2.0  # HACK!!!
     #############################   Multinomial emissions
     #   setup discrete model.B for MultinomialHMM()
     #     set up a obs density with mean=model.outputs[n].
     for i,n in enumerate(model.names):
         tmp_leaf = abtc.aug_leaf(0.500)  # dummy leaf to use SetObsDensity() method
-        tmp_leaf.set_Obs_Density(model.outputs[n], sig)
+        tmp_leaf.set_Obs_Density(model.outputs[n], ac.sig)
         #print 'mean: ', model.outputs[n]
-        for j in range(NSYMBOLS):
+        for j in range(ac.NSYMBOLS):
             model.B[i,j] = tmp_leaf.Obs[j]    # guarantees same P's as ABT(!)
     M.emissionprob_ = np.array(model.B.copy())  # docs unclear on this name!!!!
     return M
@@ -257,7 +257,7 @@ def HMM_fully_random(model):
     # randomize means of the output observations
     B = np.zeros(model.n)
     for i,n in enumerate(model.names):
-        B[i] = int( 0.5 + FIRSTSYMBOL + (NSYMBOLS-FIRSTSYMBOL)*random.random() )
+        B[i] = int( 0.5 + ac.FIRSTSYMBOL + (ac.NSYMBOLS-ac.FIRSTSYMBOL)*random.random() )
     B.shape = [rn,1]   # match req. of hmmlearn
     return A_rand, B
 
@@ -351,8 +351,6 @@ def HMM_perturb(M, d, model=abtc.model(1)):
             B[i] += randsign() * bdelta
         M.means_ = B
     elif M.typestring == 'MultinomialHMM':
-        #########################
-        sig = 2.0  # HACK!!!
         #############################   Multinomial emissions
         #   setup discrete model.B for MultinomialHMM()
         for i,n in enumerate(model.names):
@@ -360,8 +358,8 @@ def HMM_perturb(M, d, model=abtc.model(1)):
             #perturb the mean by bdelta before generating the emission probs.
             newmean = model.outputs[n] + randsign() * bdelta
             #print 'Setting mean for state ',i, 'from ' , model.outputs[n], ' to ', newmean
-            tmp_leaf.set_Obs_Density(newmean, sig)
-            for j in range(NSYMBOLS):
+            tmp_leaf.set_Obs_Density(newmean, ac.sig)
+            for j in range(ac.NSYMBOLS):
                 model.B[i,j] = tmp_leaf.Obs[j]    # guarantees same P's as ABT(!)
         M.emissionprob_ = np.array(model.B.copy())  # docs unclear on this name!!!!
     else:
