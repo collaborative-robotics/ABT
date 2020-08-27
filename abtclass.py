@@ -31,20 +31,21 @@ class model():
 
     def setup_means(self,first, Ratio, sig):
         ''' *means* here means mean value of output symbol for each state 
-        '''
+        ''' 
         assert len(self.names) > 0, 'Names have to be set up first'
         assert len(self.names) == self.n, 'Wrong number of states'
         i = first
         di = Ratio*sig  # 
-        for n in self.outputs.keys():
+        for n in self.names:
             self.outputs[n] = i    # outputs[] = mean output for each state
             i += di
             
     # validate model setup
     def check(self):
         assert len(self.names) == self.n, 'Wrong number of states'
+        #print self.A   # helps when debugging failures below
         for i in range(self.n-2):   # go through the leaf-states
-            assert abs(sum(self.A[i,:]) - 1.0000) < checkepsilon, 'Rows of A-matrix must sum to 1.0'
+            assert abs(sum(self.A[i,:]) - 1.0000) < checkepsilon, 'Rows of A-matrix must sum to 1.0: row: '+str(i)
             for j in range(self.n):   # all transitions
                 assert abs (self.A[i,j] - 1.00) > checkepsilon, 'Success probs must be < 1.0: A['+str(i)+','+str(j)+']=' + str(self.A[i,j])
         i = self.n - 2
