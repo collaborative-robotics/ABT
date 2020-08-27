@@ -2,6 +2,10 @@
 #
 
 #  Test for HMM setup and perturbs
+#
+#   TODO: verify if this is a subset of test_hmm_rand_pert.py
+#      (in which case delete this file)
+#
 
 import sys
 import numpy as np
@@ -16,7 +20,7 @@ from hmmlearn import hmm
 import unittest
 import mock
 
-from tests.common import *
+import tests.common as tc
 #from common import *
 
 
@@ -256,8 +260,10 @@ class Test_hmm_pert(unittest.TestCase):
         else:
             outS_index = 14
         outF_index = outS_index+1
-        assert M.transmat_[outS_index,outS_index] - 1.0 < testeps, 'A 1.0 element was modified'
-        assert M.transmat_[outF_index,outF_index] - 1.0 < testeps, 'A 1.0 element was modified'
+        #assert M.transmat_[outS_index,outS_index] - 1.0 < testeps, 'A 1.0 element was modified'
+        #assert M.transmat_[outF_index,outF_index] - 1.0 < testeps, 'A 1.0 element was modified'
+        tc.assert_feq(M.transmat_[outS_index,outS_index], 1.0 , 'A 1.0 element was modified', testeps)
+        tc.assert_feq(M.transmat_[outF_index,outF_index], 1.0, 'A 1.0 element was modified',testeps)
 
 
         print '-------------------------- test distance metrics -------------------'
@@ -281,9 +287,10 @@ class Test_hmm_pert(unittest.TestCase):
         print 'EAinfty = ',x[2]    # max difference
         print 'EAavg   = ',x[1]    # avg non-zero elements
 
-        assert abs(x[2] - 0.2) < testeps, fs+' (max diff)'
-        assert abs(x[1] - 0.2) < testeps, fs+' (avg diff non-zero)'
-
+        #assert abs(x[2] - 0.2) < testeps, fs+' (max diff)'
+        #assert abs(x[1] - 0.2) < testeps, fs+' (avg diff non-zero)'
+        tc.assert_feq(x[2], 0.2, fs+' (max diff)', testeps)
+        tc.assert_feq(x[1], 0.2, fs+' (avg diff non-zero)', testeps)
         print 'Passed distance metric assertions'
         
         
@@ -305,7 +312,8 @@ class Test_hmm_pert(unittest.TestCase):
                 print '   ',i
                 d = abs(M.means_[i][0]-B[i])
                 print 'testing: ', i, m, B[i]
-                assert (d/B[i] - Pdelta) < testeps, 'Wrong B-matrix perturbed value'
+                #assert (d/B[i] - Pdelta) < testeps, 'Wrong B-matrix perturbed value'
+                tc.assert_feq(d/B[i], Pdelta, 'Wrong B-matrix perturbed value',testeps)
                 
             print 'Passed B-matrix perturb tests'
             
