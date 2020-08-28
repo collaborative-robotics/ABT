@@ -4,10 +4,9 @@
 #
 #
 
-import os as os
+import os
+import sys
 
-# b3 class modified by BH, local version in current dir
-import b3 as b3          # behavior trees
 #import random as random
 import math as m
 import numpy as np
@@ -16,15 +15,14 @@ import numpy as np
 import unittest
 import mock
 
-from tests.common import *
-#from common import *
+import tests.common as tc
 
-
-import numpy as np
 import abt_constants
 from abtclass import *
 from hmm_bt import *
  
+# b3 class modified by BH, local version in current dir
+import b3 as b3          # behavior trees
 
 
 class Test_XXNAMEXX(unittest.TestCase):
