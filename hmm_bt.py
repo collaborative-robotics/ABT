@@ -77,6 +77,7 @@ def A_row_test(A,of):
 
 def HMM_setup(model, toler=0.01, maxiter=20):     #  New: setup model.B:  discrete emission probs.
     #print 'Size: A: ', A.shape
+    #   components = states         features = observation symbols
     l = model.A.shape[0]
     #print 'len(Pi): ', len(Pi), l
     #M = hmm.GaussianHMM(n_components=l, covariance_type='diag', n_iter=maxiter, tol=toler, init_params='')
@@ -84,10 +85,11 @@ def HMM_setup(model, toler=0.01, maxiter=20):     #  New: setup model.B:  discre
     #   fit all params:  params='ste'
     #   fit only A matrix:  params='t'
 
-    M = hmm.MultinomialHMM(n_components=l, n_iter=maxiter, params='t', init_params='',verbose=True)
+    M = hmm.MultinomialHMM(n_components=l, n_iter=maxiter, params='t', tol=toler, init_params='',verbose=True)
     M.typestring = 'MultinomialHMM'
 
-    #M.n_features = 1
+    M.n_features = ac.NSYMBOLS
+    M.n_components = l
     M.startprob_ = model.Pi
     M.transmat_ = model.A
     #############################  Gaussian emissions
@@ -112,11 +114,11 @@ def HMM_setup(model, toler=0.01, maxiter=20):     #  New: setup model.B:  discre
     #############################   Multinomial emissions
     #   setup discrete model.B for MultinomialHMM()
     #     set up a obs density with mean=model.outputs[n].
-    for i,n in enumerate(model.names):
+    for i,n in enumerate(model.names):  # names of "components" or "states"
         tmp_leaf = abtc.aug_leaf(0.500)  # dummy leaf to use SetObsDensity() method
         tmp_leaf.set_Obs_Density(model.outputs[n], ac.sig)
         #print 'mean: ', model.outputs[n]
-        for j in range(ac.NSYMBOLS):
+        for j in range(ac.NSYMBOLS):    # "features" or "output symbols"
             model.B[i,j] = tmp_leaf.Obs[j]    # guarantees same P's as ABT(!)
     M.emissionprob_ = np.array(model.B.copy())  # docs unclear on this name!!!!
     return M
@@ -216,6 +218,8 @@ def HMM_model_sizes_check(M):
     l = M.transmat_.shape[0]
     fs = 'Your HMM has inconsistent model sizes and will not run: quitting'
     assert M.transmat_.shape == (l,l), fs
+    print 'Model components/states: ', M.n_components, '   features/symbols: ', M.n_features
+    assert M.emissionprob_.shape == (l, ac.NSYMBOLS), fs+': emissionprob_'
     #assert M.means_.shape == (l,1), fs
 
 
