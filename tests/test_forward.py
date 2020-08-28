@@ -67,7 +67,7 @@ class Test_Forward_Algorithm(unittest.TestCase):
                     
             model.setup_means(FIRSTSYMBOL,Ratio, sig)
             [ABT, bb, leaves] = ABTtree(model)
-            pref = 'tests/data_for_tests'
+            pref = 'tests/data_for_tests/'
             sequence_name =  pref+'Forward_test_sequence'+str(NST)+'stateR'+str(Ratio)+'.txt'
             seq_data_f = open(sequence_name,'w')
             bb.set('logfileptr',seq_data_f)   #allow BT nodes to access/write to file
