@@ -30,9 +30,10 @@ import model01 as m1
 import model00 as m0
 import matplotlib.pyplot as plt
 
+KEEP_DATA = False  # delete data files after test
 
 NST = 6    # Small model
-NST = 16
+#NST = 16
 
 #  Too few epochs and asserts will fail "reasonableness" tests
 #  Too many and test will be slow.   2000 seems a good balance
@@ -49,6 +50,7 @@ class Test_Forward_Algorithm(unittest.TestCase):
 
     def test_FA_01(self):
         results_logP = {}
+        files_used = []
         #
         #   Effect of output Ratio on Fwd alg perf. with 20% perturbation
         #
@@ -69,20 +71,25 @@ class Test_Forward_Algorithm(unittest.TestCase):
             [ABT, bb, leaves] = ABTtree(model)
             pref = 'tests/data_for_tests/'
             sequence_name =  pref+'Forward_test_sequence'+str(NST)+'stateR'+str(Ratio)+'.txt'
-            seq_data_f = open(sequence_name,'w')
-            bb.set('logfileptr',seq_data_f)   #allow BT nodes to access/write to file
-            osu = model.names[-2]  # state names
-            ofa = model.names[-1]
+            if not os.path.isfile(sequence_name):
+                print'No existing data file. starting simulation to generate data'
+                seq_data_f = open(sequence_name,'w')
+                bb.set('logfileptr',seq_data_f)   #allow BT nodes to access/write to file
+                osu = model.names[-2]  # state names
+                ofa = model.names[-1]
 
-            for i in range(NEpochs_test):
-                result = ABT.tick("ABT Simulation", bb)
-                if (result == b3.SUCCESS):
-                    seq_data_f.write('{:s}, {:.0f}\n'.format(osu,model.outputs[osu]))  # not random obs!
-                else:
-                    seq_data_f.write('{:s}, {:.0f}\n'.format(ofa,model.outputs[ofa]))
-                seq_data_f.write('---\n')
-            seq_data_f.close()
-            print 'Finished simulating ',NEpochs_test,'  epochs.  Ratio: ', Ratio
+                for i in range(NEpochs_test):
+                    result = ABT.tick("ABT Simulation", bb)
+                    if (result == b3.SUCCESS):
+                        seq_data_f.write('{:s}, {:.0f}\n'.format(osu,model.outputs[osu]))  # not random obs!
+                    else:
+                        seq_data_f.write('{:s}, {:.0f}\n'.format(ofa,model.outputs[ofa]))
+                    seq_data_f.write('---\n')
+                seq_data_f.close()
+                print 'Finished simulating ',NEpochs_test,'  epochs.  Ratio: ', Ratio
+            else:
+                print 'Using existing data sequence: '+sequence_name
+            files_used.append(sequence_name)
             
             # Now run FWD Alg for various model perts
                 
@@ -164,6 +171,10 @@ class Test_Forward_Algorithm(unittest.TestCase):
             assert results_logP[2.5][2] > -32.0, fs
         print 'passed reasonableness assertions'
         
+        if not KEEP_DATA:
+            for fn in files_used:
+                os.remove(fn)
+            
         
 if __name__ == '__main__':
     unittest.main()
