@@ -85,7 +85,7 @@ Unique filenames are generated using URI's.  Each line contains
    7.  emax (max error)
 
 
-## Other Files
+## Other Files in this package
 
  * `hmm_bt.py`
  
@@ -94,4 +94,31 @@ Unique filenames are generated using URI's.  Each line contains
  * `abtclass.py`
 
     The new "leaf" class which Augments the BT to work with Success/Fail probabilities, and stochastic observations from each leaf. 
+
+## Testing:
+
+ * Now unified with the python `unittest` library
+ * To run all tests:
+ ```
+ > python2 -m unittest discover tests/
+ ```
+ * Several tests are stochastic in nature and so can occasionally fail though code is correct.  Rerun them several times. 
+ (assert thresholds could be made more conservative)
+ 
+ * To run tests individually (often `unittest discover` will finish with some stochastic errors that you want to track down), 
+ ```
+ > python2 -m unittest tests.XX_TEST_NAMEXX
+ ```
+ Important: use `.` instead of `/` and DO NOT add the `.py` extension to test name (complain to unittest developers etc).
     
+## Based on 
+
+
+# BEHAVIOR3PY
+
+Behavior3 library, originally written in Javascript and converted to Python2.7
+
+- Info: https://github.com/behavior3/behavior3py
+
+- Based on the work of [(Marzinotto et al., 2014)](http://www.csc.kth.se/~miccol/Michele_Colledanchise/Publications_files/2013_ICRA_mcko.pdf), in which they propose a **formal**, **consistent** and **general** definition of Behavior Trees;
+
