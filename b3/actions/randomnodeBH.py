@@ -8,9 +8,9 @@ class RandomNode(b3.Action):
         x = random.random()
         if(x > 0.5):
 	  return b3.SUCCESS
-	elseif (0.5 < x < 0.75)
+	elif (0.5 < x < 0.75):
 	  return b3.RUNNING
-	else
+	else:
 	  return b3.FAILURE
 	
 	

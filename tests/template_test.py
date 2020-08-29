@@ -29,12 +29,12 @@ class Test_XXNAMEXX(unittest.TestCase):
 
 
     def test_XXNAME_1(self):
-
+        pass
          
         
 
     def test_XXNAME_2(self):
-
+        pass
          
         
 
