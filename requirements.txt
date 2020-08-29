@@ -1,3 +1,5 @@
+# generated with pipreqs
+#       sudo pip install pipreqs
 hmmlearn==0.2.2
 mock==3.0.5
 matplotlib==2.1.1
