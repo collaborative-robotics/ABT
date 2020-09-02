@@ -13,7 +13,7 @@ for context, terminology, notation, and examples.
     
 2. They released a [javascript package](https://github.com/behavior3/behavior3js) and a [python version](https://github.com/behavior3/behavior3py) shortly after. See `https://github.com/behavior3`.
     
-3. Blake Hannaford modified the python version (behavior3py) so that BT selector nodes could learn from experience, *Adaptive BTs*, as documented  in the report: 
+3. Blake Hannaford modified the python version (behavior3py) so that BT selector nodes could learn from experience: *Adaptive BTs*, as documented  in the report: 
     [Simulation Results on Selector Adaptation in Behavior Trees](https://arxiv.org/pdf/1606.09219). These 
     mods are in the branch `abt_dev`
     
