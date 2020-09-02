@@ -4,11 +4,13 @@
  * simulate an ABT having stochastic output distribution for each leaf.
  * Use hmmlearn library to estimate stochastic ABT parameters from output data.
  * Support authoring of ABTs.
+ * ABTs and related Hidden Markov Models are desribed in ["Hidden Markov Models derived from Behavior Trees"[(https://arxiv.org/pdf/1907.10029.pdf)
 
  
 ## Classes:
 
-The simulation is built on the [b3 library](https://github.com/behavior3/behavior3py),
+The simulation is built on the [b3 library](https://github.com/collaborative-robotics/behavior3py) (a fork of 
+[behavior3py](https://github.com/behavior3/behavior3py), as modified in the `abt_dev` [branch](https://github.com/collaborative-robotics/behavior3py/tree/abt_dev)   
 a python Behavior Tree library.  The new leaf class, `aug_leaf(b3.Action)` inherits the 
 b3 Action class and adds transition and emission probabilities.  
 
@@ -126,4 +128,7 @@ Behavior3 library, originally written in Javascript and converted to Python2.7
 - Info: https://github.com/behavior3/behavior3py
 
 - Based on the work of [(Marzinotto et al., 2014)](http://www.csc.kth.se/~miccol/Michele_Colledanchise/Publications_files/2013_ICRA_mcko.pdf), in which they propose a **formal**, **consistent** and **general** definition of Behavior Trees;
+
+
+## [Wait!  I'm confused about these different BT repositories!](wait_im_confused.md)
 
