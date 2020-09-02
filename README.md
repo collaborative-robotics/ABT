@@ -78,15 +78,15 @@ Unique filenames are generated using URI's.  Each line contains
 
 2. `sequences/`   contains the simulated state transition/observation sequences
 
-3. `bw_output/`   containts datafiles (item 1 of metadata).   Data file line:
-    1.  Task code (2=Baum Welch)
-    1.  Ratio  (codeword mean spacing / sigma)
-    2.  di     (codeword spacing)
-    3.  HMM_delta    amt HMM params changed
-    4.  Sigma
+3. `bw_output/`   containts datafiles (item 2 of metadata above).   Data file line:
+    1.  Task code: (2=Baum Welch)
+    1.  Ratio:  (codeword mean spacing / sigma)
+    2.  di:     (codeword spacing)
+    3.  HMM_delta:   amt HMM params changed
+    4.  Sigma:    standard deviation of output observations in a state
     5.  run#
-    6.  e2 (RMS error)
-    7.  emax (max error)
+    6.  e2 (RMS error between original A matrix and identified A matrix)
+    7.  emax (max error between original A matrix and identified A matrix )
 
 
 ## Other Files in this package
