@@ -5,7 +5,7 @@
 import unittest
 import mock
 
-from tests.common import *
+import tests.common as tc
 #from common import *
 
 
@@ -29,6 +29,7 @@ import math as m
 
 import warnings
 
+tc.all_random_seeds(430298219)  # we want same seqs every time so we can assert for right answers                        
 
 #
 ############################################
@@ -49,7 +50,8 @@ if MODEL==SMALL:
 class Test_bw_alg_tl(unittest.TestCase):
 
 
-    def test_bw_alg_tl(self):
+    def test_bw_alg_tl(self):  
+
         print('Test env: path: ', sys.path[0:2])
         print('NSYMBOLS: ', NSYMBOLS)
         print('NEpochs: ', NEpochs)

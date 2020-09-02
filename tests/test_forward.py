@@ -8,7 +8,7 @@
 import os
 import sys
 
-#import random as random
+import random as random
 import math as m
 import numpy as np
 
@@ -49,6 +49,7 @@ else:
 class Test_Forward_Algorithm(unittest.TestCase):
 
     def test_FA_01(self):
+        tc.all_random_seeds(430298219)  # we want same seqs every time so we can assert for right answers                        
         results_logP = {}
         files_used = []
         #

@@ -1,5 +1,7 @@
 #
 # stub for testing utilities
+import random
+import numpy as np
 
 epsilon_probs = 0.00001  # required accuracy for probabilities
 
@@ -10,3 +12,6 @@ def assert_feq(a,b,message='assertion failure: floats should be equal', eps=epsi
     assert e<eps, message    
     return
 
+def all_random_seeds(x):
+    random.seed(x)
+    np.random.seed(x)
