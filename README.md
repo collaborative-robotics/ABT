@@ -4,7 +4,8 @@
  * simulate an ABT having stochastic output distribution for each leaf.
  * Use hmmlearn library to estimate stochastic ABT parameters from output data.
  * Support authoring of ABTs.
- * ABTs and related Hidden Markov Models are desribed in ["Hidden Markov Models derived from Behavior Trees"[(https://arxiv.org/pdf/1907.10029.pdf)
+ * ABTs and related Hidden Markov Models are described in ["Hidden Markov Models derived from Behavior Trees"](https://arxiv.org/pdf/1907.10029.pdf)
+ 
 ![how the modules include each other](importModules.png  "Import Structure Diagram")
  
 ## Classes:
