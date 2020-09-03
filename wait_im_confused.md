@@ -50,7 +50,7 @@ self.Obs = np.zeros(NSYMBOLS)   # probability to emit each observation symbol in
 Sadly, instead of a proper import structure, `b3` is hard-copied into the ABT repository.   If 
 the `abt_dev` branch of `behavior3py` [1] is updated, recopy the entire `b3` directory from it into `ABT/` .
 
-Augmeted BTs are analytically equivalent to HMMs (e.g. there is exactly one HMM for each ABT).  HMM algorithms are applied to outputs from executed ABTs in various "top level" test software.
+Augmented BTs are analytically equivalent to HMMs (e.g. there is exactly one HMM for each ABT).  HMM algorithms are applied to outputs from executed ABTs in various "top level" test software.
 
 
 ## Notes
