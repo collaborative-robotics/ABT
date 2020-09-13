@@ -16,9 +16,9 @@ a python Behavior Tree library.  The new leaf class, `aug_leaf(b3.Action)` inher
 b3 Action class and adds transition and emission probabilities.  
 
 Emmisions (observations) from each state are modeled by `NSYMBOLS`  discrete symbols. 
-There is a Gaussian probability density applied to each state with mean `mu` and standard deviation `sigma`.  The observations are integer valued.  Default sigma = 2.00.
+There is a discrete Gaussian probability distribution applied to each state with mean `mu` and standard deviation `sigma`.  The observations are integer valued.  Default sigma = 2.00.
 
-"Perterbuation" refers to the process of changing the HMM parameters between generating model outputs
+"Perturbuation" refers to the process of changing the HMM parameters between generating model outputs
 and running HMM-based analyses (e.g. Forward/Viterbi/Baum-Welch).   This is more realistic than starting out
 with exact parameters.
 
@@ -28,21 +28,21 @@ To build a model you have to create three files (bad!)
 
 1. `modelxx.py`.   This file contains/initializes
  
-    1. The names of your ABT leafs,
+    1. The names of your ABT leaves,
     
     2. The initial probability of success for each leaf
     
     2. The mean and variance for the emission symbol distribution for each state
     
-    2. all of this is folded into an object of class model() (def in abtclass.py)
+    2. all of this is folded into an object of class model() (defined in abtclass.py)
 
 2. `[ProjName]_ABT.py`.   This file sets up the ABT with 
  
     1. the new leaf class `aug_leaf()` (from abtclass.py)
 
-    2. the 16-state file peg_ABT.py  e.g. peg in hole task. 
+    2. the 16-state file peg_ABT.py an example peg-in-hole task. 
     
-    **  or-** a simple test project:   `simp_ABT.py` with 4+2 states
+    **  or-** a simple test project:   `simp_ABT.py` with 4+2=6 states
     
     **  or-** customize your own `N` state model.
     
@@ -62,13 +62,13 @@ To build a model you have to create three files (bad!)
     
     1. reporting
 
-`tl_bw_hmm.py` has two command line arguments:   the HMM perturbation magnitude (0.0<p<0.5) and a text comment for the  metadata file. 
+Run `tl_bw_hmm.py` (or whatever you want to call it) with two command line arguments:   the HMM perturbation magnitude (0.0<x<0.5) and a text comment for the  metadata file. 
     
 ##  Output Files
 
 Your results will appear in three files
 
-1. `metadata.txt` -- one line for each run of tl_xxxxxxx.py. 
+1. `metadata.txt` -- one line for each run of your top-level script. 
 Unique filenames are generated using URI's.  Each line contains 
     
     1. date and time stamp

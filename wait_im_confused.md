@@ -25,7 +25,7 @@ for context, terminology, notation, and examples.
 
 ## Classes:
 
-### *Adaptive BTs* 
+### *Adaptive BTs* (abts)
 
 The purpose of Adaptive BTs is to learn from experience.  For example, if the third
 child of a Selector node with 5 children has the highest probability of success (as learned over multiple tics) then it should be tried first by the selector node instead of
@@ -33,13 +33,13 @@ child of a Selector node with 5 children has the highest probability of success 
  
  Adaptive BTs  are built on the `behavior3py` module with minor modifications[1].   The key functionality of adaptive BTs is the selector (Priority) node which chooses the most successful child first (as opposed to a fixed order).  This is the `SmrtSel00(), SmrtSel01(), etc.` classes (featuring varieties of the smart selection algorithm). `SmrtSelxx()` are located in the [adaptive-b3 project](https://github.com/collaborative-robotics/adaptive-b3) `main` branch.
 
-### *Augmented BTs* 
-The purpose of adaptive BTs is to
+### *Augmented BTs* (ABTs)
+The purpose of Augmented BTs is to
 1. Study the relationship between Behavior Trees and HMMs
 2. Track evolution of a BT in spite of noisy measurements. 
 3. Model behavioral systems with stochastic behavior and noisy measurements.
 
-Augmented BTs refer to BTs in which each leaf (`class aug_leaf()') inherits the `behavior3py.Action()` class and adds
+Augmented BTs refer to BTs in which each leaf (`class aug_leaf()`) inherits the `behavior3py.Action()` class and adds
 
 ```python
 self.Ps   # the probability the node will return `b3.SUCCESS' (a fixed param)
@@ -47,8 +47,10 @@ self.Pf = 1.0-self.Ps
 self.Obs = np.zeros(NSYMBOLS)   # probability to emit each observation symbol in that state.
 ```
 
-Sadly, instead of a proper import structure, `b3` is hard-copied into the ABT repository.   If 
-the `abt_dev` branch of `behavior3py` [1] is updated, recopy the entire `b3` directory from it into `ABT/` .
+Sadly, instead of a proper import structure, `b3` is currently symlinked or hard-copied into the ABT repository.   If the `abt_dev` branch of `behavior3py` [1] is updated, recopy the entire `b3` directory from it into `ABT/` .
+
+![how the modules include each other](importModules.png  "Import Structure Diagram")
+
 
 Augmented BTs are analytically equivalent to HMMs (e.g. there is exactly one HMM for each ABT).  HMM algorithms are applied to outputs from executed ABTs in various "top level" test software.
 
